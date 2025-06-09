@@ -1,0 +1,740 @@
+{% extends 'public_portal_base.html' %}  
+
+
+{% load static %}
+
+{% block content %}
+
+
+<style>
+    
+
+.hero-section {
+    position: relative;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 1)),
+                url('https://source.unsplash.com/1600x900/?office,teamwork') no-repeat center center/cover;
+    height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+    padding: 0 15px;
+    border-bottom: 1px solid #eee; /* Optional: A light border for a clean separation */
+}
+
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6); /* Darker and more professional */
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        margin: 0 0;
+        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6); /* Subtle shadow for contrast */
+        animation: fadeInUp 10s ease-out infinite;
+    }
+
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-section p {
+        font-size: 1.3rem;
+        font-weight: 300;
+        opacity: 0.95;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Optional Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Optional Button */
+    .hero-btn {
+        background-color: #fcb900;
+        color: #333;
+        padding: 12px 30px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-btn:hover {
+        background-color: #f5a623;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+
+
+
+.custom-shape-divider-bottom-hero {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    }
+.custom-shape-divider-bottom-hero svg {
+        position: relative;
+        display: block;
+        width: calc(115% + 1.3px);
+        height: 80px;
+    }
+.custom-shape-divider-bottom-hero .shape-fill {
+        fill: #ffffff;
+    }
+
+
+
+
+
+
+ul.custom-arrow-list li::before {
+    content: "\21D2";  
+    color: blue;  
+    font-size: 1rem;  
+    margin-right: 10px; 
+    font-weight: bold; 
+}
+
+ul.custom-arrow-list li {
+    margin-bottom: 5px; 
+    font-family: Arial, sans-serif; 
+    font-size: 1rem; 
+    color: #333333; 
+}
+
+
+
+.module-icon {
+        font-size: 40px;
+        color: #007bff;
+    }
+.feature-section {
+        padding: 60px 0;
+        background-color: white;
+    }
+
+    
+.cta-section {
+        background-color: #007bff;
+        color: white;
+        padding: 40px 0;
+        text-align: center;
+    }
+
+
+
+.module-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+    overflow: hidden; /* Needed for inner shadow effect */
+    left: 0;
+    width:100%;
+}
+
+.module-card:hover {
+    transform: translateY(-5px); /* Move card up slightly */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+    left: 0;
+    width:100%
+}
+
+.module-card::before { /* Inner shadow on hover */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); /* Transparent initially */
+    transition: background-color 0.3s ease;
+    pointer-events: none; /* Allows clicks to pass through */
+}
+
+
+.module-card:hover::before {
+  background-color: rgba(0, 0, 0, 0.1); /* Semi-transparent black on hover */
+}
+.module-card .card-body {
+    transition: transform 0.3s ease; /* Smooth transitions for content */
+}
+
+.module-card:hover .card-body {
+    transform: scale(1.02); /* Slightly scale up the content */
+}
+
+
+
+/* Optional: Change button color on hover */
+.module-card:hover .btn-outline-primary {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+
+.feature-box,.price_card {
+    padding: 20px; /* Add some padding around the content */
+    border: 1px solid #eee; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+    
+    color: #333 !important; /* Set a visible color */
+  
+   
+}
+
+
+.feature-box:hover,.price_card:hover{
+    transform: translateY(-5px); /* Move box up slightly */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Subtler shadow */
+    border-color: #ddd; /* Slightly darker border on hover */
+    background-color: rgba(0, 0, 0, 0.1); /* Semi-transparent black on hover */
+    color: #333 !important; /* Set a visible color */
+   
+}
+
+
+
+.feature-box h4 {
+    margin-bottom: 10px;
+}
+
+
+
+
+@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+       }
+   
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+   }
+
+
+.live_demo_box {
+    padding: 20px; 
+    border: 1px solid #eee; 
+    border-radius: 8px; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+    cursor: pointer;
+    animation: shake 5s ease-in-out infinite;
+}
+
+
+
+.live_demo_box:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); 
+    border-color: #ddd; 
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+.feature-box2{
+    padding: 20px; 
+    border: 1px solid #eee; 
+    border-radius: 8px; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+    
+    color: #333 !important; 
+  
+   
+}
+
+
+.feature-box2:hover{
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: #ddd; 
+    background-color:gray;
+    color: #333 !important;
+   
+}
+
+
+.circle-card {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background-color: lightgoldenrodyellow; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    animation: shake 5s ease-in-out infinite; 
+}
+
+
+
+.circle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    background-color:	#f0f8ff; 
+    color: #000; 
+}
+
+
+
+
+.circle-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+    display: block;
+    transition: color 0.3s ease;
+    animation: shake 5s ease-in-out infinite; 
+}
+
+.circle-link:hover {
+    color: #007bff; /* Bootstrap primary color */
+}
+
+
+
+h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.animate {        
+    animation: shake 5s ease-in-out infinite;         
+       
+    }
+
+    .hover-zoom:hover {
+        transform: scale(1.03);
+        transition: all 0.3s ease;
+    }
+</style>
+
+
+
+
+<div class="container-fluid main-content">
+    <div class="row">                 
+      {% include "hero_section.html" %}
+
+
+        <!-- FEATURES -->
+       <!-- PLATFORM INTRODUCTION -->
+            <section class="py-5 bg-light">
+                <div class="container text-center">
+                    <h2 class="fw-bold mb-4 text-success">Welcome to the Future of Healthcare</h2>
+                    <p class="lead text-muted">
+                        You are in a platform where <strong>AI-powered prescription services is provided</strong> and also
+                        vetted by <strong>specialized doctors by choice</strong> via <strong>video consultation if you desire so</strong>.
+                        Get expert care from your trusted provider — fast, reliable, and personal.
+                    </p>
+                </div>
+            </section>
+
+            <!-- SERVICE PROVIDERS LIST -->
+            <section class="py-5">
+                <div class="container">
+                    <h3 class="text-center mb-5 text-primary">Choose Your Desired Service Provider</h3>
+                    <div class="row justify-content-center">
+                        {% for tenant in tenants %}
+                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
+                                <div class="card shadow-sm border-0 h-100 hover-zoom">
+                                    <div class="card-body text-center">
+                                        <!-- Placeholder for logo -->
+                                        <img src="{% static 'images/Logo.png' %}" alt="{{ tenant.name }}" class="img-fluid mb-3" style="max-height: 50px; border-radius: 20%;">
+                                        <h5 class="card-title text-dark">{{ tenant.name }}</h5>
+                                        <p class="card-text text-muted small">
+                                            Trusted by patients across the region.
+                                        </p>
+                                        <a href="https://{{ tenant.schema_name }}.aiha.live" target="_blank" class="btn btn-outline-success btn-sm mt-2">
+                                            Visit Provider
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </section>
+
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 text-success">How Our AI-Powered Prescription System Works</h2>
+
+        <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
+
+            <!-- Step 1 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="fas fa-user fs-1 text-primary"></i>
+                <h6 class="mt-2">Step 1</h6>
+                <p class="small mb-0">Register as a user</p>
+            </div>
+
+            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
+
+            <!-- Step 2 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="fas fa-id-card fs-1 text-primary"></i>
+                <h6 class="mt-2">Step 2</h6>
+                <p class="small mb-0">Fill patient profile form</p>
+            </div>
+
+            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
+
+            <!-- Step 3 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="fas fa-comments fs-1 text-primary"></i>
+                <h6 class="mt-2">Step 3</h6>
+                <p class="small mb-0">Describe symptoms & request AI prescription</p>
+            </div>
+
+            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
+
+            <!-- Step 4 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="bi bi-cpu-fill fs-1 text-info"></i>
+                <h6 class="mt-2">Step 4</h6>
+                <p class="small mb-0">AI generates preliminary prescription</p>
+            </div>
+
+            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
+
+            <!-- Step 5 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="bi bi-calendar-check-fill fs-1 text-success"></i>
+                <h6 class="mt-2">Step 5</h6>
+                <p class="small mb-0">Book doctor for vetting or direct consult</p>
+            </div>
+
+            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
+
+            <!-- Step 6 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="bi bi-journal-text fs-1 text-warning"></i>
+                <h6 class="mt-2">Step 6</h6>
+                <p class="small mb-0">Submit symptoms, images & history</p>
+            </div>
+
+            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
+
+            <!-- Step 7 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="bi bi-prescription2 fs-1 text-danger"></i>
+                <h6 class="mt-2">Step 7</h6>
+                <p class="small mb-0">Doctor reviews & finalizes prescription</p>
+            </div>
+
+            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
+
+            <!-- Step 8 -->
+            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
+                <i class="bi bi-camera-video-fill fs-1 text-info"></i>
+                <h6 class="mt-2">Step 8</h6>
+                <p class="small mb-0">Optional: Request video consultation</p>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+<h4> 💡 Why Use AI-Powered Prescriptions?<br></h4>
+<p class="justify-content">   
+In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked.
+</p>
+
+
+    <!-- BECOME A PROVIDER -->
+    <section class="py-4 bg-white text-center">
+        <h2 class="mb-3">Want to become a service provider?</h2>
+        <p>Request a demo to understand how it works in platform</p>
+        <a href="{% url 'clients:demo_request' %}" class="btn btn-primary btn-sm">Apply Now</a>
+    </section>
+
+
+    
+     <section class="py-5 bg-light">
+  <div class="container">
+    <h2 class="text-center mb-5 text-success">Why Join Our AI-Powered Healthcare Platform?</h2>
+    <div class="row g-4">
+
+      <!-- Doctor Benefits -->
+      <div class="col-md-6">
+        <div class="p-4 bg-white rounded shadow border-start border-5 border-success">
+          <h4 class="text-success mb-3"> <i class="fas fa-user-md fa-1x mb-3 text-success"></i> For Doctors</h4>
+          <ul class="list-unstyled">
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Earn consultation fees from home or on the go</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Work flexible hours, even part-time</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Gain exposure to a wide patient base</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Vet AI-generated prescriptions efficiently</li>
+            <li><i class="bi bi-check-circle-fill text-success me-2"></i> Conduct video consultations securely</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Patient Benefits -->
+      <div class="col-md-6">
+        <div class="p-4 bg-white rounded shadow border-start border-5 border-primary h-100">
+          <h4 class="text-primary mb-3"><i class="bi bi-person-check me-2"></i> For Patients</h4>
+          <ul class="list-unstyled">
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Get AI-powered prescriptions instantly</li>
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Book expert doctors from home</li>
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Share symptoms and medical files online</li>
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Request video consultations as needed</li>
+            <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Access prescriptions from anywhere</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+         
+        <section class="py-5">
+            <div class="container text-center">
+                <h2 class="mb-4">Key Healthcare Features</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="feature-box shadow-sm">
+                            <i class="fas fa-calendar-check fa-3x mb-3 text-primary"></i>
+                            <h5>Appointment Scheduling</h5>
+                            <p>Manage doctor appointments with real-time availability and SMS reminders.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box shadow-sm">
+                            <i class="fas fa-user-md fa-3x mb-3 text-success"></i>
+                            <h5>Patient Records</h5>
+                            <p>Secure EMR for storing diagnosis history, prescriptions, and treatment plans.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box shadow-sm">
+                            <i class="fas fa-vial fa-3x mb-3 text-warning"></i>
+                            <h5>Lab Test Results</h5>
+                            <p>Enter lab values, compare with standards, and generate printable reports.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box shadow-sm">
+                            <i class="fas fa-bell fa-3x mb-3 text-info"></i>
+                            <h5>Notifications</h5>
+                            <p>Send automated SMS/email updates for reports, follow-ups, and health tips.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box shadow-sm">
+                            <i class="fas fa-money-check-alt fa-3x mb-3 text-danger"></i>
+                            <h5>Billing & Payments</h5>
+                            <p>Track consultations, lab tests, medicines, and generate invoices easily.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-box shadow-sm">
+                            <i class="fas fa-clinic-medical fa-3x mb-3 text-secondary"></i>
+                            <h5>Doctor & Staff Management</h5>
+                            <p>Manage schedules, departments, and profiles for medical staff and admins.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA -->
+        <section class="bg-primary text-white text-center py-5" id="start-trial">
+            <div class="container">
+                <h2>Transform Your Healthcare Facility Today</h2>
+                <p class="lead">Try it free for 30 days — streamline your operations and boost patient satisfaction.</p>
+                <a href="#subscription_plan" class="btn btn-light btn-lg">Start Free Trial</a>
+            </div>
+        </section>
+
+        <div class="container-fluid py-5 d-flex justify-content-center">
+            <div class="row justify-content-center" style="width: 100%;">
+                <div class="col-md-4 mb-4 d-flex justify-content-center">
+                    <div class="circle-card shadow-lg text-center">
+                        <a href="#subscription_plan" class="circle-link">
+                            <h4><i class="fas fa-play-circle me-2"></i> Start Free Trial</h4>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 d-flex justify-content-center">
+                    <div class="circle-card shadow-lg text-center">
+                        <a href="{% url 'clients:demo_request' %}" class="circle-link">
+                            <h4><i class="fas fa-laptop-medical me-2"></i> Request Live Demo</h4>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4 d-flex justify-content-center">
+                    <div class="circle-card shadow-lg text-center">
+                        <a href="#" class="circle-link">
+                            <h4><i class="fas fa-headset me-2"></i> 24/7 Support</h4>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CTA Section -->
+        <div class="cta-section feature-box2 text-white text-center py-5" style="background-color: #007bff;">
+            <h2>Need a Personalized Demo?</h2>
+            <a href="#free_trial" class="btn btn-light btn-lg mt-3">We're here to help you get started</a>
+        </div> 
+
+
+       
+        <div class="col-12 mt-4">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="card-header text-center text-white bg-dark">
+                        <h3 class="fw-bold" id="subscription_plan">Choose your plan</h3>
+                    </div> 
+                    {% for plan in plans %}
+                    <div class="col-6 col-md-4 mt-2" id="free_trial">
+                        <div class="card shadow price_card"> 
+                            <div class="card-header text-center bg-dark text-white">
+                                <h4>{{ plan.get_duration_display }}</h4>
+                            </div>
+                            <div class="card-body text-center">
+                                <h2 class="card-title">${{ plan.price }}/year</h2>
+                                <p class="card-text">{{ plan.description }}</p>
+                                <ul class="list-group mb-3">
+                                    {% for feature in plan.features_list %}
+                                    <li class="list-group-item">{{ feature }}</li>
+                                    {% endfor %}
+                                    <p class="card-text">included&nbsp;{{ plan.base_users }}&nbsp;users for package</p>
+                                    <p class="card-text">price/request:&nbsp;{{ plan.price_per_request }}</p>
+                                    <p class="card-text">${{ plan.price_per_user }}/additional user/month</p>
+                                </ul>
+                                 <!-- Trigger Buttons -->
+                                 <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#subscriptionModal">Subscribe Now</a>
+                                 <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#subscriptionModal">Renew Now</a>
+ 
+                                <!-- <a href="{% url 'clients:apply_for_tenant' %}?plan_id={{ plan.id }}" class="btn btn-success">Subscribe Now</a>
+                                <a href="{% url 'clients:renew_subscription' %}?plan_id={{ plan.id }}" class="btn btn-success">Renew Now</a> -->
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>     
+        </div>
+            
+                
+    <!-- Modal -->
+    <div class="modal fade" id="subscriptionModal" tabindex="-1" aria-labelledby="subscriptionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            
+            <div class="modal-header">
+            <h5 class="modal-title" id="subscriptionModalLabel">Subscription Required</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <div class="modal-body">
+            Please fill the demo request form, we will show you our service , how to use,if you are ok then you can decide to subscribe your desired plan.
+            </div>
+            
+            <div class="modal-footer">
+            <a href="{% url 'clients:demo_request' %}" class="btn btn-primary">Go to This link</a>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Maybe Later</button>
+            </div>
+    
+            </div>
+        </div>
+    </div>
+  
+       
+        
+    <div class="col-12 box3 my-5">
+        <div class="container-fluid text-center py-5">
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-8">
+                    <div class="card shadow-lg border-0 rounded-lg">
+                        <div class="card-body p-4">
+                            <h2 class="text-primary mb-4">Thank You for Choosing Our Application!</h2>
+                            <p class="text-muted" style="font-size: 1.1rem; line-height: 1.8;">
+                                We appreciate your time and effort in exploring our 
+                                <strong>ai powered prescription services</strong>. With its advanced features 
+                                designed to streamline healthcare service at home, improve efficiency, and enable data-driven decision-making, 
+                                we are confident that this application will bring immense value to all of us.
+                            </p>
+                            <p class="text-muted" style="font-size: 1.1rem; line-height: 1.8;">
+                                If you have any feedback or need further assistance, feel free to reach out. 
+                                Your insights are invaluable to us and help us grow and improve!
+                            </p>
+                            <h4 class="text-success mt-4">Stay Efficient. Stay Productive. See You Again Soon!</h4>
+                            <p class="text-muted mt-3">~ The Development Team</p>
+                            <p style="margin-left:0px">
+                                <img src="{% static 'images/Logo.png' %}" 
+                                    class="rounded-circle border"                                    
+                                    style="width: 80px; height: 80px; object-fit: cover; border: 2px solid #007bff;"><br>
+                                    mymeplus Technology <br>
+
+                                    <img src="{% static 'images/my_image2.JPG' %}" 
+                                    class="rounded-circle border"                                    
+                                    style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #007bff;">
+                                    Engineer Humayun Kobir(Buet-eee,MBA) <br>
+                                    CTO <br>
+                                    <i class="fas fa-envelope"></i> hkobir1973@gmail.com <br>
+                                    <i class="fas fa-phone">+88-01743-800-705</i>
+                            </p>
+                           
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+   
+</div>
+
+</div>
+
+
+
+
+
+
+{% endblock %}

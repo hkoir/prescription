@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% load custom_filters %}
+{% block content %}
+
+
+<style>
+  .reply-highlight {
+  animation: flash-bg 1s ease;
+}
+
+@keyframes flash-bg {
+  0% { background-color: #fff3cd; }
+  100% { background-color: transparent; }
+}
+.list-group-item.active {
+  background-color: #f1f1f1 !important;
+  color: #000 !important;
+  border-color: #ddd !important;
+}
+
+</style>
+
+<div class="container-fluid py-4" data-selected="{% if selected_conversation %}true{% else %}false{% endif %}">
+  <div class="row">
+
+    <!-- LEFT COLUMN: Inbox -->
+    <div class="col-md-4 border-end" style="max-height: 90vh; overflow-y: auto;">
+      <h5 class="mb-3">Inbox</h5>
+
+      <div class="d-flex">
+        <form method="get" class="d-flex align-items-center gap-2 mb-3">
+          {{ filter_form.conversation }}
+          <button type="submit" class="btn btn-sm btn-primary">Filter</button>
+        </form>
+      </div>
+
+
+      <ul class="list-group">
+        {% for msg in page_obj %}       
+      
+        <div class="inbox-item">
+          <strong>{{ msg.conversation }}</strong>
+          {% with unread_count_map|dict_get:msg.conversation.id as unread %}
+            {% if unread %}
+              <span class="badge bg-warning">{{ unread }}</span>
+            {% endif %}
+          {% endwith %}     
+       </div>
+
+          <a href="{% url 'messaging:inbox' pk=msg.conversation.id %}" class="list-group-item list-group-item-action {% if selected_conversation and msg.conversation.id == selected_conversation.id %}active{% endif %}">
+            <div class="fw-bold">
+              {% if msg.conversation.is_group %}
+                👥 {{ msg.conversation.name|default:"Unnamed Group" }}
+              {% else %}
+                💬 {% for p in msg.conversation.participants.all %}{% if p != user %}{{ p.get_full_name|default:p.username }}{% endif %}{% endfor %}
+              {% endif %}
+            </div>
+            <div class="text-muted small">
+              {{ msg.body|truncatechars:50 }}<br>
+              {{ msg.timestamp|naturaltime }}
+            </div>
+          </a>
+        {% empty %}
+          <li class="list-group-item">No conversations yet.</li>
+        {% endfor %}
+      </ul>
+    </div>
+
+    <!-- RIGHT COLUMN: Conversation Detail -->
+    <div class="col-md-8">
+      <button class="btn btn-sm btn-secondary d-md-none mb-2" onclick="goBackToInbox()">← Back to Inbox</button>
+     
+      {% if selected_conversation %}
+            <script>
+              document.addEventListener('DOMContentLoaded', hideInboxOnMobile);
+            </script>
+        
+
+      
+       <div class="dropdown text-end mb-2">
+          <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" id="messageActionsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            ⋮
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messageActionsDropdown">
+            <li> <a class="dropdown-item text-success" href="{% url 'messaging:add_participants' selected_conversation.id %}"> ➕ Add Participants </a></li>
+            <li><a class="dropdown-item text-danger" href="{% url 'messaging:remove_participants' selected_conversation.id %}"> ❌ Remove Participants </a> </li>
+            <li> <a class="dropdown-item text-info" href="{% url 'messaging:send_message' %}"> 📨 Send New Message</a></li>
+            <li> <a class="dropdown-item text-primary" href="{% url 'messaging:create_group' %}">👥 Create Group</a> </li>
+          </ul>
+        </div>
+
+
+        <div class="card mt-3">
+          <div class="card-header">
+            <strong>
+              {% if selected_conversation.is_group %}
+                Group: {{ selected_conversation.name }}
+              {% else %}
+                Chat with: 
+                {% for p in selected_conversation.participants.all %}
+                  {% if p != user %}{{ p.get_full_name|default:p.username }}{% endif %}
+                {% endfor %}
+              {% endif %}
+            </strong>
+          </div>
+          <div class="card-body" style="max-height: 60vh; overflow-y: auto;">
+            {% for msg in selected_conversation.messages.all %}
+              <div class="mb-3 border-bottom pb-2">
+                <div class="d-flex justify-content-between">
+                  <div>
+                    <strong class="text-primary">{{ msg.sender.get_full_name|default:msg.sender.username }}</strong>
+                    <small class="text-muted">({{ msg.timestamp|naturaltime }})</small>
+                  </div>
+
+
+                 <div class="dropdown text-end">
+                    <button class="btn btn-sm btn-light border-0" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      <i class="bi bi-three-dots-vertical"></i> <!-- Or just use ⋮ if you don't use icons -->
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                      <li><a class="dropdown-item text-primary" href="{% url 'messaging:edit_message' msg.id %}">✏️ Edit</a> </li>
+                      <li> <a class="dropdown-item text-danger" href="{% url 'messaging:delete_message' msg.id %}">🗑️ Delete </a></li>
+                      <li> <button class="dropdown-item reply-btn"
+                                data-msg-id="{{ msg.id }}"
+                                data-sender="{{ msg.sender.get_full_name|default:msg.sender.username|escapejs }}"
+                                data-body="{{ msg.body|escapejs|truncatechars:50 }}">
+                          💬 Reply
+                        </button>
+                      </li>
+                    </ul>
+                  </div>
+
+
+
+                </div>
+
+                {% if msg.reply_to %}
+                  <div class="reply-preview text-muted border-start ps-3 mb-2 small">
+                    Replying to: <strong>{{ msg.reply_to.sender }}</strong><br>
+                    {{ msg.reply_to.body|truncatechars:50 }}
+                  </div>
+                {% endif %}
+
+                <div class="p-2 bg-light rounded mt-1">{{ msg.body }}</div>
+
+                {% if msg.image %}
+                  <div class="mt-2">
+                    <img src="{{ msg.image.url }}" alt="Image" class="img-fluid rounded" style="max-width: 200px;">
+                  </div>
+                {% endif %}
+                {% if msg.video %}
+                  <div class="mt-2">
+                    <video controls style="max-width: 400px;">
+                      <source src="{{ msg.video.url }}" type="video/mp4">
+                      Your browser does not support the video tag.
+                    </video>
+                  </div>
+                {% endif %}
+              </div>
+            {% empty %}
+              <p>No messages in this conversation yet.</p>
+            {% endfor %}
+          </div>
+
+          <div class="card-footer">
+            <!-- Reply preview box -->
+            <div id="reply-preview-box" class="alert alert-info d-none">
+              <strong>Replying to <span id="reply-preview-sender"></span>:</strong>
+              <div id="reply-preview-body"></div>
+              <button type="button" class="btn btn-sm btn-link text-danger p-0" onclick="clearReply()">Cancel</button>
+            </div>
+
+            <!-- Main reply form -->
+            <form method="post" enctype="multipart/form-data">
+              {% csrf_token %}
+              <input type="hidden" name="reply_to" id="reply_to_input">
+              Body:{{ form.body }}
+              Image:{{ form.image }}
+              Clip:{{ form.video }}
+              <button class="btn btn-success">Send</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <div class="alert alert-info">
+          Select a conversation to start messaging.
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById('messaging-container');
+  const selected = container.dataset.selected === "true";
+
+  if (window.innerWidth < 768 && selected) {
+    // Hide inbox column on mobile
+    const inboxCol = document.getElementById('inbox-column');
+    const convoCol = document.getElementById('conversation-column');
+
+    if (inboxCol && convoCol) {
+      inboxCol.style.display = 'none';
+      convoCol.classList.remove('col-md-8');
+      convoCol.classList.add('col-12');
+    }
+  }
+});
+
+function goBackToInbox() {
+  const inboxCol = document.getElementById('inbox-column');
+  const convoCol = document.getElementById('conversation-column');
+  if (inboxCol && convoCol) {
+    inboxCol.style.display = 'block';
+    convoCol.classList.remove('col-12');
+    convoCol.classList.add('col-md-8');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+</script>
+
+
+
+<script>
+function replyToMessage(msgId, sender, body) {
+  const replyInput = document.getElementById('reply_to_input');
+  const replyPreviewBox = document.getElementById('reply-preview-box');
+  const replyPreviewSender = document.getElementById('reply-preview-sender');
+  const replyPreviewBody = document.getElementById('reply-preview-body');
+
+  if (replyInput && replyPreviewBox && replyPreviewSender && replyPreviewBody) {
+    replyInput.value = msgId;
+    replyPreviewSender.textContent = sender;
+    replyPreviewBody.textContent = body;
+    replyPreviewBox.classList.remove('d-none');
+
+    // 🔽 Smooth scroll to reply form
+    replyPreviewBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+
+
+function clearReply() {
+  const replyInput = document.getElementById('reply_to_input');
+  const replyPreviewBox = document.getElementById('reply-preview-box');
+
+  if (replyInput && replyPreviewBox) {
+    replyInput.value = '';
+    replyPreviewBox.classList.add('d-none');
+  }
+}
+
+// Ensure buttons are hooked after DOM loads
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.reply-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      const msgId = this.dataset.msgId;
+      const sender = this.dataset.sender;
+      const body = this.dataset.body;
+      replyToMessage(msgId, sender, body);
+    });
+  });
+});
+</script>
+
+
+
+{% endblock %}

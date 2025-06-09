@@ -1,0 +1,1215 @@
+from django.db.models import Q
+from django.utils import timezone
+from django.contrib import messages
+from .ai import get_ai_prescription  
+import json
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+from io import BytesIO
+from django.core.files.base import ContentFile
+from django.db import transaction
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.auth.decorators import login_required
+from django.forms import modelformset_factory
+import base64
+from django.core.files.base import ContentFile
+from django.core.exceptions import PermissionDenied
+from django.urls import reverse
+import re
+from django.utils.translation import get_language
+from django.core.paginator import Paginator
+
+from .models import DoctorBooking, DoctorPrescription, SuggestedMedicine, SuggestedLabTest,LabTest
+from .models import AIPrescription,Patient,DoctorBooking,Doctor
+from .forms import DoctorPrescriptionForm, SuggestedMedicineForm, SuggestedLabTestForm,AIPrescriptionForm,PatientForm,DirectDoctorBookingForm
+from finance.models import DoctorPayment,DoctorServiceLog,PaymentProfile,AIPrescriptionPayment
+from finance.utils import update_doctor_payment
+from .forms import MedicineForm, LabTestForm
+from.models import Medicine,LabTest
+from.forms import RequestVidelCallForm,ApproveRequestVidelCallForm
+from.forms import PatientZoomRequestForm,DoctorZoomScheduleForm
+from.models import ZoomMeeting
+from.forms import DoctorFolloupBookingApprovedForm,DoctorFolloupBookingRequestForm
+from.models import DoctorFolloupBooking
+from prescription.utils.zoom import create_zoom_meeting
+
+
+
+
+
+
+def home(request):
+    return render(request,'prescription/home.html')
+
+
+
+
+@login_required
+def available_doctors(request):
+    prescription_id = request.GET.get("prescription_id")
+    ai_prescription = get_object_or_404( AIPrescription, id=prescription_id) if prescription_id else None
+
+    
+    query = request.GET.get("query", "").strip()
+    specialization_filter = request.GET.get("specialization", "").strip()
+    doctors = Doctor.objects.all()
+    if query:
+        doctors = doctors.filter(full_name__icontains=query)
+    
+    if specialization_filter:
+        doctors = doctors.filter( specialization__icontains=specialization_filter)  # ✅ Correct
+
+
+    categorized_doctors = {}
+    for doctor in doctors:
+        if doctor.specialization not in categorized_doctors:
+            categorized_doctors[doctor.specialization] = []
+        categorized_doctors[doctor.specialization].append(doctor)
+
+    return render(request, "prescription/available_doctors.html", {
+        "categorized_doctors": categorized_doctors,
+        "query": query,
+        "specialization_filter": specialization_filter,
+        'ai_prescription': ai_prescription
+       
+    })
+
+
+
+PaymentGatewayAPI=None
+
+def process_payment(payment_token, amount, currency='usd'):
+    payment_gateway = PaymentGatewayAPI(api_key="your_api_key")    
+    try:
+        charge_response = payment_gateway.charge_card(
+            token=payment_token,
+            amount=amount,
+            currency=currency
+        )
+        
+        if charge_response['status'] == 'success':
+            return True
+        else:
+            return False
+    except Exception as e:
+        return False
+
+
+
+def extract_section(text, pattern, fallback=""):
+    match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+    return match.group(1).strip() if match else fallback
+
+
+
+
+@login_required
+def create_ai_prescription(request):
+    user = request.user  
+    patient = None
+    patient_missing = False
+    free_limit = 5
+    free = False
+    payment = None
+
+    try:
+        patient = user.patient_profile
+    except Patient.DoesNotExist:
+        patient_missing = True
+
+    if patient and patient.needs_profile_update():
+        return redirect(f"{reverse('finance:update_patient_profile', args=[patient.id])}?next={request.path}")
+
+
+    # Prevent GET form rendering if patient exceeded free usage and no payment
+    if request.method != 'POST' and patient and patient.free_ai_prescriptions_used >= free_limit:
+        has_payment = AIPrescriptionPayment.objects.filter(
+            patient=patient,
+            used_for_prescription=False,
+            successful=True
+        ).exists()
+        if not has_payment:
+            messages.warning(request, 'Your free AI prescription limit has been reached. Please make a payment to continue.')
+            return redirect('prescription:home')  # <-- Replace with your actual payment URL name
+
+
+    if request.method == 'POST':
+        if 'create_patient' in request.POST:
+            patient_form = PatientForm(request.POST)
+            if patient_form.is_valid():
+                patient_instance = patient_form.save(commit=False)
+                patient_instance.user = user
+                patient_instance.save()
+                messages.success(request, "Patient profile created.")
+                return redirect('prescription:create_ai_prescription')
+        else:
+            form = AIPrescriptionForm(request.POST)
+            if not patient:
+                messages.error(request, "Please complete your patient profile before proceeding.")
+                return redirect('prescription:create_ai_prescription')
+
+            if patient.free_ai_prescriptions_used < free_limit:
+                free = True
+            else:
+                payment = AIPrescriptionPayment.objects.filter(
+                    patient=patient,
+                    used_for_prescription=False,
+                    successful=True
+                ).first()
+                if not payment:
+                    messages.warning(request, 'Your free usage has ended. Please make a payment to generate a new AI prescription.')
+                    return redirect('payment:start_ai_payment')  # Redirect again here on failed POST
+
+            if form.is_valid():
+                data = form.cleaned_data # covering symptoms,vital_signs,current_medications, duration            
+                data['age'] = data.get('age') or patient.age
+                data['gender'] = data.get('gender') or patient.gender
+                data['body_weight'] = data.get('body_weight') or patient.body_weight              
+                data['body_height'] = data.get('body_height') or patient.body_height
+                data['location'] = data.get('location') or patient.city                
+                data['medical_history'] = data.get('medical_history') or patient.medical_history
+                data['allergies'] = data.get('allergies') or patient.allergies
+             
+                ai_data = get_ai_prescription(**data)
+
+                prescription = AIPrescription.objects.create(
+                    user=user,
+                    patient=patient,
+                    symptoms=data['symptoms'],
+                    duration=data['duration'],
+                    age=data['age'],
+                    gender=data['gender'],
+                    medical_history=data.get('medical_history', ''),
+                    allergies=data.get('allergies', ''),
+                    current_medications=data.get('current_medications', ''),
+                    vital_signs=data.get('vital_signs', ''),
+                    location=data.get('location', ''),
+
+                    diagnosis=ai_data['diagnosis'],
+                    medicines=ai_data['medicines'],
+                    tests=ai_data['tests'],
+                    advice=ai_data['advice'],
+                    recommended_specialty=ai_data['recommended_specialty'],
+                    warning_signs=ai_data.get('warning_signs', '')
+                )
+
+                if free:
+                    patient.free_ai_prescriptions_used += 1
+                    patient.save()
+
+                    AIPrescriptionPayment.objects.create(
+                        patient=patient,
+                        ai_prescription=prescription,
+                        amount=0.0,
+                        payment_status='free',
+                        transaction_id='FREE'
+                    )
+                else:
+                    payment.ai_prescription = prescription
+                    payment.used_for_prescription = True
+                    payment.save()
+
+                return redirect('prescription:ai_prescription_detail', pk=prescription.pk)
+    else:
+        form = AIPrescriptionForm()
+        patient_form = PatientForm()
+
+    return render(request, 'prescription/create.html', {
+        'form': form,
+        'patient_form': patient_form,
+        'patient_missing': patient_missing
+    })
+
+
+
+def normalize_duration_text(raw_duration):
+    match = re.search(r'(\d+)', raw_duration)
+    if not match:
+        return raw_duration
+
+    number = int(match.group(1))  # forces English numerals
+    lang = get_language()
+
+    if lang == 'bn':
+        return f"{number} দিন"  # Bangla label, English number
+    else:
+        return f"{number} days"
+
+
+
+
+
+
+
+
+
+@login_required
+def ai_prescription_list(request):
+    prescriptions = AIPrescription.objects.filter(user=request.user.id).order_by('-created_at')   
+    datas = prescriptions
+    paginator = Paginator(datas, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    for prescription in page_obj:
+        prescription.normalized_duration = normalize_duration_text(prescription.duration)
+    return render(request, 'prescription/ai_prescription_list.html', {'prescriptions': prescriptions,'page_obj':page_obj})
+
+
+
+
+def ai_prescription_pdf(request, pk):
+    prescription = AIPrescription.objects.get(pk=pk)
+    template = get_template('prescription/prescription_pdf.html')  # Use a dedicated PDF template
+    html = template.render({'prescription': prescription})
+
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="Prescription_{prescription.id}.pdf"'
+
+    # Create PDF
+    pisa_status = pisa.CreatePDF(src=html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+
+
+
+@login_required
+def book_doctor(request, pk):
+    try:
+        prescription = AIPrescription.objects.get(pk=pk, user=request.user)
+    except AIPrescription.DoesNotExist:
+        messages.error(request, "You do not have permission to book a doctor for this prescription.")
+        return redirect('prescription:home') 
+
+    raw_specialty = (prescription.recommended_specialty or "").strip()
+    specialties = re.findall(r'\b(?:[A-Z][a-z]+(?:\s[A-Z][a-z]+)*)\s(?:Physician|Specialist)\b', raw_specialty)
+
+    query = Q()
+    for term in specialties:
+        query |= Q(specialization__icontains=term)
+    available_doctors = Doctor.objects.filter(query)
+
+    return render(request, 'prescription/book_doctor.html', {
+        'prescription': prescription,
+        'available_doctors': available_doctors,
+    })
+
+
+
+@login_required
+def book_doctor_direct(request, pk):
+    doctor = get_object_or_404(Doctor, pk=pk)
+    user = request.user
+    patient = None
+    patient_missing = False
+    patient_form = None
+
+    payment_amount = doctor.consultation_fees
+
+    try:
+        patient = user.patient_profile
+    except Patient.DoesNotExist:
+        patient_missing = True
+        patient_form = PatientForm()
+
+    #================== before creating - payment process need to trigger =====================
+
+    form = DirectDoctorBookingForm()
+
+    if request.method == 'POST':
+        if 'create_patient' in request.POST:
+            patient_form = PatientForm(request.POST)
+            if patient_form.is_valid():
+                patient = patient_form.save(commit=False)
+                patient.user = user
+                patient.save()
+                messages.success(request, "Patient profile created.")
+                return redirect('prescription:book_doctor_direct', pk=pk)
+        else:
+            post_data = request.POST.copy()
+            files_data = request.FILES.copy()
+
+            # Handle captured image (from webcam)
+            captured_data = post_data.get('captured_image')
+            if captured_data:
+                try:
+                    format, imgstr = captured_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    image_file = ContentFile(base64.b64decode(imgstr), name=f'captured_symptom.{ext}')
+                    files_data['symptom_image'] = image_file
+                except Exception as e:
+                    messages.error(request, "Failed to process captured image.")
+
+            # Handle recorded video (from webcam)
+            recorded_data = post_data.get('recorded_video')
+            if recorded_data:
+                try:
+                    format, videostr = recorded_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    video_file = ContentFile(base64.b64decode(videostr), name=f'recorded_symptom.{ext}')
+                    files_data['symptom_video'] = video_file
+                except Exception as e:
+                    messages.error(request, "Failed to process recorded video.")
+
+            # Create form with POST and files data
+            form = DirectDoctorBookingForm(post_data, files_data)
+
+            if form.is_valid():
+                if not patient:
+                    messages.error(request, "Please create a patient profile first.")
+                else:
+                    doctor_booking = form.save(commit=False)
+                    doctor_booking.user = user
+                    doctor_booking.doctor = doctor
+                    doctor_booking.patient = patient
+                    doctor_booking.preferred_time = timezone.now()
+                    doctor_booking.save()
+                    messages.success(request, "Doctor appointment booked successfully.")
+                    return redirect('prescription:doctor_booking_success')
+            else:
+                messages.error(request, "There was an error in the form. Please check your input.")
+
+    return render(request, 'prescription/confirm_booking_direct.html', {
+        'doctor': doctor,
+        'patient': patient,
+        'form': form,
+        'patient_form': patient_form,
+        'patient_missing': patient_missing,
+    })
+
+
+@login_required
+def confirm_booking(request, prescription_id, doctor_id):
+    prescription = get_object_or_404(AIPrescription, pk=prescription_id, user=request.user)
+    doctor = get_object_or_404(Doctor, pk=doctor_id)
+    patient = prescription.patient
+
+    payment_amount = doctor.consultation_fees
+
+    if not patient:
+        messages.error(request, "No patient information found in this prescription. Cannot proceed with booking.")
+        return redirect('prescription:ai_prescription_detail', pk=prescription.pk)
+    
+    #================== before creating - payment process need to trigger =====================
+
+
+    if request.method == 'POST':
+        symptom_image = request.FILES.get('symptom_image')
+        symptom_video = request.FILES.get('symptom_video')  # In case it's uploaded as file
+
+        # Handle base64 image capture
+        if not symptom_image:
+            captured_image_data = request.POST.get('captured_image')
+            if captured_image_data:
+                try:
+                    format, imgstr = captured_image_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    symptom_image = ContentFile(base64.b64decode(imgstr), name=f"captured_symptom.{ext}")
+                except Exception as e:
+                    messages.error(request, "Failed to process captured image.")
+
+        # Handle base64 recorded video
+        if not symptom_video:
+            recorded_video_data = request.POST.get('recorded_video')
+            if recorded_video_data:
+                try:
+                    format, videostr = recorded_video_data.split(';base64,')
+                    ext = format.split('/')[-1]
+                    symptom_video = ContentFile(base64.b64decode(videostr), name=f"captured_video.{ext}")
+                except Exception as e:
+                    messages.error(request, "Failed to process recorded video.")
+
+        # Create booking
+        booking = DoctorBooking.objects.create(
+            patient=patient,
+            doctor=doctor,
+            ai_prescription=prescription,
+            user=request.user,
+            preferred_time=timezone.now(),
+            symptom_image=symptom_image,
+            symptom_video=symptom_video,
+            symptoms_summary=prescription.symptoms,
+            duration=prescription.duration,
+            age=prescription.age,
+            medical_history=prescription.medical_history,
+            allergies=prescription.allergies,
+            current_medications=prescription.current_medications,
+            vital_signs=prescription.vital_signs,
+            location=prescription.location
+        )
+
+        messages.success(request, "Doctor appointment confirmed successfully.")
+        return redirect('prescription:doctor_booking_success',doctor.id,booking.id)
+
+    return render(request, 'prescription/confirm_booking.html', {
+        'prescription': prescription,
+        'doctor': doctor,
+        'patient': patient
+    })
+
+
+def doctor_booking_success(request, doctor_id, booking_id):
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    booking = get_object_or_404(DoctorBooking, id=booking_id, user=request.user)
+    return render(request, 'prescription/booking_success.html', {
+        'doctor': doctor,
+        'booking': booking
+    })
+
+
+
+@login_required
+def request_video_call(request, booking_id):
+    booking = get_object_or_404(DoctorBooking, id=booking_id)
+
+    try:
+        patient = Patient.objects.get(user=request.user)
+    except Patient.DoesNotExist:
+        messages.warning(request, 'Patient profile not found.')
+        return redirect('prescription:home')
+
+    if patient != booking.patient:
+        messages.warning(request, 'Only the associated patient can access this follow-up booking.')
+        return redirect('prescription:home')
+
+    if request.method == 'POST':
+        form = RequestVidelCallForm(request.POST, instance=booking)
+        if form.is_valid():
+            form_instance = form.save(commit=False)
+            form_instance.video_call_requested = True  # if you have a field to track this
+            form_instance.save()
+            messages.success(request, 'Video call request submitted successfully.')
+            return redirect('finance:patient_dashboard')  # or wherever you want
+        else:
+            print(form.errors)
+    else:
+        form = RequestVidelCallForm(instance=booking)
+
+    return render(request, 'prescription/request_video_call.html', {
+        'form': form,
+        'booking': booking
+    })
+
+
+def approve_request_video_call(request, booking_id):
+    booking = get_object_or_404(DoctorBooking, id=booking_id)
+
+    try:
+        doctor = Doctor.objects.get(user=request.user)
+    except Doctor.DoesNotExist:
+        messages.warning(request, 'Doctor profile not found.')
+        return redirect('prescription:home')
+
+    followup_doctor = booking.doctor
+    if doctor != followup_doctor:
+        messages.warning(request, 'Only the associated doctor can access this follow-up booking.')
+        return redirect('prescription:home')
+
+    if request.method == 'POST':
+        form = ApproveRequestVidelCallForm(request.POST, instance=booking)
+        if form.is_valid():
+            form.save()
+            return redirect('prescription:doctor_bookings_list')  # redirect after success
+        else:
+            print(form.errors)
+    else:
+        form = ApproveRequestVidelCallForm(instance=booking)
+    return render(request, 'prescription/request_video_call_approve.html', {
+        'form': form,
+        'booking': booking
+    })
+
+
+
+@login_required
+def doctor_bookings_list(request): 
+    bookings = DoctorBooking.objects.filter().exclude(status='cancelled').order_by('-created_at')
+    patient = None
+    doctor = None
+
+    try:
+        patient = Patient.objects.get(user=request.user)
+    except Patient.DoesNotExist:
+        pass
+
+    try:
+        doctor = Doctor.objects.get(user=request.user)
+    except Doctor.DoesNotExist:
+        pass
+
+    if patient:
+        bookings = bookings.filter(patient=patient)
+    elif doctor:
+        bookings = bookings.filter(doctor=doctor)
+    else:
+        bookings = DoctorBooking.objects.none()
+        messages.warning(request, "You are not associated with any patient or doctor profile.")   
+
+    datas =  bookings 
+    paginator = Paginator(datas, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number) 
+    return render(request, 'prescription/bookings_list.html', {'bookings': bookings,'page_obj':page_obj})
+
+
+
+
+
+@login_required
+def doctor_booking_detail(request, pk):
+    booking = get_object_or_404(DoctorBooking, pk=pk)
+
+    is_doctor = booking.doctor and booking.doctor.user == request.user
+    is_patient = booking.patient and booking.patient.user == request.user
+
+    if not (is_doctor or is_patient):
+        messages.warning(request,"You do not have permission to view this booking.")
+        return redirect('prescription:doctor_bookings_list')
+
+    return render(request, 'prescription/booking_detail.html', {'booking': booking})
+
+
+
+
+PrescriptionFormSet = modelformset_factory(
+    SuggestedMedicine,
+    form=SuggestedMedicineForm,
+    extra=1,
+    can_delete=True,
+)
+
+
+
+@login_required
+def create_doctor_prescription(request, booking_id, followup_id=None):
+    booking = get_object_or_404(DoctorBooking, pk=booking_id)
+    service_fee=None
+
+    followup_booking = None
+    if followup_id:
+        followup_booking = get_object_or_404(DoctorFolloupBooking, pk=followup_id, doctor_booking=booking)
+
+    ai_prescription = booking.ai_prescription if booking.ai_prescription else None
+
+    if followup_booking:
+        prescription_instance = None 
+    else:
+        prescription_instance = DoctorPrescription.objects.filter(
+            ai_prescription=ai_prescription
+        ).first()
+
+    if booking.doctor.user != request.user:
+        messages.error(request, "Only the assigned doctor can create a prescription for this booking.")
+        return redirect('prescription:doctor_booking_detail', pk=booking_id)
+
+    if request.method == 'POST':
+        medical_form = DoctorPrescriptionForm(request.POST, request.FILES, instance=prescription_instance)
+        prescription_formset = PrescriptionFormSet(request.POST, queryset=SuggestedMedicine.objects.none())
+        lab_test_form = SuggestedLabTestForm(request.POST)
+
+        if medical_form.is_valid() and prescription_formset.is_valid() and lab_test_form.is_valid():
+            with transaction.atomic():
+                doctor_prescription = medical_form.save(commit=False)
+                doctor_prescription.patient = booking.patient
+                doctor_prescription.doctor = booking.doctor
+                doctor_prescription.ai_prescription = booking.ai_prescription if booking.ai_prescription else None
+               
+                if followup_booking:
+                    doctor_prescription.booking_folloup_ref = followup_booking
+                else:
+                    doctor_prescription.booking_ref = booking
+                doctor_prescription.save()
+
+                if followup_booking and booking.is_followup_valid():
+                    service_fee = booking.doctor.folloup_consultation_fees
+                else:
+                   service_fee = booking.doctor.consultation_fees
+
+                # Medicines
+                for form in prescription_formset:
+                    if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
+                        prescribed_medicine = form.save(commit=False)
+                        prescribed_medicine.prescription = doctor_prescription
+                        prescribed_medicine.save()
+
+                # Lab Tests
+                selected_lab_tests = request.POST.getlist('lab_tests')
+                for test_id in selected_lab_tests:
+                    try:
+                        lab_test_catalog = LabTest.objects.get(id=test_id)
+                        SuggestedLabTest.objects.create(
+                            prescription=doctor_prescription,
+                            lab_test_name=lab_test_catalog,
+                            lab_test_notes='Pending'
+                        )
+                    except LabTest.DoesNotExist:
+                        pass
+
+                if followup_booking:
+                    followup_booking.status = 'completed'
+                    followup_booking.save()
+                else:
+                    booking.status = 'completed'
+                    booking.save()
+                if followup_booking and followup_booking.zoom_folloup_schedule:
+                    followup_booking.zoom_folloup_schedule.status = 'executed'
+                    followup_booking.zoom_folloup_schedule.save()
+
+
+                DoctorServiceLog.objects.create(
+                    user=request.user,
+                    ai_prescription=ai_prescription,
+                    doctor=booking.doctor,
+                    patient=booking.patient,
+                    service_date=timezone.now(),
+                    service_fee = service_fee
+                )
+                update_doctor_payment(booking.doctor)
+
+                messages.success(request, 'Prescription created successfully.')
+                return redirect('prescription:doctor_prescription_detail', pk=doctor_prescription.pk)
+
+        # show errors if invalid
+        return render(request, 'prescription/create_doctor_prescription.html', {
+            'booking': followup_booking or booking,
+            'medical_form': medical_form,
+            'prescription_formset': prescription_formset,
+            'lab_test_form': lab_test_form,
+            'lab_tests': LabTest.objects.all(),
+            'followup_booking':followup_booking
+        })
+
+    else:
+
+        if followup_booking and not prescription_instance:
+            last_prescription = DoctorPrescription.objects.filter(
+                booking_ref=booking
+            ).last()
+
+            medical_form = DoctorPrescriptionForm(
+                initial={
+                    'diagnosis': last_prescription.diagnosis,
+                    'advice': last_prescription.advice,
+                    
+                }
+            )
+        else:
+             medical_form = DoctorPrescriptionForm(instance=prescription_instance)       
+        prescription_formset = PrescriptionFormSet(queryset=SuggestedMedicine.objects.none())
+        lab_test_form = SuggestedLabTestForm()
+
+    return render(request, 'prescription/create_doctor_prescription.html', {
+        'booking': followup_booking or booking,
+        'medical_form': medical_form,
+        'prescription_formset': prescription_formset,
+        'lab_test_form': lab_test_form,
+        'lab_tests': LabTest.objects.all()
+    })
+
+
+@login_required
+def doctor_prescription_list(request): 
+    user = request.user
+    doctor_pres_list = DoctorPrescription.objects.none()  # default empty queryset
+
+    if hasattr(user, 'role'):
+        if user.role == 'patient':
+            try:
+                patient = Patient.objects.get(user=user)
+                doctor_pres_list = DoctorPrescription.objects.filter(patient=patient)
+            except Patient.DoesNotExist:
+                messages.warning(request, 'Patient profile not found.')
+        elif user.role in ['doctor', 'consultant']:
+            try:
+                doctor = Doctor.objects.get(user=user)
+                doctor_pres_list = DoctorPrescription.objects.filter(doctor=doctor)
+            except Doctor.DoesNotExist:
+                messages.warning(request, 'Doctor profile not found.')
+        else:
+            messages.warning(request, 'You are not authorized to view prescriptions.')
+    else:
+        messages.warning(request, 'Role information not available.')
+    datas =  doctor_pres_list
+    paginator = Paginator(datas, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'prescription/doctor_prescription_list.html', {
+        'doctor_pres_list': doctor_pres_list,
+        'page_obj':page_obj
+    })
+
+
+
+def doctor_prescription_detail(request, pk):
+    prescription = get_object_or_404(DoctorPrescription, pk=pk)
+
+    if prescription.ai_prescription:
+        # Case 1: AI-based prescription group
+        related_prescriptions = DoctorPrescription.objects.filter(
+            ai_prescription=prescription.ai_prescription
+        ).order_by('prescribed_at')
+
+    elif prescription.booking_ref:
+        # Case 2: Initial direct booking
+        related_prescriptions = DoctorPrescription.objects.filter(
+            booking_ref=prescription.booking_ref
+        ).order_by('prescribed_at')
+
+    elif prescription.booking_folloup_ref:
+        # Case 3: Follow-up booking only
+        related_prescriptions = DoctorPrescription.objects.filter(
+            booking_folloup_ref=prescription.booking_folloup_ref
+        ).order_by('prescribed_at')
+
+    else:
+        # Fallback: only the current prescription
+        related_prescriptions = [prescription]
+
+    return render(request, 'prescription/doctor_prescription_detail.html', {
+        'related_prescriptions': related_prescriptions,
+        'main_prescription': prescription,
+    })
+
+
+@login_required
+def doctor_prescription_detail_single(request, pk):
+    prescription = get_object_or_404(DoctorPrescription, pk=pk)
+    medicines = prescription.pres_medicines.all()
+    lab_tests = prescription.lab_tests.all()
+
+    return render(request, 'prescription/doctor_prescription_detail_single.html', {
+        'prescription': prescription,
+        'medicines': medicines,
+        'lab_tests': lab_tests,
+    })
+
+
+
+def render_to_pdf(request, obj, template_path, filename_prefix, context):
+    template = get_template(template_path)
+    html = template.render(context)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename_prefix}_{obj.id}.pdf"'
+
+    pisa_status = pisa.CreatePDF(src=html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+
+
+def doctor_prescription_pdf(request, pk):
+    prescription = DoctorPrescription.objects.get(pk=pk)
+    return render_to_pdf(
+        request,
+        prescription,
+        'prescription/doctor_prescription_pdf.html',
+        'doctor_Prescription',
+        {'prescription': prescription}
+    )
+
+
+
+
+#================= folloup booking and soom meeting management =======================
+
+
+
+def request_doctor_followup_booking(request, doctor_booking_id):
+    doctor_booking_instance = get_object_or_404(DoctorBooking,id=doctor_booking_id)   
+    if request.user != doctor_booking_instance.patient.user:
+        messages.warning(request,'Only associated patient can request for followup booking')
+        return redirect('prescription:home')
+        
+    if doctor_booking_instance and doctor_booking_instance.is_followup_valid():
+        payment_amount = doctor_booking_instance.doctor.folloup_consultation_fees
+    else:
+        payment_amount = doctor_booking_instance.doctor.consultation_fees
+
+    if request.method == "POST":
+        form = DoctorFolloupBookingRequestForm(request.POST,request.FILES)
+        if form.is_valid():
+            booking = form.save(commit=False)
+            booking.doctor_booking = doctor_booking_instance
+            booking.patient = doctor_booking_instance.patient
+            booking.doctor = doctor_booking_instance.doctor
+            booking.save()
+            return redirect("prescription:followup_up_booking_request_list")
+    else:
+        form = DoctorFolloupBookingRequestForm()
+    return render(request, "telemedicine/request_doctor_followup_booking.html", {"form": form,'doctor_booking':doctor_booking_instance})
+
+
+
+
+def followup_up_booking_request_list(request):
+    followup_requests = DoctorFolloupBooking.objects.all()
+    doctor=None
+    patient = None
+    try:
+        patient = Patient.objects.get(user=request.user)               
+    except Patient.DoesNotExist:
+        print('no patient')
+    try:
+        doctor = Doctor.objects.get(user=request.user)               
+    except Doctor.DoesNotExist:
+        print('no doctor')       
+
+    if doctor:
+        followup_requests = followup_requests.filter( doctor_booking__doctor=doctor)
+    if patient:
+        followup_requests = followup_requests.filter( doctor_booking__patient=patient)
+
+    paginator = Paginator(followup_requests, 10)  
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request,'telemedicine/doctor_followup_booking_request_list.html',{'page_obj':page_obj})
+
+
+
+
+def aprove_doctor_followup_booking(request, followup_booking_id):
+    followup_booking = get_object_or_404(DoctorFolloupBooking, id=followup_booking_id)
+   
+    doctor =None
+    try:
+        doctor = Doctor.objects.get(user=request.user)
+    except Doctor.DoesNotExist:
+        messages.warning(request, 'Doctor profile not found.')
+        return redirect('prescription:home')
+    followup_doctor = followup_booking.doctor_booking.doctor
+    if doctor != followup_doctor:
+        messages.warning(request, 'Only the associated doctor can access this follow-up booking.')
+        return redirect('prescription:home')
+    
+
+    form = DoctorFolloupBookingApprovedForm()
+    if request.method == "POST":
+        form = DoctorFolloupBookingApprovedForm(request.POST, instance=followup_booking)
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.status = "confirmed"
+            form.save()
+            return redirect("prescription:followup_up_booking_request_list")
+    else:
+        form = DoctorFolloupBookingApprovedForm(instance=followup_booking)
+    return render(request, "telemedicine/approve_doctor_followup_booking.html", {"form": form, "booking":followup_booking})
+
+
+
+
+@login_required
+def all_follow_up_schedules(request, booking_id): 
+    doctor_booking = get_object_or_404(DoctorBooking, id=booking_id)
+
+    user = request.user
+    is_doctor = Doctor.objects.filter(user=user).exists()
+    is_patient = Patient.objects.filter(user=user).exists()
+
+    if is_doctor:
+        doctor = Doctor.objects.get(user=user)
+        if doctor_booking.doctor != doctor:
+            raise PermissionDenied("You do not have permission to view this booking.")
+    elif is_patient:
+        patient = Patient.objects.get(user=user)
+        if doctor_booking.patient != patient:
+            raise PermissionDenied("You do not have permission to view this booking.")
+    else:
+        raise PermissionDenied("Access denied.")
+
+    # Get follow-up bookings
+    all_followup_requests = doctor_booking.doctor_folloup_bookings.all()
+
+    # Paginate
+    paginator = Paginator(all_followup_requests, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'telemedicine/all_followup_requestes.html', {'page_obj': page_obj})
+
+
+
+
+def request_zoom_meeting(request, followup_booking_id):
+    followup_booking_instance = get_object_or_404(DoctorFolloupBooking, id=followup_booking_id)
+    
+    if request.user != followup_booking_instance.doctor_booking.patient.user:
+        messages.warning(request, 'Only the associated patient can request a video conference.')
+        return redirect('prescription:home')
+
+    if request.method == "POST":
+        form = PatientZoomRequestForm(request.POST)
+        if form.is_valid():
+            zoom_meeting = form.save(commit=False)
+            zoom_meeting.doctor_booking = followup_booking_instance.doctor_booking
+            zoom_meeting.doctor_folloup_booking = followup_booking_instance
+            zoom_meeting.user = request.user
+            zoom_meeting.save()
+            return redirect("prescription:doctor_bookings_list")
+    else:
+        form = PatientZoomRequestForm(
+            initial={
+                'doctor_folloup_booking': followup_booking_instance,
+            }
+        )
+
+    return render(request, "telemedicine/request_zoom_meeting.html", {
+        "form": form,
+        'followup_booking_instance': followup_booking_instance
+    })
+
+
+def zoom_meeting_request_list(request):
+    zoom_meeting_requests = ZoomMeeting.objects.all()
+    doctor = Doctor.objects.filter(user = request.user).first()
+    patient = Patient.objects.filter(user = request.user).first()
+    if doctor:
+        zoom_meeting_requests=  zoom_meeting_requests.filter( doctor_booking__doctor=doctor)
+    if patient:
+        zoom_meeting_requests = zoom_meeting_requests.filter( doctor_booking__patient=patient)
+
+    paginator = Paginator(zoom_meeting_requests, 10)  
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request,'telemedicine/zoom_meeting_request_list.html',{'page_obj': page_obj})
+
+
+
+def approve_zoom_meeting(request, zoom_booking_id):
+    zoom_booking = get_object_or_404(ZoomMeeting, id=zoom_booking_id)
+    doctor =None
+    try:
+        doctor = Doctor.objects.get(user=request.user)
+    except Doctor.DoesNotExist:
+        messages.warning(request, 'Doctor profile not found.')
+        return redirect('prescription:home')
+    followup_doctor = zoom_booking.doctor_booking.doctor
+    if doctor != followup_doctor:
+        messages.warning(request, 'Only the associated doctor can access this follow-up booking.')
+        return redirect('prescription:home')
+
+
+    form = DoctorZoomScheduleForm()
+    if request.method == "POST":
+        form = DoctorZoomScheduleForm(request.POST, instance=zoom_booking)
+        if form.is_valid():
+            form = form.save(commit=False)
+            form.status = "approved"
+            form.save()
+            return redirect("prescription:doctor_bookings_list")
+    else:
+        form = DoctorZoomScheduleForm(instance=zoom_booking)
+    return render(request, "telemedicine/approve_zoom_meeting.html", {"form": form, "booking": zoom_booking})
+
+
+
+
+def all_follow_up_zoom_schedules(request,booking_id):
+    doctor_booking = get_object_or_404(DoctorBooking,id=booking_id)
+    all_followup_requests = doctor_booking.zoom_schedules.all()
+
+    paginator = Paginator(all_followup_requests, 10)  
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return render(request,'telemedicine/all_followup_zoom_requestes.html',{'page_obj':page_obj})
+
+
+
+# this video was intended to match prescribing and video call in same page but not success
+@login_required
+def video_consultation_prescription(request, booking_id):
+    booking = get_object_or_404(DoctorBooking, pk=booking_id)
+
+    if not booking.video_link:
+        try:
+            zoom_meeting = create_zoom_meeting(doctor_email=booking.doctor.email)
+            booking.video_link = zoom_meeting["join_url"]
+            booking.save()
+        except Exception as e:
+            print("Zoom creation failed:", e)
+
+
+
+    ai_prescription = booking.ai_prescription
+    prescription_instance = DoctorPrescription.objects.filter( ai_prescription=ai_prescription).first()
+
+    medical_form = DoctorPrescriptionForm(request.POST, request.FILES,instance= prescription_instance)
+    prescription_formset = PrescriptionFormSet(request.POST, queryset=SuggestedMedicine.objects.none())
+    lab_test_form = SuggestedLabTestForm(request.POST)
+   
+   
+    booking = get_object_or_404(DoctorBooking, pk=booking_id)
+    ai_prescription = booking.ai_prescription
+    prescription_instance = DoctorPrescription.objects.filter(ai_prescription=ai_prescription).first()
+
+    if booking.doctor.user != request.user:
+        messages.error(request, "Only the assigned doctor can create a prescription for this booking.")
+        return redirect('prescription:doctor_booking_detail', pk=booking_id)
+
+    if request.method == 'POST':
+        print('post/get=', request.method)
+        medical_form = DoctorPrescriptionForm(request.POST, request.FILES,instance= prescription_instance)
+        prescription_formset = PrescriptionFormSet(request.POST, queryset=SuggestedMedicine.objects.none())
+        lab_test_form = SuggestedLabTestForm(request.POST)
+
+        if medical_form.is_valid() and prescription_formset.is_valid() and lab_test_form.is_valid():           
+            with transaction.atomic():
+                doctor_prescription = medical_form.save(commit=False)
+                doctor_prescription.patient = booking.patient
+                doctor_prescription.doctor = booking.doctor
+                doctor_prescription.ai_prescription = booking.ai_prescription
+                doctor_prescription.booking_ref = booking
+                doctor_prescription.save()              
+
+                for form in prescription_formset:
+                    if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
+                        prescribed_medicine = form.save(commit=False)
+                        prescribed_medicine.prescription = doctor_prescription
+                        prescribed_medicine.save()
+                    else:
+                        print(form.errors)
+
+                selected_lab_tests = request.POST.getlist('lab_tests')
+                if selected_lab_tests:                   
+
+                    for test_id in selected_lab_tests:
+                        try:
+                            lab_test_catalog = LabTest.objects.get(id=test_id)
+
+                            SuggestedLabTest.objects.create(
+                                prescription=doctor_prescription,
+                                 lab_test_name=lab_test_catalog,
+                                 lab_test_notes='Pending'
+                            )
+                        except LabTest.DoesNotExist:
+                            print(f"LabTestCatalog with ID {test_id} does not exist.")
+
+                booking.status = 'completed'
+                booking.save()
+                DoctorServiceLog.objects.create(
+                    user=request.user,
+                    ai_prescription=ai_prescription if ai_prescription else None,
+                    doctor=booking.doctor,
+                    patient=booking.patient,
+                    service_date=timezone.now()
+                )
+                messages.success(request, 'Prescription has been successfully created and is downloadable on the appointment list page')
+                return redirect('prescription:doctor_prescription_detail', pk=doctor_prescription.pk)
+
+        else:
+            for form in prescription_formset:
+                print("Form errors:", form.errors)
+
+            return render(request, 'prescription/create_doctor_prescription.html', {
+                'booking': booking,
+                'medical_form': medical_form,
+                'prescription_formset': prescription_formset,
+                'lab_test_form': lab_test_form,
+                'lab_tests':LabTest.objects.all(),
+                 'video_link': booking.video_link,
+            })
+
+    else:
+        medical_form = DoctorPrescriptionForm(instance= prescription_instance)
+        prescription_formset = PrescriptionFormSet(queryset=SuggestedMedicine.objects.none())
+        lab_test_form = SuggestedLabTestForm()
+
+   
+
+    return render(request, 'telemedicine/video_consultation_form.html', {
+        'booking': booking,
+        'medical_form': medical_form,
+        'prescription_formset': prescription_formset,
+        'lab_test_form': lab_test_form,
+        'lab_tests': LabTest.objects.all(),
+        'video_link': booking.video_link,
+        
+    })
+
+
+
+
+
+
+@login_required
+def manage_medicine(request, id=None):  
+    instance = get_object_or_404(Medicine, id=id) if id else None
+    message_text = "updated successfully!" if id else "added successfully!"  
+    form = MedicineForm(request.POST or None, request.FILES or None, instance=instance)
+
+    if request.method == 'POST' and form.is_valid():
+        form_intance=form.save(commit=False)
+        form_intance.user = request.user
+        form_intance.save()        
+        messages.success(request, message_text)
+        return redirect('prescription:create_medicine') 
+
+    datas = Medicine.objects.all().order_by('-created_at')
+    paginator = Paginator(datas, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'medicine/add_medicine.html', {
+        'form': form,
+        'instance': instance,
+        'datas': datas,
+        'page_obj': page_obj
+    })
+
+
+
+@login_required
+def delete_medicine(request, id):
+    instance = get_object_or_404(Medicine, id=id)
+    if request.method == 'POST':
+        instance.delete()
+        messages.success(request, "Deleted successfully!")
+        return redirect('prescription:create_medicine')
+
+    messages.warning(request, "Invalid delete request!")
+    return redirect('prescription:create_medicine')
+
+
+
+
+
+@login_required
+def manage_lab_test(request, id=None):  
+    instance = get_object_or_404(LabTest, id=id) if id else None
+    message_text = "updated successfully!" if id else "added successfully!"  
+    form = LabTestForm(request.POST or None, request.FILES or None, instance=instance)
+
+    if request.method == 'POST' and form.is_valid():
+        form_intance=form.save(commit=False)
+        form_intance.user = request.user
+        form_intance.save()        
+        messages.success(request, message_text)
+        return redirect('prescription:create_lab_test') 
+
+    datas = LabTest.objects.all().order_by('-created_at')
+    paginator = Paginator(datas, 5)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    return render(request, 'medicine/add_lab_test.html', {
+        'form': form,
+        'instance': instance,
+        'datas': datas,
+        'page_obj': page_obj
+    })
+
+
+
+@login_required
+def delete_lab_test(request, id):
+    instance = get_object_or_404(LabTest, id=id)
+    if request.method == 'POST':
+        instance.delete()
+        messages.success(request, "Deleted successfully!")
+        return redirect('prescription:create_lab_test') 
+
+    messages.warning(request, "Invalid delete request!")
+    return redirect('prescription:create_lab_test') 

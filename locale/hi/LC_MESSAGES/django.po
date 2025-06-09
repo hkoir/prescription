@@ -1,0 +1,133 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# 
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-06-06 17:09+0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+#: .\symptom_checker\views.py:81
+msgid ""
+"Your free AI prescription limit has been reached. Please make a payment to "
+"continue."
+msgstr ""
+
+#: .\symptom_checker\views.py:144
+msgid "What is your gender? (male / female / other)"
+msgstr ""
+
+#: .\symptom_checker\views.py:145
+msgid "What is your date of birth? (YYYY-MM-DD)"
+msgstr ""
+
+#: .\symptom_checker\views.py:146
+msgid "What is your weight in kg?"
+msgstr ""
+
+#: .\symptom_checker\views.py:147
+msgid "What is your height in cm?"
+msgstr ""
+
+#: .\symptom_checker\views.py:148
+msgid ""
+"Tell your medical history if any? Previous conditions (e.g., diabetes, "
+"asthma)"
+msgstr ""
+
+#: .\symptom_checker\views.py:149
+msgid "Do you have any known drug or food allergies?"
+msgstr ""
+
+#: .\symptom_checker\views.py:150
+msgid "Are you taking any medicine now? Write down with dosage"
+msgstr ""
+
+#: .\symptom_checker\views.py:151
+msgid ""
+"Please enter vital signs if any (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)"
+msgstr ""
+
+#: .\symptom_checker\views.py:152
+msgid "Where are you located?"
+msgstr ""
+
+#: .\symptom_checker\views.py:153
+msgid "How long your symptoms are continuing?"
+msgstr ""
+
+#: .\symptom_checker\views.py:166
+msgid "Please select a valid gender: male, female, or other."
+msgstr ""
+
+#: .\templates\accounts\password_reset\password_reset_email.html:5
+#, python-format
+msgid ""
+"You're receiving this email because you requested a password reset for your "
+"user account at %(site_name)s."
+msgstr ""
+
+#: .\templates\accounts\password_reset\password_reset_email.html:7
+msgid "Please go to the following page and choose a new password:"
+msgstr ""
+
+#: .\templates\accounts\password_reset\password_reset_email.html:11
+msgid "Your username, in case you’ve forgotten:"
+msgstr ""
+
+#: .\templates\accounts\password_reset\password_reset_email.html:13
+msgid "Thanks for using our site!"
+msgstr ""
+
+#: .\templates\accounts\password_reset\password_reset_email.html:15
+#, python-format
+msgid "The %(site_name)s team"
+msgstr ""
+
+#: .\templates\symptom_checker\start.html:24
+msgid "AI Symptom Checker"
+msgstr "एआई लक्षण परीक्षक"
+
+#: .\templates\symptom_checker\start.html:25
+msgid ""
+"This guided screening will ask you a few simple questions to help assess "
+"your condition."
+msgstr ""
+
+#: .\templates\symptom_checker\start.html:28
+msgid "Takes less than 2 minutes"
+msgstr ""
+
+#: .\templates\symptom_checker\start.html:29
+msgid "Your answers are private and secure"
+msgstr ""
+
+#: .\templates\symptom_checker\start.html:30
+msgid "This tool provides suggestions — it does not replace medical advice"
+msgstr ""
+
+#: .\templates\symptom_checker\start.html:39
+#, python-format
+msgid ""
+"\n"
+"        Step %(current_step)s of %(total_steps)s\n"
+"      "
+msgstr ""
+
+#: .\templates\symptom_checker\start.html:63
+msgid "Previous"
+msgstr ""
+
+#: .\templates\symptom_checker\start.html:70
+msgid "Next"
+msgstr ""

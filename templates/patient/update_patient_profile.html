@@ -1,0 +1,141 @@
+
+
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+
+
+
+<style>
+  .card-glow {
+    background: #f8fbff;
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 20px rgba(0, 123, 255, 0.15);
+    animation: fadeInUp 0.6s ease;
+  }
+
+  .card-header-custom {
+    background: linear-gradient(45deg, #007bff, #00c6ff);
+    color: white;
+    text-align: center;
+    border-radius: 1rem 1rem 0 0;
+    padding: 1.25rem;
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .form-label {
+    font-weight: 500;
+  }
+
+  .btn-update {
+    background: linear-gradient(to right, #28a745, #218838);
+    border: none;
+    color: white;
+    font-weight: 600;
+    transition: background 0.3s ease;
+  }
+
+  .btn-update:hover {
+    background: linear-gradient(to right, #218838, #28a745);
+  }
+</style>
+
+
+<div class="container-fluid main-content">
+    <div class="row">       
+
+        <div class="col-12">            
+            <div class="container my-5">
+            <div class="card card-glow">
+                <div class="card-header card-header-custom">
+                <h3 class="mb-0">Update Profile</h3>
+                <small class="text-white">Keep your personal information up-to-date</small>
+                </div>
+                <div class="card-body px-4">
+                <form method="post" novalidate>
+                    {% csrf_token %}
+                     <input type="hidden" name="next" value="{{ next }}">
+                    <div class="row g-3">
+                    {% for field in form %}
+                        <div class="col-md-3">
+                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                        {{ field|add_class:"form-control" }}
+                        {% if field.help_text %}
+                            <div class="form-text text-muted small">{{ field.help_text }}</div>
+                        {% endif %}
+                        {% if field.errors %}
+                            <div class="text-danger small">{{ field.errors }}</div>
+                        {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-update w-100">
+                        <i class="bi bi-save me-1"></i> Update
+                        </button>
+                    </div>
+                    </div>
+                </form>
+                </div>
+            </div>
+         </div>
+        </div>           
+        
+        <div class="col-12 table-responsive">
+            <table class="table table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-center p-2">Patient Name</th>
+                        <th class="text-center p-2">Address</th>
+                        <th class="text-center p-2">Phone</th>
+                        <th class="text-center p-2">City</th>
+                        <th class="text-center p-2">Date of birtht</th>                       
+                        <th class="text-center p-2">Profile </th>
+                    </tr>
+                </thead> 
+                <tbody>
+                   
+                        <tr>
+                            <td class="text-center p-1">{{ patient.full_name }}</td>
+                            <td class="text-center p-1">{{ patient.address}}</td>  
+                            <td class="text-center p-1">{{ patient.phone }}</td>  
+                            <td class="text-center p-1">{{ patient.city}}</td>                          
+                            <td class="text-center p-2" style="white-space: nowrap;">{{patient.dob}}</td>
+
+                            <td>
+                                {% if request.user.photo_id %}
+                                <a href="{{ request.user.photo_id.url }}" target="'_blank">
+                                    <img src="{{ request.user.photo_id.url }}" style="width:40px;height:40px">
+                                </a>
+                                {% else %}
+                                no profile photo
+                                {% endif %}
+                               
+                            </td> 
+                          
+                        </tr>
+                       
+                </tbody>
+            </table>
+           
+        </div>
+    </div>
+
+
+</div>
+
+
+
+{% endblock %}

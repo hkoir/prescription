@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2 class="mb-4 text-primary"><i class="fas fa-notes-medical"></i> Symptom Summary</h2>
+
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">
+      <strong><i class="fas fa-comments"></i> Conversation History</strong>
+    </div>
+    <div class="card-body">
+      {% if qa_history %}
+        <ul class="list-group list-group-flush">
+          {% for qa in qa_history %}
+            <li class="list-group-item">
+              
+              <strong class="text-muted">{% trans "Question" %}:</strong> {{ qa.question }}<br>
+              <strong class="text-muted">{% trans "Answer" %}:</strong> {{ qa.answer }}
+
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">No conversation history found.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-warning text-dark">
+      <strong><i class="fas fa-stethoscope"></i> AI Medical Summary</strong>
+    </div>
+    <div class="card-body">    
+      <p><strong>🦠 {% trans "Probable Disease" %}:</strong>&nbsp;|&nbsp;{{session.probable_disease }}</p>
+      <p><strong>🤒 {% trans "Key Symptoms" %}:</strong> &nbsp;|&nbsp;{{ session.probable_symptoms }}</p>
+
+      <hr>
+      <p>{{ summary|linebreaks }}</p>
+    </div>
+  </div>
+
+  <div class="text-center">
+
+	 <a href="{% url 'symptom_checker:symptom_summary' session.id %}" class="btn btn-sm btn-outline-primary require-terms view-summary-link">
+          🔍 View Summary
+           <span class="spinner-border spinner-border-sm d-none spinner-icon" role="status" aria-hidden="true"></span>
+      </a>
+    <a href="{% url 'symptom_checker:download_symptom_pdf' session.id %}" class="btn btn-outline-primary mb-2 view-summary-link">
+      <i class="fas fa-download"></i> Download Report
+       <span class="spinner-border spinner-border-sm d-none spinner-icon" role="status" aria-hidden="true"></span>
+    </a>
+
+      {% if session.ai_prescription %}
+      <a href="{% url 'prescription:ai_prescription_detail' session.ai_prescription.id %}" class="btn btn-outline-primary mb-2 view-summary-link">
+      <i class="fas fa-eye"></i> View prescription
+       <span class="spinner-border spinner-border-sm d-none spinner-icon" role="status" aria-hidden="true"></span>
+    </a>
+    {% endif %}
+       {% if session.ai_prescription %}
+     <a href="{% url 'prescription:ai_prescription_pdf' session.ai_prescription.id %}" class="btn btn-outline-primary mb-2 view-summary-link">
+      <i class="fas fa-download"></i> Download  prescription
+       <span class="spinner-border spinner-border-sm d-none spinner-icon" role="status" aria-hidden="true"></span>
+    </a>
+    {% endif %}
+    <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-outline-secondary mb-2 view-summary-link">
+      <i class="fas fa-redo-alt"></i> Start New Check
+       <span class="spinner-border spinner-border-sm d-none spinner-icon" role="status" aria-hidden="true"></span>
+    </a>
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-outline-success mb-2 view-summary-link">
+      <i class="fas fa-user-md"></i> Book Doctor Appointment
+       <span class="spinner-border spinner-border-sm d-none spinner-icon" role="status" aria-hidden="true"></span>
+    </a>
+
+  </div>
+  
+</div>
+
+
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const links = document.querySelectorAll('.view-summary-link');
+
+    links.forEach(function(link) {
+      link.addEventListener('click', function () {
+        const spinner = link.querySelector('.spinner-icon');
+        const label = link.querySelector('.text-label');
+
+        if (spinner) spinner.classList.remove('d-none');
+        if (label) label.classList.add('d-none');
+
+        link.classList.add('disabled');
+
+        // fallback reset in 5s
+        setTimeout(() => {
+          if (spinner) spinner.classList.add('d-none');
+          if (label) label.classList.remove('d-none');
+          link.classList.remove('disabled');
+        }, 5000);
+      });
+    });
+  });
+
+  // Reset UI state on browser back/forward cache restore
+  window.addEventListener('pageshow', function (event) {
+    if (event.persisted) {
+      const links = document.querySelectorAll('.view-summary-link');
+
+      links.forEach(function(link) {
+        const spinner = link.querySelector('.spinner-icon');
+        const label = link.querySelector('.text-label');
+
+        if (spinner) spinner.classList.add('d-none');
+        if (label) label.classList.remove('d-none');
+
+        link.classList.remove('disabled');
+      });
+    }
+  });
+</script>
+
+
+
+{% endblock %}

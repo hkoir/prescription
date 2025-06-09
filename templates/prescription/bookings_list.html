@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <a href="{% url 'prescription:create_ai_prescription' %}"class="text-center btn btn-sm btn-outline-success">See the power of Ai </a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-primary">Your appointments</a>
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
+    <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12 table-responsive">              
+                <h2>Your Appointments</h2>
+                <table class="table">
+                    <thead class="table-info">
+                        <tr>
+                            <th>Patient</th>
+                            <th>Parent Booking Code</th>
+                             <th>Symptoms</th>
+                            <th>Preferred Time</th>
+                            <th>Parent booking Status</th>
+                            <th>Followup booking Status</th>                       
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in page_obj %}
+                        <tr>
+                            <td>{{ booking.patient.full_name }}</td>
+                            <td>{{ booking.booking_code}}</td>
+                             <td>{{ booking.symptoms_summary}}</td>
+                            <td>{{ booking.preferred_time }}</td>
+
+                            <td>
+                                <a href="{% url 'prescription:doctor_booking_detail' booking.id %}">
+                                {% if booking.status == 'completed' %}
+                                <span class="fas fa-eye fw-bold text-success">Prescribed</span>
+                                {% elif booking.status == 'cancelled' %}
+                                <span class="fas fa-eye fw-bold text-info">Cancelled</span>
+                               {% else %}
+                                <span class="fas fa-eye fw-bold text-info">Pending</span>
+                                {% endif %}
+                                </a>
+                            </td>
+             
+                            <td>
+                                {% if booking.doctor_folloup_bookings.exists %}
+                                <a href="{% url 'prescription:all_follow_up_schedules' booking.pk %}"class="btn btn-sm btn-outline-success">Followup schedules</a>
+                                {% else %}
+                                <span class="btn btn-sm btn-outline-secondary">No followup yet</span>
+                                {% endif %}
+                            </td>
+                            
+
+                            <td>
+                                 {% if request.user.role == 'patient' %}
+                                 <a href="{% url 'prescription:request_doctor_followup_booking' booking.pk %}" 
+					class="btn btn-sm btn-outline-success">Create Followup booking</a>
+                                 {% endif %}
+                               {% if request.user.role == 'doctor' %}
+                                <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" 
+					class="btn btn-sm btn-outline-success">View and Prescribe</a>
+                                   {% endif %}    
+                                   
+                                   
+
+                              
+                                {% if booking.video_call_reuest_message %}
+                                <span class="fw-bold text-primary">Video Call requested</span>
+                                {% elif booking.video_link %}                               
+                                    {% if booking.status != 'completed' %}
+                                    <span class="btn btn-sm btn-outline-secondary">Video request Existed</span>
+                                    {% endif %}
+                                {% elif request.user.role == 'patient' and booking.status != 'completed'%}
+                                <a href="{% url 'prescription:request_video_call' booking.pk %}" 
+					class="btn btn-sm btn-primary">Request Video call</a>
+                                {% endif %}
+
+
+
+                                
+                                {% if booking.video_call_reuest_message %}
+                                        {% if booking.video_call_request_approve == 'rejected' %}
+                                        <span class=" fas fa-times fw-bold text-danger">Video declined by Doctor</span>
+                                        {% elif request.user.role == 'doctor' %}
+                                        <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" 
+					class="btn btn-sm btn-outline-secondary">Doctor to Approve Video call</a>
+                                        {% endif %}
+                                {% endif %}
+
+
+                               {% if booking.status != 'completed' %}
+                                 {% if booking.video_link %} 
+				   {% if booking.video_call_reuest_approve == 'approved' %}                              
+                                 <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-primary" 
+					target="_blank">Click to start Conf</a>
+				   {% endif %}
+                                 {% endif %}
+                                {% endif %}
+
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                  <!-- Pagination Controls -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+                  </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

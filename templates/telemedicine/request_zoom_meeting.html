@@ -1,0 +1,59 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% load custom_filters %}
+
+{% block content %}
+
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-md-10">
+      <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-header bg-primary text-white rounded-top-4 py-3 px-4">
+          <h4 class="mb-0">Video Consultation request for  <strong>{{ followup_booking_instance.doctor_booking.patient }}</strong></h4>
+        </div>
+        <div class="card-body p-4">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="mb-4">
+        {% if field.name == "doctor_folloup_booking" %}
+          <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+            Follow-up meeting ID
+          </label>
+        {% else %}
+          <label for="{{ field.id_for_label }}" class="form-label fw-semibold">
+            {{ field.label }}
+          </label>
+        {% endif %}
+
+        {{ field|add_class:"form-control" }}
+
+        {% if field.errors %}
+          <div class="text-danger small mt-1">{{ field.errors }}</div>
+        {% endif %}
+      </div>
+    {% endfor %}
+
+    <div class="d-flex justify-content-between mt-4">
+      <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-outline-secondary">
+        Cancel
+      </a>
+      <button type="submit" class="btn btn-success px-4">
+        <i class="bi bi-check-circle me-1"></i> Confirm
+      </button>
+    </div>
+  </form>
+</div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+

@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+{% include 'hero_section.html' %}
+<div class="container mt-5">
+  <div class="card shadow border-0">
+    <div class="row g-0">
+      <div class="col-md-4 p-4 text-center bg-light">
+        {% if doctor.photo %}
+          <img src="{{ doctor.photo.url }}" class="img-fluid rounded-circle border" alt="{{ doctor.full_name }}">
+        {% else %}
+          <img src="{% static 'images/default_doctor.png' %}" class="img-fluid rounded-circle border" alt="Default Photo">
+        {% endif %}
+        <h4 class="mt-3">{{ doctor.full_name }}</h4>
+        <p class="text-muted">{{ doctor.department }}</p>
+        <p><strong>License:</strong> {{ doctor.medical_license_number }}</p>
+        <p><strong>Phone:</strong> {{ doctor.phone }}</p>
+        <p><strong>Email:</strong> {{ doctor.email }}</p><br><br>
+        <a href="{% url 'prescription:book_doctor_direct' doctor.id %}">Book now</a>
+      </div>
+      <div class="col-md-8 p-4">
+        <h5 class="mb-3">👨‍⚕️ About</h5>
+        <p>{{ doctor.description|linebreaks }}</p>
+
+        <hr>
+        <h6>🕒 Availability</h6>
+        <p><strong>Start Time:</strong> {{ doctor.start_time }}</p>
+        <p><strong>End Time:</strong> {{ doctor.end_time }}</p>
+
+        <hr>
+        <h6>💵 Consultation Fees</h6>
+        <p><strong>Regular:</strong> {{ doctor.consultation_fees }} BDT</p>
+        <p><strong>Follow-up:</strong> {{ doctor.folloup_consultation_fees }} BDT (within {{ doctor.followup_validity_days }} days)</p>
+
+        <hr>
+        <h6>🎓 Education & Experience</h6>
+        <p><strong>Education:</strong> {{ doctor.education|linebreaks }}</p>
+        <p><strong>Experience:</strong> {{ doctor.experience_years }} years</p>
+
+        <hr>
+        <h6>🏥 Affiliations</h6>
+        <p>{{ doctor.hospital_affiliations|linebreaks }}</p>
+
+        <hr>
+        <h6>🌐 Memberships & Awards</h6>
+        <p><strong>Memberships:</strong> {{ doctor.memberships|linebreaks }}</p>
+        <p><strong>Awards:</strong> {{ doctor.awards|linebreaks }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

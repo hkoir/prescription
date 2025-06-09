@@ -1,0 +1,32 @@
+
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% load static %}
+
+{% block content %}
+
+
+<div class="container mt-5">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">Payment Confirmation for {{ payment.doctor.full_name }}</h4>     
+    </div>
+    <div class="card-body p-4">     
+         <h3>Confirm Payment</h3>
+        <p>Amount Paid: {{ payment.amount_paid }}</p>
+        <p>Payment Method: {{ payment.payment_method }}</p>
+        <p>Transaction ID: {{ payment.transaction_id }}</p> 
+            <form method="post" enctype="multipart/form-data" class="row p-4 ">
+        {% csrf_token %}
+
+       <label><input type="radio" name="payment_confirmation" value="received" required> Mark as Received</label><br>
+      <label><input type="radio" name="payment_confirmation" value="declined"> Decline</label><br><br>
+       <button type="submit" class="btn btn-primary">Confirm</button>
+
+        
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

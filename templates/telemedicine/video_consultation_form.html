@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<style>
+    #video-call-area {
+        min-height: 300px;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+</style>
+
+<h3>Join Video Consultation</h3>
+
+<p>
+    Click the button below to join your Zoom video call.
+</p>
+
+<a href="{{ video_link }}" class="btn btn-success" target="_blank">
+    Join Zoom Meeting
+</a>
+
+
+{% include "telemedicine/includes/prescription_form.html" %}
+
+
+<!-- <div style="display:flex;">
+  <iframe
+    src="{{ video_link }}"
+    allow="camera; microphone; fullscreen"
+    style="width: 70%; height: 600px; border: none;">
+  </iframe>
+
+  <div style="width: 30%; padding-left: 10px;">
+    {% include "telemedicine/includes/prescription_form.html" %}
+  </div>
+</div> -->
+
+
+{% endblock %}

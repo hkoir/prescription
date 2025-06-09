@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow">
+    <div class="card-header bg-primary text-white">
+      <h4>Doctor Prescription Details</h4>
+    </div>
+    <div class="card-body p-4">
+
+      <dl class="row">
+        <dt class="col-sm-3">Prescription Code</dt>
+        <dd class="col-sm-9">{{ prescription.doctor_prescription_code|default:"N/A" }}</dd>
+
+        <dt class="col-sm-3">Doctor</dt>
+        <dd class="col-sm-9">{{ prescription.doctor.user.get_full_name|default:prescription.doctor }}</dd>
+
+        <dt class="col-sm-3">Patient</dt>
+        <dd class="col-sm-9">{{ prescription.patient.user.get_full_name|default:prescription.patient }}</dd>
+
+        <dt class="col-sm-3 mt-3">Diagnosis</dt>
+        <dd class="col-sm-9 mt-3">{{ prescription.diagnosis|default:"Not specified" }}</dd>
+
+        <dt class="col-sm-3">Advice</dt>
+        <dd class="col-sm-9">{{ prescription.advice|default:"No advice given" }}</dd>
+
+        <dt class="col-sm-3">Prescribed At</dt>
+        <dd class="col-sm-9">{{ prescription.prescribed_at|date:"M d, Y H:i" }}</dd>
+      </dl>
+
+      {% if medicines %}
+      <hr>
+      <h5 class="mt-4">Prescribed Medicines</h5>
+      <table class="table table-bordered mt-2">
+        <thead class="table-light">
+          <tr>
+            <th>Medicine</th>
+            <th>Dosage</th>
+            <th>Schedule</th>
+            <th>Duration (days)</th>
+            <th>Instructions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for med in medicines %}
+          <tr>
+            <td>{{ med.medicine_name.name }}</td>
+            <td>{{ med.dosage }}</td>
+            <td>{{ med.dosage_schedule }}</td>
+            <td>{{ med.medication_duration }}</td>
+            <td>{{ med.instructions|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      {% if lab_tests %}
+      <hr>
+      <h5 class="mt-4">Suggested Lab Tests</h5>
+      <table class="table table-bordered mt-2">
+        <thead class="table-light">
+          <tr>
+            <th>Lab Test</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for test in lab_tests %}
+          <tr>
+            <td>{{ test.lab_test_name }}</td>
+            <td>{{ test.lab_test_notes|default:"-" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      <div class="d-flex justify-content-between">
+        <a href="{% url 'prescription:doctor_prescription_pdf' prescription.id %}" class="btn btn-secondary">Download</a>
+        <a href="{% url 'prescription:doctor_prescription_list' %}" class="btn btn-secondary">Back to List</a>
+      </div>
+
+
+    </div>
+  </div>
+</div>
+{% endblock %}

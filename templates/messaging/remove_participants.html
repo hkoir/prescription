@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Remove Participants from "{{ conversation.name }}"</h3>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label>Select Users to Remove:</label>
+        <select name="participants" multiple class="form-select">
+            {% for user in current_participants %}
+                <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-danger">Remove Selected</button>
+</form>
+
+<a href="{% url 'messaging:inbox' conversation.pk %}" class="btn btn-secondary mt-2">Back to Chat</a>
+{% endblock %}

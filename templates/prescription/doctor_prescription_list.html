@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+<div class="container mt-5">
+  <h2 class="mb-4">Doctor Prescriptions</h2>
+    <a href="{% url 'prescription:create_ai_prescription' %}"class="text-center btn btn-sm btn-outline-success">See the power of Ai </a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-primary">Your appointments</a>
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
+    <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
+
+
+  {% if doctor_pres_list %}  
+    <div class="table-responsive mt-2">
+      <table class="table table-bordered table-striped table-hover">
+        <thead class="table-dark">
+          <tr>
+            <th>#</th>
+            <th>Prescription Code</th>
+            <th>Doctor</th>
+            <th>Patient</th>
+            <th>Diagnosis</th>
+            <th>Advice</th>
+            <th>Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for pres in page_obj %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ pres.doctor_prescription_code|default:"N/A" }}</td>
+              <td>{{ pres.doctor.user.get_full_name|default:pres.doctor }}</td>
+              <td>{{ pres.patient.user.get_full_name|default:pres.patient }}</td>
+              <td>{{ pres.diagnosis|truncatewords:5 }}</td>
+              <td>{{ pres.advice|truncatewords:5 }}</td>
+              <td>{{ pres.prescribed_at|date:"M d, Y H:i" }}</td>
+              <td>
+                <a href="{% url 'prescription:doctor_prescription_detail' pres.id %}" class="btn btn-sm btn-outline-primary">View Timeline</a>
+                 <a href="{% url 'prescription:doctor_prescription_detail_single' pres.id %}" class="btn btn-sm btn-outline-success">View prescription</a>
+               
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+        <!-- Pagination Controls -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+    </div>
+  {% else %}
+    <div class="alert alert-warning">No prescriptions found.</div>
+  {% endif %}
+</div>
+{% endblock %}

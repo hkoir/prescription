@@ -1,0 +1,11 @@
+<ul>
+    {% for user in users %}
+        <li>
+            <a href="{% url 'messaging:start_conversation' user.id %}">
+                {{ user.get_full_name|default:user.username }}
+            </a>
+        </li>
+    {% empty %}
+        <li>No users found.</li>
+    {% endfor %}
+</ul>

@@ -1,0 +1,221 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+
+<div class="container py-4">
+  <h2 class="mb-4 text-center">Doctor Dashboard</h2>
+     <a href="{% url 'prescription:create_ai_prescription' %}"class="text-center btn btn-sm btn-outline-success">See the power of Ai </a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-primary">Your appointments</a>
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-success">Create Followup Schedule with doctor</a>
+    <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
+    {% if request.user.is_staff %}
+     <a href="{% url 'finance:create_manual_doctor_payment' doctor.id%}" class="btn btn-sm btn-outline-primary">Make Doctor Payment</a>
+     {% endif %}
+
+
+      <div class="container mt-5">
+          <h2 class="mb-4">My Earnings Dashboard</h2>
+
+          <div class="row mb-4">
+              <div class="col-md-4">
+                  <div class="card text-white bg-success mb-3">
+                      <div class="card-body">
+                          <h5 class="card-title">Total Earned</h5>
+                          <p class="card-text fs-4">৳ {{ total_due }}</p>
+                      </div>
+                  </div>
+              </div>
+              <div class="col-md-4">
+                  <div class="card text-white bg-primary mb-3">
+                      <div class="card-body">
+                          <h5 class="card-title">Total Paid</h5>
+                          <p class="card-text fs-4">৳ {{ total_paid }}</p>
+                      </div>
+                  </div>
+              </div>
+              <div class="col-md-4">
+                  <div class="card text-white bg-danger mb-3">
+                      <div class="card-body">
+                          <h5 class="card-title">Pending Payment</h5>
+                          <p class="card-text fs-4">৳ {{ total_unpaid }}</p>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
+          <div class="col-12 table-responsive">          
+          <h4>Payment History</h4>
+          <table class="table table-bordered table-hover">
+              <thead class="table-dark">
+                  <tr>
+                      <th>#</th>
+                      <th>Date</th>
+                      <th>Total Due</th>
+                      <th>Paid</th>
+                      <th>Method</th>
+                      <th>Transaction ID</th>
+                      <th>Status</th>
+                      <th>Remarks</th>
+                  </tr>
+              </thead>
+              <tbody>
+                  {% for payment in payouts %}
+                  <tr>
+                      <td>{{ forloop.counter }}</td>
+                      <td>{{ payment.payment_date }}</td>
+                      <td>৳ {{ payment.total_due_amount }}</td>
+                      <td>৳ {{ payment.total_paid_amount }}</td>
+                      <td>{{ payment.payment_method }}</td>
+                      <td>{{ payment.transaction_id }}</td>
+                      <td>
+                          {% if payment.is_paid %}
+                              <span class="badge bg-success">Paid</span>
+                          {% else %}
+                              <span class="badge bg-warning text-dark">Due</span>
+                          {% endif %}
+                      </td>
+                      <td>{{ payment.remarks|default:"-" }}</td>
+                  </tr>
+                  {% empty %}
+                  <tr>
+                      <td colspan="8" class="text-center">No payment records found.</td>
+                  </tr>
+                  {% endfor %}
+              </tbody>
+          </table>
+      </div>
+
+
+
+ <h2 class="mt-5 text-center">My Appointments Dashboard</h2>
+
+
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card text-white bg-primary mb-3 shadow">
+        <div class="card-body">
+          <h5 class="card-title">Total Parent Appointments</h5>
+          <p class="card-text fs-4">{{ appointments.count }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-white bg-success mb-3 shadow">
+        <div class="card-body">
+          <h5 class="card-title">Prescriptions Given include followup booking</h5>
+          <p class="card-text fs-4">{{ prescriptions.count }}</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-md-4">
+      <div class="card text-white bg-info mb-3 shadow">
+        <div class="card-body">
+          <h5 class="card-title">Pending Parent Appointments</h5>
+          <p class="card-text fs-4">
+            {{ pending_appointments|length }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card mt-4 shadow">
+    <div class="card-header bg-light">
+      <strong>Recent Appointments</strong>
+    </div>
+    <div class="card-body p-0">
+      <div class="col-12 table-responsive">
+      <table class="table table-hover mb-0">
+        <thead class="table-light">
+          <tr>
+            <th>#</th>
+            <th>Patient</th>
+             <th>Parent booking</th>
+            <th>Follow up bookings</th>
+            <th>Date</th>
+            <th>Status</th>
+           
+          </tr>
+        </thead>
+        <tbody>
+          {% for appointment in page_obj|slice:":5" %}
+            <tr>
+              <td>{{ forloop.counter }}</td>
+              <td>{{ appointment.patient.full_name }}</td>
+              <td>{{ appointment.booking_code}}</td>
+              <td>
+                {% if appointment.doctor_folloup_bookings.exists %}
+                 <a href="{% url 'prescription:all_follow_up_schedules' appointment.id %}"class="badge bg-primary">followup schedules</a>
+                 {% else %}
+                 <span>No followup booking yet</span>
+                 {% endif %}
+              </td>
+              <td>{{ appointment.created_at|date:"M d, Y H:i" }}</td>
+              <td>
+            {% if appointment.status == 'pending' %}              
+                <span class="badge bg-warning text-dark">
+                  {{ appointment.status|capfirst }}
+                </span>
+                 <a href="{% url 'prescription:doctor_booking_detail' appointment.id %}"class="badge bg-primary">View booking</a>
+                <a href="{% url 'prescription:create_doctor_prescription' appointment.id %}"class="badge bg-primary">Create Prescription</a>
+               
+                <a href="{% url 'prescription:video_call' appointment.id %}" class="badge bg-success" target="_blank">
+                  Join Video Call
+              </a>
+
+              
+
+            {% elif appointment.status == 'completed' %}            
+              <span class="badge bg-success">
+                {{ appointment.status|capfirst }}
+              </span>
+              <a href="{% url 'prescription:doctor_prescription_detail' appointment.doctor_booking_refs.first.id %}"
+              class="badge bg-primary"> View</a>
+              
+            {% else %}
+              <span class="badge bg-secondary">
+                {{ appointment.status|capfirst }}
+              </span>
+            {% endif %}
+          {% if appointment.ai_prescription %}
+          <a href="{% url 'prescription:ai_prescription_detail' appointment.ai_prescription.id %}"
+            class="badge bg-primary">View AI</a>
+        {% endif %}
+
+          </td>
+
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="4" class="text-center">No recent appointments found.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <!-- Pagination Controls -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

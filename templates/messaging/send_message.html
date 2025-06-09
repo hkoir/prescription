@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Send a Private Message</h5>
+        </div>
+        <div class="card-body">
+           <h2>Send a New Message</h2>
+   <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Isolated Recipient Field with Select2 -->
+        <div class="mb-3">
+            <label for="{{ form.recipients.id_for_label }}" class="form-label">To:</label>
+            {{ form.recipients }}
+            {% if form.recipients.errors %}
+                <div class="text-danger">{{ form.recipients.errors }}</div>
+            {% endif %}
+        </div>
+
+        <!-- Subject Field (if still needed) -->
+        {% if form.subject %}
+        <div class="mb-3">
+            <label for="{{ form.subject.id_for_label }}" class="form-label">Subject:</label>
+            {{ form.subject }}
+        </div>
+        {% endif %}
+
+        <!-- Body Field -->
+        <div class="mb-3">
+            <label for="{{ form.body.id_for_label }}" class="form-label">Message:</label>
+            {{ form.body }}
+        </div>
+         <div class="mb-3">
+            <label for="{{ form.image.id_for_label }}" class="form-label">Image:</label>
+            {{ form.image }}
+        </div>
+         <div class="mb-3">
+            <label for="{{ form.body.id_for_label }}" class="form-label">Video</label>
+            {{ form.video }}
+        </div>
+
+         
+        <button type="submit" class="btn btn-primary">Send</button>
+    </form>
+
+        </div>
+    </div>
+</div>
+<script>
+    // Activate Select2 on the recipients field
+    $(document).ready(function() {
+        $('#id_recipients').select2({
+            width: '100%',
+            placeholder: 'Select recipient(s)',
+        });
+    });
+</script>
+{% endblock %}

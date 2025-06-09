@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container my-5 p-4 shadow rounded bg-light">
+  <h2 class="mb-4 text-primary">Confirm Doctor Consultation Booking</h2>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title text-dark">Patient Information</h5>
+      <p class="mb-1"><strong>Name:</strong> {{ patient.full_name }}</p>
+      <p class="mb-1"><strong>Age:</strong> {{ patient.age }}</p>
+      <p class="mb-1"><strong>Gender:</strong> {{ patient.get_gender_display }}</p>
+    </div>
+  </div>
+
+  {% if ai_prescription %}
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title text-dark">AI Prescription Summary</h5>
+      <p><strong>Symptoms:</strong><br> {{ ai_prescription.symptoms|linebreaks }}</p>
+      <p><strong>Diagnosis:</strong><br> {{ ai_prescription.diagnosis|linebreaks }}</p>
+      <p><strong>Medicines:</strong><br> {{ ai_prescription.medicines|linebreaks }}</p>
+      <p><strong>Advice:</strong><br> {{ ai_prescription.advice|linebreaks }}</p>
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="alert alert-warning mb-4">
+    <strong>Note:</strong> By confirming, your request will be sent to a registered doctor who will follow up with a physical prescription.
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'prescription:ai_prescription_list' %}" class="btn btn-outline-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">Confirm Booking</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

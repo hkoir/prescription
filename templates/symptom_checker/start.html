@@ -1,0 +1,130 @@
+
+
+{% extends 'base.html' %}
+{% load custom_filters %}
+{% load i18n %}
+
+{% block content %}
+
+
+
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+      <div class="card shadow border-0 rounded-4">
+        <div class="card-body p-4">
+          <h4 class="text-center text-primary fw-bold mb-3">
+            {% trans "Let's Prepare Your AI Prescription" %}
+          </h4>
+          <p class="text-muted text-center mb-4">
+            {% trans "Tell us about your current medications and any vital signs." %}
+          </p>
+
+          <form method="post" enctype="multipart/form-data" id="ai-prescription-form">
+            {% csrf_token %}
+
+            <div class="mb-3">
+              <label for="id_current_medications" class="form-label fw-semibold">
+                {% trans "Current Medications" %}
+              </label>
+              {{ form.current_medications|add_class:"form-control" }}
+              {% if form.current_medications.errors %}
+                <div class="text-danger small mt-1">{{ form.current_medications.errors.0 }}</div>
+              {% endif %}
+            </div>
+
+            <div class="mb-4">
+              <label for="id_vital_signs" class="form-label fw-semibold">
+                {% trans "Vital Signs" %}
+              </label>
+              {{ form.vital_signs|add_class:"form-control" }}
+              {% if form.vital_signs.errors %}
+                <div class="text-danger small mt-1">{{ form.vital_signs.errors.0 }}</div>
+              {% endif %}
+            </div>
+		
+             
+	    <div class="form-check mt-4">
+              <input class="form-check-input" type="checkbox" value="" id="agreeTerms" required>
+              <label class="form-check-label small" for="agreeTerms">
+                {% trans "I agree to the" %} 
+                <a href="{% url 'symptom_checker:terms' %}" target="_blank" class="text-decoration-underline">{% trans "Terms of Use" %}</a> 
+                {% trans "and" %} 
+                <a href="{% url 'symptom_checker:privacy' %}" target="_blank" class="text-decoration-underline">{% trans "Privacy Policy" %}</a>.
+              </label>
+            </div>
+
+            <div class="text-center">
+              <!-- Spinner -->
+              <div id="form-spinner" class="mb-3 d-none">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg w-100" id="submit-btn">
+                {% trans "Continue to Symptom Analysis" %}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+<!-- Spinner Script -->
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("ai-prescription-form");
+    const spinner = document.getElementById("form-spinner");
+    const submitBtn = document.getElementById("submit-btn");
+
+    form.addEventListener("submit", function () {
+      spinner.classList.remove("d-none");
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Submitting...";
+    });
+
+    // Re-enable button if user navigates back
+    window.addEventListener("pageshow", function (event) {
+      if (event.persisted) {
+        spinner.classList.add("d-none");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "{% trans 'Continue to Symptom Analysis' %}";
+      }
+    });
+  });
+</script>
+
+
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const fields = ['id_current_medications', 'id_vital_signs'];
+
+    fields.forEach(function (fieldId) {
+      const field = document.getElementById(fieldId);
+      if (field) {
+        field.addEventListener('focus', function () {
+          if (field.value.trim().toLowerCase() === 'none') {
+            field.value = '';
+          }
+        });
+      }
+    });
+  });
+</script>
+
+
+
+{% endblock %}
+
+
+
+

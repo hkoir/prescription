@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12 table-responsive">              
+                <h2>Your Video Consultation List</h2>
+                <table class="table">
+                    <thead class="table-info">
+                        <tr>
+                            <th>Parent booking</th> 
+                            <th>Followup booking code</th>                      
+                            <th>Video Consultation code</th>
+                            <th>Request message</th>
+                            <th>Requested meeting time</th>
+                            <th>Doctor approved time</th>
+                             <th>Status</th>
+                             <th>Meeting Link</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in page_obj %}
+                        <tr>
+                            <td>{{ booking.doctor_booking }}</td>
+                            <td>{{ booking.doctor_folloup_booking.booking_code }}</td>
+                            
+                            <td>{{ booking.meeting_code }}</td>
+                            <td>{{ booking.request_message }}</td>
+                            <td>{{ booking.proposed_meeting_datetime }}</td>
+                            <td>{{ booking.scheduled_time }}</td>
+                            <td>{{ booking.status }}</td>
+                            <td>{{ zoom_meeting_link }}</td>
+
+                            <td>                               
+
+                                <a href="{% url 'prescription:approve_zoom_meeting' booking.id %}" class="btn btn-sm btn-success">Accept Video Consultation by Doctor</a>
+                                <a href="" class="btn btn-sm btn-primary"></a>
+
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                  </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

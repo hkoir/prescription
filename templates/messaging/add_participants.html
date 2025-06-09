@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Add Participants to "{{ conversation.name }}"</h3>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="participants">Select Users:</label>
+        <select name="participants" multiple class="form-select user-select">
+            {% for user in available_users %}
+                <option value="{{ user.id }}">{{ user.get_full_name|default:user.username }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Participants</button>
+</form>
+
+<a href="{% url 'messaging:inbox' conversation.pk %}" class="btn btn-secondary mt-2">Back to Chat</a>
+
+
+
+<script>
+    $(document).ready(function() {
+        $('.user-select').select2({
+            width: '100%',
+            placeholder: 'Select participants',
+            allowClear: true
+        });
+    });
+</script>
+
+
+{% endblock %}

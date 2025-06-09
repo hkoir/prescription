@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% load humanize %}
+
+{% block content %}
+
+<h2>Your Inbox</h2>
+<div class="my-4 d-flex gap-2">   
+  <a href="{% url 'messaging:send_message' %}" class="btn btn-outline-primary">
+    📩 Send Private Message
+  </a>
+  <a href="{% url 'messaging:create_group' %}" class="btn btn-outline-secondary">
+    👥 Create new Group Chat
+  </a>
+</div>
+
+{% if comm_messages %}
+  <ul class="list-group">
+    {% for msg in page_obj %}
+      <li class="list-group-item d-flex justify-content-between align-items-start">
+        <div class="ms-2 me-auto">
+          
+          {% if msg.conversation.is_group %}
+       <div class="fw-bold d-flex align-items-center gap-2">
+        {% if not msg.is_read and msg.sender != user %}
+            <span class="badge bg-warning" style="white-space: nowrap;">Unread</span>
+        {% endif %}
+        <a href="{% url 'messaging:group_conversation_detail' msg.conversation.id %}">
+            <span class="badge bg-primary">Group</span>
+            {{ msg.conversation.name|default:"Unnamed Group" }}
+        </a>
+        </div>
+
+
+          {% else %}
+            <div class="fw-bold">
+                <div class="fw-bold d-flex align-items-center gap-2">
+                {% if not msg.is_read and msg.sender != user %}
+                    <span class="badge bg-warning" style="white-space: nowrap;">Unread</span>
+                {% endif %}
+              <a href="{% url 'messaging:conversation_detail' msg.conversation.id %}">               
+                <span class="badge bg-success">Private</span>
+                <strong>From:</strong> {{ msg.sender.get_full_name|default:msg.sender.username }}
+              </a>
+            </div>
+          {% endif %}
+
+          <div class="text-muted mt-1">
+            {% if msg.conversation.is_group %}
+              <strong>Group:</strong> {{ msg.conversation.name|default:"Unnamed Group" }}<br>
+            {% else %}
+              <strong>To:</strong> 
+              {% for participant in msg.conversation.participants.all %}
+                {% if participant != msg.sender %}
+                  {{ participant.get_full_name|default:participant.username }}
+                {% endif %}
+              {% endfor %}<br>
+            {% endif %}
+            
+            {% if msg.subject %}
+              <strong>Subject:</strong> {{ msg.subject }}<br>
+            {% endif %}
+
+            <strong>Body:</strong> {{ msg.body|truncatechars:60 }}
+          </div>
+        </div>
+        <span class="text-muted small">{{ msg.timestamp|naturaltime }}</span>
+      </li>
+    {% endfor %}
+      <!-- Pagination Controls -->
+     <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
+
+  </ul>
+{% else %}
+  <div class="alert alert-info" role="alert">
+    No conversations found.
+  </div>
+{% endif %}
+
+
+{% endblock %}

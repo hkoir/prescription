@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+    <a href="{% url 'prescription:create_ai_prescription' %}"class="text-center btn btn-sm btn-outline-success">See the power of Ai </a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-primary">Your appointments</a>
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-success">Create Followup Schedule with doctor</a>
+    <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
+    
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12 table-responsive">              
+                <h2>Your follow-up Video conference</h2>
+                <table class="table">
+                    <thead class="table-info">
+                        <tr>
+                            <th>Parent booking</th>
+                            <th>Followup booking code</th>
+                            <th>Patient current status</th>
+                            <th>Requested meeting time</th>
+                           
+                            <th>Doctor approved time</th>
+                             <th>Status</th>
+                            <th>Conf Time</th>                            
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in page_obj %}
+                        <tr>
+                            <td>{{ booking.doctor_booking }}</td>
+                            <td>{{ booking.doctor_folloup_booking.booking_code }}</td>
+                            <td>{{ booking.doctor_folloup_booking.patient_Current_status }}</td>
+                            <td>{{ booking.doctor_folloup_booking.proposed_followup_datetime }}</td>
+                            
+                            <td>{{ booking.doctor_folloup_booking.approved_followup_datetime }}</td>
+                            <td>{{ booking.status }}</td>
+                            <td>{{ booking.scheduled_time }}</td>
+                            <td>
+
+                                {% if booking.status == 'pending' %}                          
+                                 <a href="{% url 'prescription:approve_zoom_meeting' booking.id %}" class="btn btn-sm btn-outline-primary">Doctor to approve Conf Call</a>  
+                                {% elif booking.status == 'approved' %}
+                               
+                                {% elif booking.zoom_meeting_link %}
+                                    <a href="{{ booking.zoom_meeting_link }}" target="_blank">Click to start Conf</a>
+                                                             
+                                 {% elif booking.status == 'executed' %}
+                                 <span>Completed</span>
+                                {% elif booking.status == 'rejected' %}
+                                <span>Declined</span>
+                                   {% else %}
+                                     Not scheduled
+                                    {% endif %}                               
+                             
+                            </td>
+                          
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                  <!-- Pagination Controls -->
+        <div class="pagination">
+            <span class="step-links">
+                {% if page_obj.has_previous %}
+                    <a href="?page=1">&laquo; first</a>
+                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                {% endif %}
+
+                <span class="current">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}">next</a>
+                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                {% endif %}
+            </span>
+        </div>
+                  </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+      body { font-family: DejaVu Sans, sans-serif; margin: 20px; font-size: 12px; }
+      h2 { color: #2e6c80; }
+      ul { list-style-type: none; padding: 0; }
+      li { margin-bottom: 8px; }
+      .med-name { font-weight: bold; }
+      .badge { padding: 3px 6px; background: #ddd; border-radius: 3px; margin-left: 5px; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+ <p style="color: darkgreen; font-size: xx-large; font-weight: bold; text-align: center;">
+  ------------Prescription for ----------
+</p>
+
+
+  <p><strong>Prescription Code:</strong> {{ prescription.ai_prescription_code }}<br>
+  <strong>Date:</strong> {{ prescription.created_at|date:"M d, Y H:i" }}<br>
+  <strong>Patient:</strong> {{ prescription.patient }}&nbsp;|&nbsp;<strong>Location:</strong> {{ prescription.location }} <br>
+  <strong>Age:</strong> {{ prescription.age }}&nbsp;|&nbsp;<strong>Gender:</strong> {{ prescription.gender|capfirst }}<br>
+  <strong>Medical history:</strong> {{ prescription.medical_history|capfirst }}<br>
+  <strong>Current medication:</strong> {{ prescription.current_medications }}<br>
+  <strong>Vital Signs:</strong> {{ prescription.vital_signs|capfirst }}<br><br>
+ 
+  <strong style="font-size: larger;">Symptoms:</strong> {{ prescription.symptoms|linebreaksbr }}&nbsp;|&nbsp;<strong>Duration:</strong> {{ prescription.duration }} <br><br>
+ 
+  <strong style="font-size: larger;">Diagnosis:</strong> {{ prescription.diagnosis|linebreaksbr }}
+</p>
+
+<h1 align="left" style="font-size: 30px; font-weight: bold;">Rx</h1>
+
+<h3 style="color:green;font-size: large;">Medicines</h3>
+<table cellspacing="0"style="width: 100%; border-collapse: collapse;">
+  <thead style="background-color: #d3d3d3; color: black;">
+    <tr>
+      <th align="left">Name</th>
+      <th align="left">Dosage</th>
+      <th align="left">Frequency</th>
+      <th align="left">Duration</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for med in prescription.medicines %}
+    <tr>
+      <td>{{ med.name }}</td>
+      <td>{{ med.dosage }}</td>
+      <td>{{ med.frequency }}</td>
+      <td>{{ med.duration }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+  
+  <p>
+    <strong style="color:blue; font-size:large;">Tests</strong><br>
+    {{ prescription.tests|linebreaksbr }}
+  </p>
+
+  <p>
+     <strong style="color:green; font-size:large;">Advices</strong><br>
+    {{ prescription.advice|linebreaksbr }}
+</p>
+
+<p>
+     <strong style="color:green; font-size: large;">Recommended Specialized Doctor</strong><br>
+    {{ prescription.recommended_specialty|linebreaksbr }}
+</p><br><br><br>
+
+
+
+<p style="font-size:small; text-align: center;">
+    Generated on: {{ prescription.created_at|date:"F d, Y H:i" }} <br>
+    Powered by: <strong>AI Prescription Generator – v1.0</strong> <br>
+    <em>This document is generated for informational purposes and should be reviewed by a medical professional.</em>
+</p>
+
+   
+</body>
+</html>

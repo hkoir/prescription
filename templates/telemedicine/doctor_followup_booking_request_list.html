@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container">
+
+    <a href="{% url 'prescription:create_ai_prescription' %}"class="text-center btn btn-sm btn-outline-success">See the power of Ai </a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-primary">Your appointments</a>
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
+    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-success">Create Followup Schedule with doctor</a>
+    <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
+    
+    <div class="row">
+        <div class="card">
+            <div class="card-body">
+                <div class="col-12 table-responsive">              
+                <h2>Your follow-up Appointments</h2>
+                <table class="table">
+                    <thead class="table-info">
+                        <tr>
+                            <th>Parent booking</th>
+                            <th>Followup booking code</th>
+                            <th>Patient current status</th>
+                            <th>Requested meeting time</th>
+                            <th>Doctor approved time</th>
+                             <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in page_obj %}
+                        <tr>
+                            <td>{{ booking.doctor_booking.booking_code }}</td>
+                            <td>{{ booking.booking_code }}</td>
+                            <td>{{ booking.patient_Current_status }}</td>
+                            <td>{{ booking.proposed_followup_datetime }}</td>
+                            <td>{{ booking.approved_followup_datetime }}</td>
+                            <td>{{ booking.status }}</td>
+                            <td>   
+                                {% if booking.status == 'confirmed' %}       
+                                <span class="fas fa-check fw-bold text-success">Followup Scheduled Confirmed</span>   
+                                {% else %}                  
+
+                                <a href="{% url 'prescription:aprove_doctor_followup_booking' booking.id %}" class="btn btn-sm btn-outline-success">Doctor approved schedule</a>
+                                {% endif %}
+
+                                {% if booking.zoom_folloup_schedule %}
+                                <span class="fas fa-check fw-bold text-success">Video Consultation Requested</span>
+                                {% else %}
+                                <a href="{% url 'prescription:request_zoom_meeting' booking.doctor_booking.id %}" class="btn btn-sm btn-outline-success">Request Video Consultation</a>     
+                                {% endif %}                         
+
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">No bookings found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                  </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,26 @@
+<!-- Terms & Privacy Agreement Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="termsModalLabel">Please Read and Accept</h5>
+      </div>
+      <div class="modal-body">
+        <p>
+          Before you can view your AI-generated summary or prescription, you must agree to our
+          <a href="{% url 'symptom_checker:terms' %}" target="_blank">Terms of Use</a> and
+          <a href="{% url 'symptom_checker:privacy' %}" target="_blank">Privacy Policy</a>.
+        </p>
+        <div class="form-check mt-3">
+          <input class="form-check-input" type="checkbox" id="agreeToTermsModal">
+          <label class="form-check-label" for="agreeToTermsModal">
+            I have read and agree to the Terms and Privacy Policy.
+          </label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="acceptTermsBtn" type="button" class="btn btn-primary" disabled>Accept and Continue</button>
+      </div>
+    </div>
+  </div>
+</div>

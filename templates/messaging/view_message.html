@@ -1,0 +1,14 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+
+<h2>{{ comm_message.subject }}</h2>
+<p><strong>From:</strong> {{ comm_message.sender }}</p>
+<p><strong>To:</strong> {{ comm_message.recipient }}</p>
+<p>{{ comm_message.body }}</p>
+<a href="{% url 'messaging:inbox' %}">Back to Inbox</a>
+
+
+{% endblock %}

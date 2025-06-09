@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Doctor Payment Details</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            Summary for Dr. {{ doctor.full_name }}
+        </div>
+        <div class="card-body">
+            <ul class="list-group">
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Total Due Amount</strong>
+                    <span>{{ payment.total_due_amount }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Total Paid Amount</strong>
+                    <span>{{ payment.total_paid_amount }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Outstanding</strong>
+                    <span class="{% if payment.due_amount > 0 %}text-danger{% else %}text-success{% endif %}">{{ payment.due_amount }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    <strong>Status</strong>
+                    <span class="badge {% if payment.is_paid %}bg-success{% else %}bg-danger{% endif %}">
+                        {% if payment.is_paid %}Paid{% else %}Due{% endif %}
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+            Service Logs
+        </div>
+        <div class="card-body">
+            {% if service_logs %}
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Patient</th>
+                        <th>Fee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in service_logs %}
+                    <tr>
+                        <td>{{ log.service_date }}</td>
+                        <td>{{ log.patient }}</td>
+                        <td>{{ log.service_fee }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No service logs found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header bg-secondary text-white">
+            Payment Logs
+        </div>
+        <div class="card-body">
+            {% if payment_logs %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Txn ID</th>
+                        <th>Confirmation</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for log in payment_logs %}
+                    <tr>
+                        <td>{{ log.payment_date }}</td>
+                        <td>{{ log.amount_paid }}</td>
+                        <td>{{ log.payment_method }}</td>
+                        <td>{{ log.transaction_id }}</td>
+                        <td>
+                            {% if log.payment_confirmation %}
+                                <span class="badge bg-success">{{ log.payment_confirmation }}</span>
+                            {% else %}
+                                <a href="{% url 'finance:confirm_payment_status' log.id %}" class="btn btn-sm btn-outline-primary">
+                                    Confirm Now
+                                </a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted">No payment logs found.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

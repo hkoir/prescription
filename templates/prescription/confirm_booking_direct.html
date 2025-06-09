@@ -1,0 +1,300 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-body p-4">
+                    <h3 class="mb-4 text-center text-primary">Confirm Doctor Booking</h3>
+
+                    <div class="mb-3">
+                        <p><strong>Patient:</strong> {{ patient }}<br>
+                        <strong>Doctor:</strong> Dr. {{ doctor.full_name }} ({{ doctor.specialization }})
+                        </p>
+                    </div>
+                    <p class="text-center text-success fw-bold my-4">Please provide the below details to get more accurate prescription</p>
+
+                  <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        <div class="row">
+
+                            {% for field in form %}
+                                {% if field.name == 'symptom_image' %}
+                                    <!-- Image Capture -->
+                                <div class="col-12 my-2" style="border: 1px solid darkgreen;">
+                                    <div class="row">
+                                         <div class="col-6">
+                                            <label for="symptom_image" class="form-label">
+                                                <span class="text-center"> 
+                                                Upload Symptom Image (optional)</span>                               
+                                            </label>
+                                            <input type="file" name="symptom_image" id="symptom_image" class="form-control" accept="image/*">
+                                        </div>
+
+                                       
+                                        <div class="text-center col-6">
+                                             <label class="form-label">Capture Symptom Image</label><br>
+                                            <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="startCamera()">Use Webcam</button>
+                                            <button type="button" class="btn btn-sm btn-info mt-2" onclick="takePhoto()">Capture</button>
+                                            <button type="button" id="retakeBtn" class="btn btn-sm btn-warning mt-2" onclick="retakePhoto()" style="display:none;">Retake</button>
+
+                                            <video id="video" width="100%" autoplay style="display:none;" class="mt-2 border rounded"></video>
+                                            <canvas id="canvas" style="display:none;" class="mt-2 border rounded"style="height: 100px; width: auto;"></canvas>
+                                            <img id="captured_preview" class="img-thumbnail mt-2" style="display: none; height: 100px; width: 100px;" alt="Captured Image Preview">
+
+                                            <input type="hidden" name="captured_image" id="captured_image">
+                                        </div>
+                                    </div>
+
+                                {% elif field.name == 'symptom_video' %}
+                                <div class="row my-5">
+                                     <div class="col-6">
+                                            <label for="symptom_video" class="form-label">                                               
+                                                Upload Symptom video(optional)                            
+                                            </label>
+                                            <input type="file" name="symptom_video" id="symptom_video" class="form-control" accept="image/*">
+                                        </div>
+
+                                    <!-- Video Capture -->
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Or record a short symptom video</label>
+                                        <div class="text-center">
+                                            <video id="recordPreview" autoplay muted playsinline class="border rounded shadow-sm mb-2" style="width: 100%; height: 100px;"></video>
+                                            <div class="d-flex justify-content-center gap-2 mb-2">
+                                                <button type="button" class="btn btn-outline-success btn-sm" id="startRecording">Start Recording</button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm" id="stopRecording" disabled>Stop Recording</button>
+                                            </div>
+                                            <video id="playback" controls class="d-none w-50 rounded border"></video>
+                                            <input type="hidden" name="recorded_video" id="recordedVideoInput">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                                {% else %}
+                                    <!-- Regular Fields -->
+                                    <div class="col-md-6 mb-3" style="border: 1px solid darkcyan;">
+                                        <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                                        {{ field|add_class:"form-control" }}
+
+                                        {% if field.help_text %}
+                                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                                        {% endif %}
+
+                                        {% if field.errors %}
+                                            <div class="invalid-feedback d-block">
+                                                {{ field.errors|striptags }}
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                {% if forloop.counter|divisibleby:2 and not forloop.last %}
+                                    </div><div class="row">
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-flex gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                            <a href="{% url 'prescription:available_doctors' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+<!-- Patient Registration Modal -->
+<div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-header bg-primary text-white rounded-top">
+          <h5 class="modal-title fw-semibold" id="patientModalLabel">🩺 Complete Your Patient Profile</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+              {% for field in patient_form %}
+                <div class="col-md-6 col-12">
+                  <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <div class="small text-danger">{{ field.errors }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-info">
+          <button type="submit" name="create_patient" class="btn btn-success">Save</button>
+           <a href="{% url 'prescription:home' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+{% if patient_missing %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = new bootstrap.Modal(document.getElementById('patientModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+    });
+</script>
+{% endif %}
+
+<script>
+let videoStream = null;
+
+function startCamera() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const retakeBtn = document.getElementById('retakeBtn');
+
+    canvas.style.display = 'none';
+    video.style.display = 'block';
+    retakeBtn.style.display = 'none';
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            videoStream = stream;
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            alert("Could not access camera: " + err);
+        });
+}
+function takePhoto() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const hiddenInput = document.getElementById('captured_image');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const previewImg = document.getElementById('captured_preview');
+
+    // Resize canvas to a smaller dimension (optional)
+    const scale = 0.6;  // 20% of original size
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Stop video stream
+    video.srcObject.getTracks().forEach(track => track.stop());
+    video.style.display = 'none';
+    canvas.style.display = 'none';  // hide canvas if only using img preview
+    retakeBtn.style.display = 'inline-block';
+
+    const dataURL = canvas.toDataURL('image/png');
+    hiddenInput.value = dataURL;
+
+    // Show preview
+    previewImg.src = dataURL;
+    previewImg.style.display = 'inline-block';
+}
+function retakePhoto() {
+    const canvas = document.getElementById('canvas');
+    const hiddenInput = document.getElementById('captured_image');
+    const previewImg = document.getElementById('captured_preview');
+
+    hiddenInput.value = '';
+    previewImg.src = '#';
+    previewImg.style.display = 'none';
+    canvas.style.display = 'none';
+
+    startCamera();
+}
+
+
+</script>
+
+
+
+<script>
+let mediaRecorder;
+let recordedChunks = [];
+
+const recordPreview = document.getElementById('recordPreview');
+const startBtn = document.getElementById('startRecording');
+const stopBtn = document.getElementById('stopRecording');
+const playback = document.getElementById('playback');
+const recordedInput = document.getElementById('recordedVideoInput');
+
+startBtn.addEventListener('click', async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    recordPreview.srcObject = stream;
+
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    let currentSize = 0; // track size in bytes
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    mediaRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) {
+            currentSize += e.data.size;
+
+            // If the size exceeds the limit, stop recording and alert
+            if (currentSize > maxSizeBytes) {
+                alert("Recording exceeded 5 MB. Stopping automatically.");
+                mediaRecorder.stop();
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                return;
+            }
+
+            recordedChunks.push(e.data);
+        }
+    };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const videoURL = URL.createObjectURL(blob);
+            playback.src = videoURL;
+            playback.classList.remove('d-none');
+
+            // Store as base64 for hidden input (optional)
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                recordedInput.value = reader.result;
+            };
+            reader.readAsDataURL(blob);
+
+            // Reset size tracker
+            currentSize = 0;
+        };
+
+
+    mediaRecorder.start();
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+});
+
+stopBtn.addEventListener('click', () => {
+    mediaRecorder.stop();
+    recordPreview.srcObject.getTracks().forEach(track => track.stop());
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+});
+</script>
+
+
+{% endblock %}

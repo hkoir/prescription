@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 ">
+            <div class="card shadow-lg rounded-4">
+                <div class="card-body p-4">
+                    <h3 class="mb-4 text-center text-primary">Confirm Doctor Booking</h3>
+
+                    <div class="mb-3">
+                        <p><strong>Patient:</strong> {{ patient }}<br>
+                        <strong>Doctor:</strong> Dr. {{ doctor.full_name }} ({{ doctor.specialization }})
+                    </p>
+                    </div>
+
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                         (We would use your medical history from your ai-prescription)
+
+                    
+                      
+                    <div class="row my-4" style="border:1px solid blue">
+                       
+                        <div class="col-6">
+                            <label for="symptom_image" class="form-label my-5">
+                                <span class="text-center"> 
+                                Upload Symptom Image (optional)</span>                               
+                            </label>
+                            <input type="file" name="symptom_image" id="symptom_image" class="form-control" accept="image/*">
+                        </div>
+
+                        
+                        <div class="col-6">
+                            <label class="form-label">Or capture image using webcam</label><br>
+                            <div class="text-center">
+                                <video id="cameraPreview" autoplay playsinline muted width="100%" class="border rounded shadow-sm mb-2" style="max-width: 50%; height: auto;"></video>
+                                <div class="d-flex justify-content-center gap-2">
+                                    <button type="button" id="startCameraBtn" class="btn btn-outline-primary btn-sm d-none">Start Camera</button>
+                                    <button type="button" onclick="capturePhoto()" class="btn btn-outline-info btn-sm">Capture</button>
+                                </div>
+                                <canvas id="snapshotCanvas" class="d-none mt-3 border rounded" style="width: 100%; max-width: 200px;"></canvas>
+                            </div>
+                            <input type="hidden" name="captured_image" id="capturedImageInput">
+                        </div>
+                    </div>
+
+
+                    <div class="row" style="border:1px solid green">
+                        <div class="col-6">
+                            <label for="symptom_video" class="form-label my-5">
+                                <span class="text-center">
+                                Upload Symptom video(optional)</span>                               
+                            </label>
+                            <input type="file" name="symptom_video" id="symptom_video" class="form-control" accept="video/*">
+
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Or record a short symptom video</label>
+                            <div class="text-center">
+                                <video id="recordPreview" autoplay muted playsinline class="border rounded shadow-sm mb-2" style="width: 100%; height: 100px;"></video>
+                                <div class="d-flex justify-content-center gap-2 mb-2">
+                                    <button type="button" class="btn btn-outline-success btn-sm" id="startRecording">Start Recording</button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm" id="stopRecording" disabled>Stop Recording</button>
+                                </div>
+                                <video id="playback" controls class="d-none w-50 rounded border"></video>
+                                <input type="hidden" name="recorded_video" id="recordedVideoInput">
+                            </div>
+                        </div>
+                    </div>
+
+                    </div>
+
+
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-primary">Confirm Booking</button>
+                            <a href="{% url 'finance:patient_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    const video = document.getElementById('cameraPreview');
+    const canvas = document.getElementById('snapshotCanvas');
+    const capturedInput = document.getElementById('capturedImageInput');
+    const startBtn = document.getElementById('startCameraBtn');
+
+    function isMobile() {
+        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    }
+
+    async function startCamera() {
+        try {
+            const constraints = { video: { facingMode: "environment" }, audio: false };
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            video.srcObject = stream;
+            video.style.display = 'block';
+            startBtn.style.display = 'none';
+        } catch (err) {
+            alert('Cannot access camera: ' + err.message);
+            console.error(err);
+        }
+    }
+
+    async function capturePhoto() {
+    try {
+        if (!video.srcObject) {
+            await startCamera();
+            if (!video.srcObject) {
+                alert('Camera not started!');
+                return;
+            }
+        }
+
+        const context = canvas.getContext('2d');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = canvas.toDataURL('image/jpeg');
+        capturedInput.value = imageData;
+        canvas.classList.remove('d-none');
+
+    } catch (error) {
+        console.error('Capture failed:', error);
+        alert('Failed to capture photo. See console for details.');
+    }
+}
+
+
+    // Initialize
+    window.addEventListener('load', () => {
+        if (isMobile()) {
+            // Show start button on mobile
+            startBtn.style.display = 'inline-block';
+            video.style.display = 'none';
+        } else {
+            // Auto-start camera on desktop/laptop
+            startCamera();
+        }
+    });
+
+    // Start camera on mobile button click
+    startBtn.addEventListener('click', startCamera);
+
+    // Make capturePhoto accessible globally (for inline onclick)
+    window.capturePhoto = capturePhoto;
+    window.startCamera = startCamera;
+</script>
+
+
+
+<script>
+let mediaRecorder;
+let recordedChunks = [];
+
+const recordPreview = document.getElementById('recordPreview');
+const starRectBtn = document.getElementById('startRecording');
+const stopBtn = document.getElementById('stopRecording');
+const playback = document.getElementById('playback');
+const recordedInput = document.getElementById('recordedVideoInput');
+
+starRectBtn.addEventListener('click', async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    recordPreview.srcObject = stream;
+
+    recordedChunks = [];
+    mediaRecorder = new MediaRecorder(stream);
+    let currentSize = 0; // track size in bytes
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    mediaRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) {
+            currentSize += e.data.size;
+
+            // If the size exceeds the limit, stop recording and alert
+            if (currentSize > maxSizeBytes) {
+                alert("Recording exceeded 5 MB. Stopping automatically.");
+                mediaRecorder.stop();
+                starRectBtn.disabled = false;
+                stopBtn.disabled = true;
+                return;
+            }
+
+            recordedChunks.push(e.data);
+        }
+    };
+
+        mediaRecorder.onstop = () => {
+            const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            const videoURL = URL.createObjectURL(blob);
+            playback.src = videoURL;
+            playback.classList.remove('d-none');
+
+            // Store as base64 for hidden input (optional)
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                recordedInput.value = reader.result;
+            };
+            reader.readAsDataURL(blob);
+
+            // Reset size tracker
+            currentSize = 0;
+        };
+
+
+    mediaRecorder.start();
+    starRectBtn.disabled = true;
+    stopBtn.disabled = false;
+});
+
+stopBtn.addEventListener('click', () => {
+    mediaRecorder.stop();
+    recordPreview.srcObject.getTracks().forEach(track => track.stop());
+    starRectBtn.disabled = false;
+    stopBtn.disabled = true;
+});
+</script>
+
+
+{% endblock %}
