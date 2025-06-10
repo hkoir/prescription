@@ -30,7 +30,9 @@
 
       {% if medicines %}
       <hr>
+
       <h5 class="mt-4">Prescribed Medicines</h5>
+	<div class="table-responsive">
       <table class="table table-bordered mt-2">
         <thead class="table-light">
           <tr>
@@ -53,6 +55,7 @@
           {% endfor %}
         </tbody>
       </table>
+   <div>
       {% endif %}
 
       {% if lab_tests %}
