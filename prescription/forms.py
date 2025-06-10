@@ -105,16 +105,15 @@ class ApproveRequestVidelCallForm(forms.ModelForm):
 
 #======================= follow-up schedules ====================================
 
-      
-
 class DoctorFolloupBookingRequestForm(forms.ModelForm):
     class Meta:
         model = DoctorFolloupBooking
-        fields = ["patient_Current_status",'symptom_image','symptom_video','proposed_followup_datetime']
+        fields = ["patient_Current_status", 'symptom_image', 'symptom_video', 'proposed_followup_datetime']
         widgets = {
-            "proposed_followup_datetime": forms.DateTimeInput(attrs={"type": "datetime-local"}),
-            "patient_Current_status":forms.TextInput(attrs={'style':'height:100px'})
-
+            "patient_Current_status": forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
+            "proposed_followup_datetime": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'form-control'}),
+            "symptom_video": forms.ClearableFileInput(attrs={'accept': 'video/*'}),
+            "symptom_image": forms.ClearableFileInput(attrs={'accept': 'image/*'}),
         }
 
 
