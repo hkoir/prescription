@@ -76,11 +76,50 @@
 }
 
 
+
+.welcome-banner {
+    text-align: center;
+    padding: 30px 20px;
+    margin-bottom: 20px;
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .welcome-banner h2 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+
+  .welcome-banner p {
+    font-size: 1.1rem;
+  }
+
+
 </style>
 
 <div class="container-fluid main-content">
     <!-- Marquee Section -->
-    <div class="row">           
+    <div class="row">
+
+	<div class="welcome-banner animate__animated animate__fadeInDown">
+           <h2>👋 Welcome to AI-Powered Prescription Services</h2>
+           <p>Your intelligent healthcare assistant is ready to help.</p>
+        </div>
+	  <div>
+	   <p class="text-dark fs-6 mb-2">
+            To access personalized medical services powered by artificial intelligence, please login or register.
+            </p>
+            <p class="text-muted fs-6">
+            🔒 For your security, access is restricted to registered users only.<br>
+            🩺 Patients are kindly requested to complete their profile, including basic info and medical history, when prompted.<br>
+            ✅ This is a one-time process to ensure faster and smarter service in future visits.
+            </p>
+ 
+	 </div>
+
+           
             <div class="col-12">
                 <div class="container">       
                     <div class="row">
@@ -157,23 +196,44 @@
                 </div>
             {% endif %}
                 </div>
-                <div class="col-12 col-md-2"></div>
+                <div class="col-12 col-md-2 my-5"></div>
              </div>
             </div>
         </div>
-            
+	{% include 'addition.html' %}
+	{% include 'hero_section.html' %}
+	{% include 'feedback.html' %}            
 
-    </div>
+	<div class="container my-5">
+	  <div class="p-4 bg-white text-center rounded shadow-sm border-top border-4 border-primary">
+    	      <h5 class="text-primary fw-bold mb-2">Powered by AI. Driven by Care.</h5>
+    		<p class="text-muted fs-6">
+      		Stay in touch as we continue to shape the future of healthcare—together.
+    		</p>
+  	   </div>
+       </div>
 
-       <div style="height:300px"></div>
-        <div class="col-12 bg-light text-center mb-0">
-            <footer>
-                <p>&copy; 2025 mymeplus Technology. All rights reserved.</p>
-            </footer>
-        </div>
-    
+
+   </div>
+  
 </div>
 
+<script>
+  const messages = [
+    "Your AI doctor is ready.",
+    "Smarter prescriptions, faster recovery.",
+    "Empowering healthcare with intelligence."
+  ];
+  let index = 0;
+
+  function rotateMessage() {
+    const messageBox = document.querySelector(".welcome-banner p");
+    messageBox.textContent = messages[index];
+    index = (index + 1) % messages.length;
+  }
+
+  setInterval(rotateMessage, 4000); // Change every 4 seconds
+</script>
 
 
 {% endblock %}

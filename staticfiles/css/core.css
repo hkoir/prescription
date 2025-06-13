@@ -3,9 +3,12 @@
 html, body {
     background-color: white;
     color: #333333;
-    padding-top: 125px; /* Offset for fixed navbars */
+    padding-top: 125px; 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
+
+
+
 
 .social-nav {
     background-color: #1a1a2e;

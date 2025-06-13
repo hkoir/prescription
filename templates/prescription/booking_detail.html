@@ -46,9 +46,9 @@
               <p class="mb-1"><strong>Doctor:</strong> {{ booking.doctor }}</p>
               <p class="mb-1"><strong>Symptoms:</strong> {{ booking.symptoms_summary }}</p>
               <p class="mb-1"><strong>Duration:</strong> {{ booking.duration }}</p>
-              <p class="mb-1"><strong>Medical History:</strong> {{ booking.medical_history }}</p>
-              <p class="mb-1"><strong>Allergies:</strong> {{ booking.allergies }}</p>
-              <p class="mb-1"><strong>Current Medications:</strong> {{ booking.current_medications }}</p>
+              <p class="mb-1"><strong>Medical History:</strong> {{ booking.patient.medical_history }}</p>
+              <p class="mb-1"><strong>Allergies:</strong> {{ booking.patient.allergies }}</p>
+              <p class="mb-1"><strong>Current Medications:</strong> {{ booking.patient.current_medications }}</p>
               <p class="mb-1"><strong>Vital Signs:</strong> {{ booking.vital_signs }}</p>
               <p class="mb-1"><strong>Status:</strong> 
                 <span class="badge {% if booking.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">

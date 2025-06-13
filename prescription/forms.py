@@ -55,14 +55,11 @@ class DirectDoctorBookingForm(forms.ModelForm):
         model = DoctorBooking
         fields = [
              'symptom_image', 'symptom_video','symptoms_summary', 'duration',
-            'medical_history', 'allergies', 'current_medications', 'vital_signs', 'location'
+            'vital_signs', 'location'
         ]
         widgets = {
             'symptoms_summary': forms.TextInput(attrs={'style': 'height:70px'}),
-            'medical_history': forms.TextInput(attrs={'style': 'height:70px'}),
-            'current_medications': forms.TextInput(attrs={'style': 'height:70px'}),
             'vital_signs': forms.TextInput(attrs={'style': 'height:70px'}),
-            'allergies': forms.TextInput(attrs={'style': 'height:70px'}),
              'symptom_image': forms.ClearableFileInput(attrs={
                 'accept': 'image/*',
                 'capture': 'environment',  # 'user' for front camera

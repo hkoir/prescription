@@ -31,7 +31,12 @@
                         <tr>
                             <td>{{ booking.doctor_booking.booking_code }}</td>
                             <td>{{ booking.doctor_booking.patient.full_name }}</td>
-                            <td>{{ booking.booking_code }}</td>
+                            <td>
+	                        <a href="{% url 'prescription:doctor_followup_booking_detail' booking.id %}"><i class="fas fa-eye"></i>
+                                  {{ booking.booking_code }}
+                                </a>
+			    </td>
+
                             <td>{{ booking.patient_Current_status }}</td>
                             <td>{{ booking.proposed_followup_datetime }}</td>
                             <td>{{ booking.approved_followup_datetime }}</td>

@@ -122,7 +122,7 @@ def tenant_expire_check(request):
     tenant_instance = tenant.tenant.first()
     if tenant_instance and tenant_instance.subscription and tenant_instance.subscription.is_expired:
         messages.warning(request, 'Your subscription has expired, please renew')
-        return redirect('clients:renew_tenant')
+        return redirect('prescription:home')
     return redirect('prescription:home')
 
    

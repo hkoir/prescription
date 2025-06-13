@@ -118,6 +118,8 @@ class Patient(models.Model):
     body_height = models.DecimalField(max_digits=7,decimal_places=2,null=True, blank=True,help_text="Please enter height in cm")    
     medical_history = models.TextField(blank=True, null=True,help_text="Previous conditions (e.g., diabetes, asthma)")
     allergies = models.TextField(blank=True, null=True,help_text="Any known drug or food allergies")
+    current_medications = models.TextField(blank=True, null=True, help_text="Current medications with dosage")
+
 
     free_ai_prescriptions_used = models.IntegerField(default=0)   
     last_profile_update = models.DateTimeField(null=True, blank=True) 

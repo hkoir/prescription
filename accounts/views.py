@@ -140,6 +140,7 @@ def register_view(request):
             with transaction.atomic():  
                 user = registerForm.save(commit=False)
                 user.email = registerForm.cleaned_data['email']
+                role = registerForm.cleaned_data['role']
                 email_domain = user.email.split('@')[-1] if '@' in user.email else ''
                 user.set_password(registerForm.cleaned_data['password1'])
 
@@ -149,7 +150,10 @@ def register_view(request):
 
                 user.is_active = False
                 user.tenant = current_tenant
-                user.role = 'doctor'
+                if role == 'patient':
+                    user.role = 'patient'
+                else:
+                    user.role = 'doctor'
                 user.save()
 
                 current_site = get_current_site(request)
@@ -189,6 +193,7 @@ def register_patient(request):
             with transaction.atomic():  
                 user = registerForm.save(commit=False)
                 user.email = registerForm.cleaned_data['email']
+                role = registerForm.cleaned_data['role']
                 email_domain = user.email.split('@')[-1] if '@' in user.email else ''
                 user.set_password(registerForm.cleaned_data['password1'])
 
@@ -198,7 +203,10 @@ def register_patient(request):
 
                 user.is_active = False
                 user.tenant = current_tenant
-                user.role = 'patient'
+                if role == 'patient':
+                    user.role = 'patient'
+                else:
+                    user.role = 'doctor'
                 user.save()
 
                 current_site = get_current_site(request)
@@ -310,7 +318,7 @@ def login_view(request):
         current_date = timezone.now().date()
         for subscription in subscriptions:
             if subscription.expiration_date:
-                if subscription.expiration_date > current_date:
+                if subscription.expiration_date < current_date:
                     subscription.is_expired = True
                     subscription.save()
     form = CustomLoginForm(initial={'tenant': current_schema })   

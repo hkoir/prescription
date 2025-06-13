@@ -52,8 +52,7 @@ class CustomLoginForm(AuthenticationForm):
 from.models import CustomUser
 
 class TenantUserRegistrationForm(UserCreationForm):
-    profile_picture = forms.ImageField(required=False)
-    
+
     class Meta:
         model = CustomUser
         fields = ['role','username', 'email', 'password1', 'password2', 'photo_id']

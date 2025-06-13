@@ -22,6 +22,7 @@ urlpatterns = [
    
     path('doctor-bookings-list/', views.doctor_bookings_list, name='doctor_bookings_list'),
     path('doctor-bookings-detail/<int:pk>/', views.doctor_booking_detail, name='doctor_booking_detail'),
+    path('doctor-followup_bookings-detail/<int:pk>/', views.doctor_followup_booking_detail, name='doctor_followup_booking_detail'),
    
     path('bookings/<int:booking_id>/prescription/', views.create_doctor_prescription, name='create_doctor_prescription'),
     path('prescription/create/<int:booking_id>/followup/<int:followup_id>/',views.create_doctor_prescription, name='create_followup_doctor_prescription'),

@@ -1,0 +1,498 @@
+
+
+{% load static %}
+
+
+
+<style>
+    
+
+.hero-section {
+    position: relative;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 1)),
+                url('https://source.unsplash.com/1600x900/?office,teamwork') no-repeat center center/cover;
+    height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    text-align: center;
+    overflow: hidden;
+    padding: 0 15px;
+    border-bottom: 1px solid #eee; /* Optional: A light border for a clean separation */
+}
+
+
+    .hero-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.6); /* Darker and more professional */
+        z-index: 1;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        margin: 0 0;
+        text-shadow: 0px 2px 4px rgba(0, 0, 0, 0.6); /* Subtle shadow for contrast */
+        animation: fadeInUp 10s ease-out infinite;
+    }
+
+    .hero-section h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero-section p {
+        font-size: 1.3rem;
+        font-weight: 300;
+        opacity: 0.95;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    /* Optional Animation */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Optional Button */
+    .hero-btn {
+        background-color: #fcb900;
+        color: #333;
+        padding: 12px 30px;
+        font-size: 1rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        border: none;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .hero-btn:hover {
+        background-color: #f5a623;
+        color: #fff;
+        transform: translateY(-3px);
+    }
+
+
+
+.custom-shape-divider-bottom-hero {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    overflow: hidden;
+    line-height: 0;
+    }
+.custom-shape-divider-bottom-hero svg {
+        position: relative;
+        display: block;
+        width: calc(115% + 1.3px);
+        height: 80px;
+    }
+.custom-shape-divider-bottom-hero .shape-fill {
+        fill: #ffffff;
+    }
+
+
+
+
+
+
+ul.custom-arrow-list li::before {
+    content: "\21D2";  
+    color: blue;  
+    font-size: 1rem;  
+    margin-right: 10px; 
+    font-weight: bold; 
+}
+
+ul.custom-arrow-list li {
+    margin-bottom: 5px; 
+    font-family: Arial, sans-serif; 
+    font-size: 1rem; 
+    color: #333333; 
+}
+
+
+
+.module-icon {
+        font-size: 40px;
+        color: #007bff;
+    }
+.feature-section {
+        padding: 60px 0;
+        background-color: white;
+    }
+
+    
+.cta-section {
+        background-color: #007bff;
+        color: white;
+        padding: 40px 0;
+        text-align: center;
+    }
+
+
+
+.module-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+    overflow: hidden; /* Needed for inner shadow effect */
+    left: 0;
+    width:100%;
+}
+
+.module-card:hover {
+    transform: translateY(-5px); /* Move card up slightly */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* More pronounced shadow */
+    left: 0;
+    width:100%
+}
+
+.module-card::before { /* Inner shadow on hover */
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0); /* Transparent initially */
+    transition: background-color 0.3s ease;
+    pointer-events: none; /* Allows clicks to pass through */
+}
+
+
+.module-card:hover::before {
+  background-color: rgba(0, 0, 0, 0.1); /* Semi-transparent black on hover */
+}
+.module-card .card-body {
+    transition: transform 0.3s ease; /* Smooth transitions for content */
+}
+
+.module-card:hover .card-body {
+    transform: scale(1.02); /* Slightly scale up the content */
+}
+
+
+
+/* Optional: Change button color on hover */
+.module-card:hover .btn-outline-primary {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+
+.feature-box,.price_card {
+    padding: 20px; /* Add some padding around the content */
+    border: 1px solid #eee; /* Light border */
+    border-radius: 8px; /* Rounded corners */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth transitions */
+    
+    color: #333 !important; /* Set a visible color */
+  
+   
+}
+
+
+.feature-box:hover,.price_card:hover{
+    transform: translateY(-5px); /* Move box up slightly */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Subtler shadow */
+    border-color: #ddd; /* Slightly darker border on hover */
+    background-color: rgba(0, 0, 0, 0.1); /* Semi-transparent black on hover */
+    color: #333 !important; /* Set a visible color */
+   
+}
+
+
+
+.feature-box h4 {
+    margin-bottom: 10px;
+}
+
+
+
+
+@keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+       }
+   
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+   }
+
+
+.live_demo_box {
+    padding: 20px; 
+    border: 1px solid #eee; 
+    border-radius: 8px; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+    cursor: pointer;
+    animation: shake 5s ease-in-out infinite;
+}
+
+
+
+.live_demo_box:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); 
+    border-color: #ddd; 
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+
+
+
+.feature-box2{
+    padding: 20px; 
+    border: 1px solid #eee; 
+    border-radius: 8px; 
+    transition: transform 0.3s ease, box-shadow 0.3s ease; 
+    
+    color: #333 !important; 
+  
+   
+}
+
+
+.feature-box2:hover{
+    transform: translateY(-5px); 
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    border-color: #ddd; 
+    background-color:gray;
+    color: #333 !important;
+   
+}
+
+
+.circle-card {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    background-color: lightgoldenrodyellow; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+    animation: shake 5s ease-in-out infinite; 
+}
+
+
+
+.circle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    background-color:	#f0f8ff; 
+    color: #000; 
+}
+
+
+
+
+.circle-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 600;
+    text-align: center;
+    display: block;
+    transition: color 0.3s ease;
+    animation: shake 5s ease-in-out infinite; 
+}
+
+.circle-link:hover {
+    color: #007bff; /* Bootstrap primary color */
+}
+
+
+
+h4 {
+    margin: 0;
+    font-size: 1.2rem;
+    text-align: center;
+}
+
+.animate {        
+    animation: shake 5s ease-in-out infinite;         
+       
+    }
+
+
+</style>
+
+
+<div class=" my-5 container-fluid main-content">
+    <div class="row">        
+        
+        
+        <section class="hero-section">
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+               <h2 class="display-5 fw-bold">Ai Power health assistance</h2>
+                <p class="lead">Get personalized, AI-enhanced prescriptions backed by licensed doctors. Empower your wellness journey — anytime, anywhere.</p>
+
+                <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-robot"></i> Get your Prescription now
+                </a>
+                <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
+                </a>
+            </div>
+            <div class="custom-shape-divider-bottom-hero">
+                <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                    <path d="M0,0V46.29c47.6,15.4,98.5,27.4,150,24.67,49.6-2.6,97.1-20.73,146.6-27.27,64.5-8.53,129.6,1.84,194,9.39,65.1,7.6,130.8,10.9,196.5,2.53,65.8-8.27,128.9-27.47,192.2-31.1,51.5-3,103.7,4.72,155.2,13.11,51.5,8.4,103.2,17.6,155.5,20.44,45.5,2.51,91.3-.53,136.8-5.39V0Z" fill="#ffffff"></path>
+                </svg>
+            </div>
+        </section>    
+        
+
+        <!-- FEATURES -->
+        <section class="py-5">
+            <div class="container text-center">  
+                         
+                <div class="container text-center">
+                    <h2 class="fw-bold mb-4 text-success">Welcome to the Future of Healthcare</h2>
+                    <p class="lead text-muted">
+                        You are in a platform where <strong>AI-powered prescription services is provided</strong> and also
+                        vetted by <strong>specialized doctors by choice</strong> via <strong>video consultation if you desire so</strong>.
+                        Get expert care from your trusted provider — fast, reliable, and personal.
+                    </p>
+                </div>                                 
+        
+                <p class="mb-4">
+                    A powerful combination of AI technology and experienced medical specialists.<br>
+                    Bridging the gap between expert doctors and patients in need of quality healthcare.
+                </p>  
+        </section>   
+
+      <div class="d-flex justify-content-center">
+        <div class="col-md-6">
+            <video class="w-100 rounded shadow" controls>
+            <source src="{% static 'videos/symptom-checkerv2.mp4' %}"
+            style="border-radius: 30%;" type="video/mp4">
+            Your browser does not support the video tag.
+            </video>
+        </div>
+     </div> 
+
+	 <div class="container my-5">
+            <div class="row justify-content-between align-items-center">
+                <div class="col-12 col-md-4 mb-3">
+                    <div class="p-4 bg-white border border-success rounded shadow text-center">
+                        <h5 class="text-success mb-3">Are You a Doctor?</h5>
+                        <a href="{% url 'accounts:register' %}" class="btn btn-outline-success w-100">Register as Doctor</a>
+                    </div>
+                </div>
+                 <div class="col-12 col-md-4 mb-3">
+                    <div class="p-4 bg-white border border-success rounded shadow text-center">
+                        <h5 class="text-success mb-3">Are You a registered Doctor?</h5>
+                        <a href="{% url 'finance:create_doctor_profile' %}" class="btn btn-outline-success w-100">Create Doctor Profile</a>
+                    </div>
+                </div>
+
+                <div class="col-12 col-md-4 mb-3">
+                    <div class="p-4 bg-white border border-primary rounded shadow text-center">
+                        <h5 class="text-primary mb-3">Are You a Patient?</h5>
+                        <a href="{% url 'accounts:register_patient' %}" class="btn btn-outline-primary w-100">Register as Patient</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+          
+
+       
+
+        <h4 class="mt-5 text-start"> 💡 Why Use AI-Powered Prescriptions?</h4>
+        <p class="justify-content">   
+        In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked.
+        </p>
+        
+
+
+     <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5 text-success">Why Join Our AI-Powered Healthcare Platform?</h2>
+            <div class="row g-4">
+
+            <!-- Doctor Benefits -->
+            <div class="col-md-6">
+                <div class="p-4 bg-white rounded shadow border-start border-5 border-success">
+                <h4 class="text-success mb-3"> <i class="fas fa-user-md fa-1x mb-3 text-success"></i> For Doctors</h4>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Earn consultation fees from home or on the go</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Work flexible hours, even part-time</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Gain exposure to a wide patient base</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Vet AI-generated prescriptions efficiently</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Conduct video consultations securely</li>
+                </ul>
+                </div>
+            </div>
+
+            <!-- Patient Benefits -->
+            <div class="col-md-6">
+                <div class="p-4 bg-white rounded shadow border-start border-5 border-primary h-100">
+                <h4 class="text-primary mb-3"><i class="bi bi-person-check me-2"></i> For Patients</h4>
+                <ul class="list-unstyled">
+                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Get AI-powered prescriptions instantly</li>
+                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Book expert doctors from home</li>
+                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Share symptoms and medical files online</li>
+                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Request video consultations as needed</li>
+                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Access prescriptions from anywhere</li>
+                </ul>
+                </div>
+            </div>
+
+            </div>
+        </div>
+        </section>
+
+    <div class="container my-5">
+      <div class="row justify-content-center">
+        <div class="col-md-10">
+           <div class="alert alert-success text-center shadow-lg p-4 border border-primary rounded">
+                <h3 class="fw-bold text-primary mb-3">
+                🧠 Get Your AI-Powered Prescription – First 2 Uses Free! Check it now
+                </h3>
+                <p class="mb-2 text-muted fs-5">
+                Experience instant, intelligent health advice from our advanced AI model.
+                </p>
+                <p class="fs-4 text-dark">
+                <strong>After that, only ৳100 per use.</strong>
+                </p>
+               <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-robot"></i> Try It Now
+                </a>
+                <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
+                </a>
+            
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+  </div>
+</div>

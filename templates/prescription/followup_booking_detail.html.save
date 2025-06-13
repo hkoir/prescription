@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-5">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card shadow rounded-4">
+        <div class="card-body p-4">
+          <h3 class="text-success mb-4">
+            <i class="bi bi-journal-medical"></i> Follow-up Booking Details
+          </h3>
+
+          <div class="row">
+            <!-- Patient Information -->
+            <div class="col-md-6 mb-3">
+              <h5 class="text-primary">Patient Information</h5>
+              <p class="mb-1"><strong>Name:</strong> {{ booking.doctor_booking.patient.full_name }}</p>
+              <p class="mb-1"><strong>Age:</strong> {{ booking.doctor_booking.patient.age }} | <strong>Gender:</strong> {{ booking.patient.gender }}</p>
+               <p class="mb-1"><strong>Body weight:</strong> {{ booking.doctor_booking.patient.body_weight }}kg |  {{ booking.patient.body_weight_unit }}</p>
+              <p class="mb-1"><strong>Body height:</strong> {{ booking.doctor_booking.patient.body_height }}cm |  {{ booking.patient.body_height_unit }}</p>
+              <p class="mb-1"><strong>Phone:</strong> {{ booking.doctor_booking.patient.phone }}</p>
+              <p class="mb-1"><strong>Location:</strong> {{ booking.doctor_booking.location }}</p>
+              {% if booking.symptom_image %}
+                <p class="mb-1"><strong>Spot Image:</strong><br>
+                  <a href="{{ booking.symptom_image.url }}" target="_blank">
+                    <img src="{{ booking.symptom_image.url }}" class="img-thumbnail mt-2" style="width: 30%; height:auto; border-radius: 10%;">
+                  </a>
+                </p>
+              {% endif %}
+              {% if booking.symptom_video %}
+            <p class="mb-1"><strong>Spot Video:</strong><br>
+              <a href="{{ booking.symptom_video.url }}" target="_blank">
+                <video class="mt-2" style="width: 30%; height: auto; object-fit: cover;border-radius: 10%" controls muted>
+                  <source src="{{ booking.symptom_video.url }}" type="video/mp4">
+                  Your browser does not support the video tag.
+                </video>
+              </a>
+            </p>
+          {% endif %}
+
+            </div>
+
+            <!-- Booking & Medical Info -->
+            <div class="col-md-6 mb-3">
+              <h5 class="text-primary">Booking & Medical Info</h5>
+              <p class="mb-1"><strong>Preferred Time:</strong> {{ booking.doctor_booking.approved_followup_datetime}}</p>
+              <p class="mb-1"><strong>Doctor:</strong> {{ booking.doctor_booking.doctor }}</p>
+              <p class="mb-1"><strong>Patient Initial Symptom:</strong> {{ booking.doctor_booking.symptoms_summary }}</p>
+	      
+	      <p class="mb-1"><strong>Patient current status:</strong> {{ booking.patient_Current_status }}</p>
+              <p class="mb-1"><strong>Duration:</strong> {{ booking.doctor_booking.duration }}</p>
+              <p class="mb-1"><strong>Medical History:</strong> {{ booking.doctor_booking.medical_history }}</p>
+              <p class="mb-1"><strong>Allergies:</strong> {{ booking.allergies }}</p>
+              <p class="mb-1"><strong>Current Medications:</strong> {{ booking.doctor_booking.current_medications }}</p>
+              <p class="mb-1"><strong>Vital Signs:</strong> {{ booking.doctor_booking.vital_signs }}</p>
+              <p class="mb-1"><strong>Status:</strong> 
+                <span class="badge {% if booking.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
+                  {{ booking.status }}
+                </span>
+              </p>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="d-flex justify-content-between align-items-center">
+            {% if booking.doctor_booking.ai_prescription %}
+            <span class="text-muted">
+                <a href="{% url 'prescription:ai_prescription_detail' booking.doctor_booking.ai_prescription.id %}" 
+                class="btn bn-sm btn-outline-success">Patient AI Prescription</a></span>
+                {% else %}
+                <span class="text-dark btn btn-sm btn-outline-primary">This patient has no Ai Prescription</span>
+            {% endif %}
+
+
+
+
+            {% if booking.status == 'completed' %}
+              <span class="text-primary">
+                {% if booking.doctor_booking.doctor_booking_refs %}
+                <a href="{% url 'prescription:doctor_prescription_detail' booking.doctor_bookin.doctor_booking_refs.first.id %}"
+                class="btn btn-outline-primary">View doctor prescription</a>
+                {% elif booking.doctor_bookin.ai_prescription %}
+                 <a href="{% url 'prescription:doctor_prescription_detail' booking.doctor_booking.doctor_prescriptions.first.id %}"
+                 class="btn btn-sm btn-outline-secondary">View doctor prescription</a>
+                {% endif %}
+              </span>
+		{% else %}
+		<a href="{% url 'prescription:create_followup_doctor_prescription' booking.doctor_booking.id booking.id %}"
+		 class="btn btn-sm btn-outline-success">Doctor to Prescribe</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}

@@ -11,9 +11,22 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*','loclhost','152.42.231.103','www.aiha.live','aiha.live']
 
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+    "x-requested-with",
+    "accept",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "accept-encoding",
+]
 
 SHARED_APPS = [ 
     'django_tenants',    
+    'corsheaders',
     'django.contrib.contenttypes',  
     'django.contrib.sessions',     
     'django.contrib.messages',     
@@ -63,6 +76,7 @@ AUTHENTICATION_BACKENDS = [
 
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware', 

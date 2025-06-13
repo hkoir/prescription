@@ -1,0 +1,146 @@
+
+
+
+
+<style>
+    .feedback-section {
+  padding: 60px 20px;
+  background-color: #f9f9f9;
+  text-align: center;
+}
+
+.feedback-section h2 {
+  font-size: 2rem;
+  margin-bottom: 40px;
+  color: #2c3e50;
+}
+
+.feedback-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 30px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.feedback-card {
+  background: white;
+  border-radius: 12px;
+  padding: 25px 20px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease;
+}
+
+.feedback-card:hover {
+  transform: translateY(-5px);
+}
+
+.feedback-card p {
+  font-style: italic;
+  margin-bottom: 20px;
+  color: #34495e;
+}
+
+.feedback-card h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.feedback-card span {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+
+.feedback-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.feedback-header img {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 15px;
+  border: 2px solid #ddd;
+}
+
+.feedback-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #2c3e50;
+}
+
+.feedback-header span {
+  font-size: 0.85rem;
+  color: #7f8c8d;
+}
+
+
+</style>
+
+
+<div class=" my-5 d-flex justify-content-between align-items-center border p-2">
+  <img src="/static/images/male_doctor-1.jpg" alt="Description of Image" class="img-fluid" style="width: 40%;height:350px">
+  <img src="/static/images/male_doctor-2.jpg" alt="Description of Image" class="img-fluid" style="width: 40%;height:350px">
+</div>
+
+
+<section class="feedback-section">
+  <h2>What Our Users Are Saying</h2>
+  <div class="feedback-container">
+    <!-- Doctor Feedback -->
+     <div class="feedback-card">
+        <div class="feedback-header">
+            <img src="/static/images/male_doctor-1.jpg" alt="Dr. Ayesha Rahman">
+            <div>
+            <h4>Dr. Ayesha Rahman</h4>
+            <span>General Physician</span>
+            </div>
+        </div>
+        <p>"AI-based prescription suggestions have streamlined my workflow and reduced errors. I trust this system every day."</p>
+        </div>
+
+     <div class="feedback-card">
+        <div class="feedback-header">
+            <img src="/static/images/male_doctor-2.jpg" alt="Dr. Ayesha Rahman">
+            <div>
+           <h4>Dr. Imran Hossain</h4>
+            <span>Consultant, Internal Medicine</span>
+            </div>
+        </div>
+       <p>"Smart insights and lab result interpretation save me valuable time, especially during patient rush hours."</p>
+     </div>
+
+       <!-- Patient Feedback -->
+
+     <div class="feedback-card">
+        <div class="feedback-header">
+	 <img src="/static/images/Mother.jpg" alt="Fatema">
+            <div>
+           <h4>Fatema Akter</h4>
+             <span>Patient, Dhaka</span>
+            </div>
+        </div>
+        <p>"I got my prescription instantly and clearly understood my medication. It's like having a digital doctor beside me."</p>
+     </div>  
+
+    <div class="feedback-card">
+        <div class="feedback-header">
+            <img src="/static/images/hasan.jpg" alt="hasan">
+            <div>
+           <h4>Hasan Mahmud</h4>
+            <span>Patient, Chittagong</span>
+            </div>
+        </div>
+       <p>"No confusion, no delays. The service is fast, accurate, and reassuring. I highly recommend it to my family."</p>
+     </div>
+  
+
+  </div>
+</section>

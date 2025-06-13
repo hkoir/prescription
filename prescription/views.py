@@ -412,7 +412,7 @@ def book_doctor_direct(request, pk):
                     doctor_booking.preferred_time = timezone.now()
                     doctor_booking.save()
                     messages.success(request, "Doctor appointment booked successfully.")
-                    return redirect('prescription:doctor_booking_success')
+                    return redirect('prescription:doctor_booking_success',doctor.id,doctor_booking.id)
             else:
                 messages.error(request, "There was an error in the form. Please check your input.")
 
@@ -617,6 +617,20 @@ def doctor_booking_detail(request, pk):
 
 
 
+@login_required
+def doctor_followup_booking_detail(request, pk):
+    booking = get_object_or_404( DoctorFolloupBooking, pk=pk)   
+    is_doctor = booking.doctor_booking.doctor and booking.doctor_booking.doctor.user == request.user
+    is_patient = booking.doctor_booking.patient and booking.doctor_booking.patient.user == request.user
+    if not (is_doctor or is_patient):
+        messages.warning(request,"You do not have permission to view this booking.")
+        return redirect('prescription:doctor_bookings_list')
+    return render(request, 'prescription/followup_booking_detail.html', {'booking': booking})
+
+
+
+
+
 
 PrescriptionFormSet = modelformset_factory(
     SuggestedMedicine,
@@ -647,7 +661,7 @@ def create_doctor_prescription(request, booking_id, followup_id=None):
 
     if booking.doctor.user != request.user:
         messages.error(request, "Only the assigned doctor can create a prescription for this booking.")
-        return redirect('prescription:doctor_booking_detail', pk=booking_id)
+        return redirect('prescription:doctor-bookings-list')
 
     if request.method == 'POST':
         medical_form = DoctorPrescriptionForm(request.POST, request.FILES, instance=prescription_instance)
@@ -861,30 +875,56 @@ def doctor_prescription_pdf(request, pk):
 #================= folloup booking and soom meeting management =======================
 
 
+import uuid
 
 def request_doctor_followup_booking(request, doctor_booking_id):
-    doctor_booking_instance = get_object_or_404(DoctorBooking,id=doctor_booking_id)   
+    doctor_booking_instance = get_object_or_404(DoctorBooking, id=doctor_booking_id)
+
     if request.user != doctor_booking_instance.patient.user:
-        messages.warning(request,'Only associated patient can request for followup booking')
+        messages.warning(request, 'Only associated patient can request for followup booking')
         return redirect('prescription:home')
-        
+
     if doctor_booking_instance and doctor_booking_instance.is_followup_valid():
         payment_amount = doctor_booking_instance.doctor.folloup_consultation_fees
     else:
         payment_amount = doctor_booking_instance.doctor.consultation_fees
 
     if request.method == "POST":
-        form = DoctorFolloupBookingRequestForm(request.POST,request.FILES)
+        form = DoctorFolloupBookingRequestForm(request.POST, request.FILES)
         if form.is_valid():
             booking = form.save(commit=False)
             booking.doctor_booking = doctor_booking_instance
-            booking.patient = doctor_booking_instance.patient
-            booking.doctor = doctor_booking_instance.doctor
+            booking.user = request.user
+
+            # Handle captured image (base64)
+            captured_image_data = request.POST.get('captured_image')
+            if captured_image_data:
+                format, imgstr = captured_image_data.split(';base64,')  # format ~= data:image/png
+                ext = format.split('/')[-1]
+                img_file = ContentFile(base64.b64decode(imgstr), name=f"{uuid.uuid4()}.{ext}")
+                booking.symptom_image = img_file
+
+            # Handle recorded video (base64)
+            recorded_video_data = request.POST.get('recorded_video')
+            if recorded_video_data:
+                format, vidstr = recorded_video_data.split(';base64,')
+                ext = format.split('/')[-1]
+                vid_file = ContentFile(base64.b64decode(vidstr), name=f"{uuid.uuid4()}.{ext}")
+                booking.symptom_video = vid_file
+
             booking.save()
             return redirect("prescription:followup_up_booking_request_list")
     else:
         form = DoctorFolloupBookingRequestForm()
-    return render(request, "telemedicine/request_doctor_followup_booking.html", {"form": form,'doctor_booking':doctor_booking_instance})
+    
+    return render(request, "telemedicine/request_doctor_followup_booking.html", {
+        "form": form,
+        "doctor_booking": doctor_booking_instance
+    })
+
+
+
+
 
 
 
