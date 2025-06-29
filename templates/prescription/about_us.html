@@ -1,0 +1,59 @@
+{% extends "sub_base.html" %}
+{% load static %}
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col text-center">
+            <h2 class="display-5 fw-bold">About Us</h2>
+            <p class="lead text-muted">Bridging AI technology and compassionate care</p>
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6">
+            <h4>Who We Are</h4>
+            <p>
+                We are a team of medical professionals, AI engineers, and healthcare innovators dedicated to reshaping the future of healthcare. 
+                Our platform seamlessly combines the precision of AI-powered symptom analysis and prescription generation with the experience and insight of licensed physicians.
+            </p>
+        </div>
+        <div class="col-md-6">
+            <img src="{% static 'images/Logo.png' %}" 
+            class="img-fluid rounded shadow-sm" alt="Our Team" style="width:100px;height:100px">
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-6 order-md-2">
+            <h4>Our Mission</h4>
+            <p>
+                To make healthcare faster, more accessible, and affordable through AI-driven prescriptions and 24/7 doctor consultations. 
+                Whether you need an instant AI-based diagnosis or a trusted opinion from a certified doctor, we're here for you.
+            </p>
+        </div>
+        <div class="col-md-6 order-md-1">
+            <img src="{% static 'images/Logo.png' %}" 
+            class="img-fluid rounded shadow-sm" alt="AI in Healthcare" style="width:100px;height:100px">
+        </div>
+    </div>
+
+    <div class="row mb-5">
+        <div class="col-md-12">
+            <h4>What We Offer</h4>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">🤖 AI-powered prescription generator</li>
+                <li class="list-group-item">👩‍⚕️ Verified doctor consultations (in-person or telemedicine)</li>
+                <li class="list-group-item">🧾 Electronic prescription records and reports</li>
+                <li class="list-group-item">📊 Smart health history and patient tracking</li>
+                <li class="list-group-item">🔒 Secure and confidential medical data</li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row text-center mt-4">
+        <div class="col">
+            <a href="{% url 'prescription:contact_us' %}" class="btn btn-primary px-4 py-2">Contact Us</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,5 +1,4 @@
 
-
 {% load static %}
 
 
@@ -408,13 +407,6 @@ h4 {
                         <a href="{% url 'accounts:register' %}" class="btn btn-outline-success w-100">Register as Doctor</a>
                     </div>
                 </div>
-                 <div class="col-12 col-md-4 mb-3">
-                    <div class="p-4 bg-white border border-success rounded shadow text-center">
-                        <h5 class="text-success mb-3">Are You a registered Doctor?</h5>
-                        <a href="{% url 'finance:create_doctor_profile' %}" class="btn btn-outline-success w-100">Create Doctor Profile</a>
-                    </div>
-                </div>
-
                 <div class="col-12 col-md-4 mb-3">
                     <div class="p-4 bg-white border border-primary rounded shadow text-center">
                         <h5 class="text-primary mb-3">Are You a Patient?</h5>
@@ -485,7 +477,7 @@ h4 {
                 <strong>After that, only ৳100 per use.</strong>
                 </p>
                <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
-                <i class="bi bi-robot"></i> Tri It Now
+                <i class="bi bi-robot"></i> Tyi It Now
                 </a>
                 <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
                     <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor

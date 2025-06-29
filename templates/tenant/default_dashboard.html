@@ -368,112 +368,125 @@ h4 {
                 </div>
             </section>
 
-            <!-- SERVICE PROVIDERS LIST -->
-            <section class="py-5">
-                <div class="container">
-                    <h3 class="text-center mb-5 text-primary">Choose Your Desired Service Provider</h3>
-                    <div class="row justify-content-center">
-                        {% for tenant in tenants %}
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-3 mb-4">
-                                <div class="card shadow-sm border-0 h-100 hover-zoom">
-                                    <div class="card-body text-center">
-                                        <!-- Placeholder for logo -->
-                                        <img src="{% static 'images/Logo.png' %}" alt="{{ tenant.name }}" class="img-fluid mb-3" style="max-height: 50px; border-radius: 20%;">
-                                        <h5 class="card-title text-dark">{{ tenant.name }}</h5>
-                                        <p class="card-text text-muted small">
-                                            Trusted by patients across the region.
-                                        </p>
-                                        <a href="https://{{ tenant.schema_name }}.aiha.live" target="_blank" class="btn btn-outline-success btn-sm mt-2">
-                                            Visit Provider
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </section>
+
+<!-- SERVICE PROVIDERS LIST -->
+<section class="py-5 bg-light">
+  <div class="container">
+    <h3 class="text-center mb-5 text-primary fw-bold">Choose Your Desired Service Provider</h3>
+
+    <div class="row g-4 justify-content-center">
+      {% for tenant in tenants %}
+        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+          <div class="card h-100 border-0 shadow-sm transition hover-shadow position-relative">
+            <div class="card-body text-center p-4">
+              <img src="{% static 'images/Logo.png' %}" alt="{{ tenant.name }}"
+                   class="img-fluid mb-3 rounded-circle shadow-sm"
+                   style="width: 80px; height: 80px; object-fit: contain; background: #fff; padding: 10px;">
+
+              <h5 class="card-title text-dark mb-1">{{ tenant.name }}</h5>
+              <p class="card-text text-muted small">Trusted by patients across the region.</p>
+              <a href="https://{{ tenant.schema_name }}.aiha.live"
+                 target="_blank"
+                 class="btn btn-outline-primary btn-sm mt-2">
+                 Visit Provider <i class="fas fa-arrow-right ms-1"></i>
+              </a>
+            </div>
+
+            <!-- Optional badge or ribbon -->
+            <span class="position-absolute top-0 end-0 badge bg-success rounded-pill m-2">
+              Live
+            </span>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
 
 
 <section class="py-5 bg-light">
     <div class="container">
         <h2 class="text-center mb-5 text-success">How Our AI-Powered Prescription System Works</h2>
 
-        <div class="d-flex flex-wrap justify-content-center align-items-center gap-3">
+        <div class="row g-3"> <!-- Bootstrap grid row with gutter -->
 
             <!-- Step 1 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="fas fa-user fs-1 text-primary"></i>
-                <h6 class="mt-2">Step 1</h6>
-                <p class="small mb-0">Register as a user</p>
+            <div class="col-6 col-md-3"> <!-- 2 per row on xs, 4 per row on md -->
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="fas fa-user fs-1 text-primary"></i>
+                    <h6 class="mt-2">Step 1</h6>
+                    <p class="small mb-0">Register as a user</p>
+                </div>
             </div>
-
-            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
 
             <!-- Step 2 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="fas fa-id-card fs-1 text-primary"></i>
-                <h6 class="mt-2">Step 2</h6>
-                <p class="small mb-0">Fill patient profile form</p>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="fas fa-id-card fs-1 text-primary"></i>
+                    <h6 class="mt-2">Step 2</h6>
+                    <p class="small mb-0">Fill patient profile form</p>
+                </div>
             </div>
-
-            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
 
             <!-- Step 3 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="fas fa-comments fs-1 text-primary"></i>
-                <h6 class="mt-2">Step 3</h6>
-                <p class="small mb-0">Describe symptoms & request AI prescription</p>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="fas fa-comments fs-1 text-primary"></i>
+                    <h6 class="mt-2">Step 3</h6>
+                    <p class="small mb-0">Describe symptoms & request AI prescription</p>
+                </div>
             </div>
-
-            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
 
             <!-- Step 4 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="bi bi-cpu-fill fs-1 text-info"></i>
-                <h6 class="mt-2">Step 4</h6>
-                <p class="small mb-0">AI generates preliminary prescription</p>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="bi bi-cpu-fill fs-1 text-info"></i>
+                    <h6 class="mt-2">Step 4</h6>
+                    <p class="small mb-0">AI generates preliminary prescription</p>
+                </div>
             </div>
-
-            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
 
             <!-- Step 5 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="bi bi-calendar-check-fill fs-1 text-success"></i>
-                <h6 class="mt-2">Step 5</h6>
-                <p class="small mb-0">Book doctor for vetting or direct consult</p>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="bi bi-calendar-check-fill fs-1 text-success"></i>
+                    <h6 class="mt-2">Step 5</h6>
+                    <p class="small mb-0">Book doctor for vetting or direct consult</p>
+                </div>
             </div>
-
-            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
 
             <!-- Step 6 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="bi bi-journal-text fs-1 text-warning"></i>
-                <h6 class="mt-2">Step 6</h6>
-                <p class="small mb-0">Submit symptoms, images & history</p>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="bi bi-journal-text fs-1 text-warning"></i>
+                    <h6 class="mt-2">Step 6</h6>
+                    <p class="small mb-0">Submit symptoms, images & history</p>
+                </div>
             </div>
-
-            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
 
             <!-- Step 7 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="bi bi-prescription2 fs-1 text-danger"></i>
-                <h6 class="mt-2">Step 7</h6>
-                <p class="small mb-0">Doctor reviews & finalizes prescription</p>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="bi bi-prescription2 fs-1 text-danger"></i>
+                    <h6 class="mt-2">Step 7</h6>
+                    <p class="small mb-0">Doctor reviews & finalizes prescription</p>
+                </div>
             </div>
 
-            <i class="bi bi-arrow-right-short fs-3 text-muted d-none d-md-inline"></i>
-
             <!-- Step 8 -->
-            <div class="card shadow-sm p-3 text-center" style="width: 12rem;">
-                <i class="bi bi-camera-video-fill fs-1 text-info"></i>
-                <h6 class="mt-2">Step 8</h6>
-                <p class="small mb-0">Optional: Request video consultation</p>
+            <div class="col-6 col-md-3">
+                <div class="card shadow-sm p-3 text-center h-100">
+                    <i class="bi bi-camera-video-fill fs-1 text-info"></i>
+                    <h6 class="mt-2">Step 8</h6>
+                    <p class="small mb-0">Optional: Request video consultation</p>
+                </div>
             </div>
 
         </div>
     </div>
 </section>
+
+
 
 <h4> 💡 Why Use AI-Powered Prescriptions?<br></h4>
 <p class="justify-content">   
@@ -629,7 +642,7 @@ In today's fast-paced healthcare environment, AI-powered prescriptions serve as 
                         <h3 class="fw-bold" id="subscription_plan">Choose your plan</h3>
                     </div> 
                     {% for plan in plans %}
-                    <div class="col-6 col-md-4 mt-2" id="free_trial">
+                    <div class="col-12 col-md-4 mt-2" id="free_trial">
                         <div class="card shadow price_card"> 
                             <div class="card-header text-center bg-dark text-white">
                                 <h4>{{ plan.get_duration_display }}</h4>
@@ -646,7 +659,7 @@ In today's fast-paced healthcare environment, AI-powered prescriptions serve as 
                                     <p class="card-text">${{ plan.price_per_user }}/additional user/month</p>
                                 </ul>
                                  <!-- Trigger Buttons -->
-                                 <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#subscriptionModal">Subscribe Now</a>
+                                 <a href="#" class="btn btn-success my-2" data-bs-toggle="modal" data-bs-target="#subscriptionModal">Subscribe Now</a>
                                  <a href="#" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#subscriptionModal">Renew Now</a>
  
                                 <!-- <a href="{% url 'clients:apply_for_tenant' %}?plan_id={{ plan.id }}" class="btn btn-success">Subscribe Now</a>

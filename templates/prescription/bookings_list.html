@@ -66,49 +66,40 @@
                                         class="btn btn-sm btn-outline-success">View prescription</a>
 				     {% endif %}
                                 {% endif %}    
-                                   
-                                   
 
-                            {% if booking.status != 'completed' %}
-                                {% if booking.video_call_reuest_message %}
-                                <span class="fw-bold text-primary btn btn-sm btn-outline-success">Video Call requested</span>
-                                {% elif booking.video_link %}                               
-                                    {% if booking.status != 'completed' %}
-                                    <span class="btn btn-sm btn-outline-secondary">Video request Existed</span>
-                                    {% endif %}
-                                {% elif request.user.role == 'patient' and booking.status != 'completed'%}
-                                <a href="{% url 'prescription:request_video_call' booking.pk %}" 
-					class="btn btn-sm btn-primary">Request Video call</a>
-                                {% endif %}
-			   {% endif %}
-
-
-
-                           {% if booking.status != 'completed' and booking.video_call_reuest_message %}
-                                {% if booking.video_call_request_approve == 'rejected' %}
-                                    <span class="fas fa-times fw-bold text-danger">Video call declined by Doctor</span>
-                                {% elif booking.video_call_request_approve == 'approved' %}
-                                    <span class="fw-bold text-success">Video call approved by Doctor</span>
-                                {% elif request.user.role == 'doctor' %}
-                                    <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" class="btn btn-sm btn-outline-secondary">
-                                        Doctor to Approve Video Call
-                                    </a>
-                                {% else %}
-                                    <span class="text-warning">Awaiting doctor approval</span>
-                                {% endif %}
-                            {% endif %}
+				
+				{% if booking.status != 'completed' %}
+    {% if booking.video_call_request_message %}
+        {% if booking.video_call_request_approve == 'approved' %}
+            <a href="{{ booking.video_link }}" class="btn btn-sm btn-primary" target="_blank">
+                Join Video Call
+            </a>
+        {% elif booking.video_call_request_approve == 'rejected' %}
+            <span class="fas fa-times fw-bold text-danger">Video call declined by Doctor</span>
+        {% else %}
+            {% if request.user.role == 'doctor' %}
+                <a href="{% url 'prescription:approve_request_video_call' booking.pk %}"
+                   class="btn btn-sm btn-outline-primary">
+                   Doctor to Approve Video Call
+                </a>
+            {% else %}
+                <span class="text-warning">Awaiting doctor approval</span>
+            {% endif %}
+        {% endif %}
+    {% else %}
+        {% if request.user.role == 'patient' %}
+            <a href="{% url 'prescription:request_video_call' booking.pk %}"
+               class="btn btn-sm btn-primary">Request Video Call</a>
+        {% else %}
+            <span class="text-muted">No video call requested yet.</span>
+        {% endif %}
+    {% endif %}
+{% endif %}
 
 
 
+		
 
-                               {% if booking.status != 'completed' %}
-                                 {% if booking.video_link %} 
-				   {% if booking.video_call_reuest_approve == 'approved' %}                              
-                                 <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-primary" 
-					target="_blank">Click to start Conf</a>
-				   {% endif %}
-                                 {% endif %}
-                                {% endif %}
 
                             </td>
                         </tr>

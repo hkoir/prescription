@@ -94,6 +94,8 @@
                 </div>
             </div>
 
+
+
             <!-- Prescription Section -->
             <div class="col-12">
                 <div class="card mb-4">
@@ -107,10 +109,17 @@
                                 <div class="row">
                                     {% for field in form %}
                                         {% if field.name != "id" and field.name != "DELETE" %}
-                                        <div class="col-md-6 p-1">
+                                       <div class="col-md-6 p-1">
                                             {{ field.label_tag }}
-                                            {{ field|add_class:'form-control' }}
+                                            {% if field.name == "medicine_name" %}
+                                                {{ field|add_class:'form-control medicine-select' }}
+                                            {% elif field.name == "custom_medicine_name" %}
+                                                {{ field|add_class:'form-control custom-medicine-name' }}
+                                            {% else %}
+                                                {{ field|add_class:'form-control' }}
+                                            {% endif %}
                                         </div>
+
                                         {% endif %}
                                     {% endfor %}
                                 </div>
@@ -131,25 +140,38 @@
             </div>
             
 
-            <!-- Lab Test Selection -->
-            <div class="col-12">
-                <div class="card mb-4">
-                    <div class="card-header bg-primary text-white">Lab Test</div>
-                    <div class="card-body">
+           <!-- Lab Test Selection -->
+                <div class="col-12">
+                    <div class="card mb-4">
+                        <div class="card-header bg-primary text-white">Lab Test</div>
+                        <div class="card-body">
 
-                        <div class="col-md-6">
-                            <div class="form-group w-100">
-                                <select class="form-control select2-field" name="lab_tests" id="id_lab_tests" multiple>
-                                    {% for labtest in lab_tests %}
-                                        <option value="{{ labtest.id }}">{{ labtest.test_name }}</option>
-                                    {% endfor %}
-                                </select>
+                            <div class="row">
+
+                            <!-- Existing Lab Tests -->
+                            <div class="col-md-6 mb-3">
+                                <label><strong>Select Lab Tests</strong></label>
+                                <div class="form-group">
+                                    <select class="form-control select2-field" name="lab_tests" id="id_lab_tests" multiple>
+                                        {% for labtest in lab_tests %}
+                                            <option value="{{ labtest.id }}">{{ labtest.test_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                             </div>
-                        </div>                     
-                                                
+
+                            <!-- Custom Lab Test Entry -->
+                            <div class="col-md-6">
+                                <label><strong>Custom Lab Test(s)</strong></label>
+                                <textarea class="form-control" name="custom_lab_tests" rows="3"
+                                    placeholder="Write one or more custom lab tests, separated by commas or new lines"></textarea>
+                            </div>
+
+                        </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+
 
             <!-- Submit Button -->
             <div class="col-12">
@@ -221,6 +243,7 @@
     
             prescriptionContainer.appendChild(newItem);
             totalForms.value = formIndex + 1;
+	    toggleCustomFields();
         });
     
         // Handle Remove Button Click
@@ -237,5 +260,39 @@
     });
     </script>
  
+
+
+
+
+
+<script>
+function toggleCustomFields() {
+    document.querySelectorAll('.prescription-item').forEach(item => {
+        const medicineSelect = item.querySelector('.medicine-select');
+        const customField = item.querySelector('.custom-medicine-name')?.closest('.col-md-6');
+
+        if (medicineSelect && customField) {
+            if (medicineSelect.value) {
+                customField.style.display = 'none';
+            } else {
+                customField.style.display = '';
+            }
+
+            medicineSelect.addEventListener('change', () => {
+                if (medicineSelect.value) {
+                    customField.style.display = 'none';
+                } else {
+                    customField.style.display = '';
+                }
+            });
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", toggleCustomFields);
+</script>
+
+
+
 
 {% endblock %}

@@ -53,7 +53,8 @@ urlpatterns = [
     path('update_lab_test/<int:id>/', views.manage_lab_test, name='update_lab_test'),
     path('delete_lab_test/<int:id>/', views.delete_lab_test, name='delete_lab_test'),
 
-
+    path('about/', views.about_us, name='about_us'),
+    path('contact/', views.contact_us, name='contact_us'),
 
 
 

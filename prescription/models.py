@@ -167,7 +167,7 @@ class AIPrescription(models.Model):
     current_medications = models.TextField(blank=True, null=True, help_text="Current medications with dosage")
     vital_signs = models.TextField(blank=True, null=True, help_text="Enter vital signs (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)")
     location = models.CharField(max_length=255, blank=True, null=True, help_text="Enter patient's location (City, Country)")
- 
+    summary_of_findings = models.TextField(blank=True,null=True) 
     diagnosis = models.TextField(blank=True)
     medicines = JSONField(default=list,null=True,blank=True)
     tests = models.TextField(blank=True)
@@ -222,8 +222,8 @@ class DoctorBooking(models.Model):
     current_medications = models.TextField(blank=True, null=True, help_text="Current medications with dosage")
     vital_signs = models.TextField(blank=True, null=True, help_text="Enter vital signs (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)")
     location = models.CharField(max_length=255, blank=True, null=True, help_text="Enter patient's location (City, Country)")
-    video_call_reuest_message = models.TextField(null=True,blank=True)
-    video_call_reuest_approve =  models.CharField(null=True,blank=True,choices=[('approved','Approved'),('rejected','Rejected')])
+    video_call_request_message = models.TextField(null=True,blank=True)
+    video_call_request_approve =  models.CharField(null=True,blank=True,choices=[('approved','Approved'),('rejected','Rejected')])
     video_call_time = models.DateTimeField(null=True,blank=True)
     video_link = models.URLField(blank=True, null=True)   
 
@@ -347,6 +347,12 @@ class DoctorPrescription(models.Model):
     advice = models.TextField(help_text="Follow-up instructions, lifestyle, or dietary advice",null=True,blank=True)
     prescribed_at = models.DateTimeField(auto_now_add=True)
 
+    def get_booking_reference(self):
+        return self.booking_ref or self.booking_folloup_ref or (
+            self.ai_prescription.bookings.first() if self.ai_prescription else None
+        )
+
+
     def save(self, *args, **kwargs):
         if not self.doctor_prescription_code:
             self.doctor_prescription_code= f"DPC-{uuid.uuid4().hex[:8].upper()}"
@@ -359,6 +365,7 @@ class DoctorPrescription(models.Model):
 class SuggestedMedicine(models.Model):
     prescription = models.ForeignKey(DoctorPrescription, on_delete=models.CASCADE, related_name="pres_medicines", null=True,blank=True)
     medicine_name = models.ForeignKey(Medicine,on_delete=models.CASCADE,null=True,blank=True,related_name='medicines')
+    custom_medicine_name = models.CharField(max_length=255, blank=True, null=True)
     dosage = models.CharField(max_length=100, default='None')
     dosage_schedule = models.CharField(
         max_length=50,
@@ -381,6 +388,10 @@ class SuggestedMedicine(models.Model):
     medication_duration = models.IntegerField(blank=True, null=True)
     instructions = models.TextField(blank=True, null=True)  # optional, like "after food"
 
+    def get_display_name(self):
+        return self.custom_medicine_name if self.custom_medicine_name else (self.medicine_name.name if self.medicine_name else '')
+
+
     def __str__(self):
         return f"{self.medicine_name} ({self.dosage})"
 
@@ -388,7 +399,20 @@ class SuggestedMedicine(models.Model):
 class SuggestedLabTest(models.Model):
     prescription = models.ForeignKey(DoctorPrescription, on_delete=models.CASCADE, related_name="lab_tests", null=True,blank=True)
     lab_test_name = models.ForeignKey(LabTest,on_delete=models.CASCADE,null=True,blank=True,related_name='lab_tests')
+    custom_lab_test_name = models.CharField(max_length=255, blank=True, null=True)
     lab_test_notes = models.TextField(blank=True, null=True)  
+
+    def get_display_name(self):
+        return self.custom_lab_test_name or (self.lab_test_name.test_name if self.lab_test_name else "Unknown")
+
 
     def __str__(self):
          return str(self.lab_test_name)
+
+
+
+
+
+
+
+

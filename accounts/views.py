@@ -49,6 +49,12 @@ from django.utils import timezone
 from django_tenants.utils import get_public_schema_name
 
 from clients.models import Tenant
+from .models import PhoneOTP
+from accounts.utils import send_sms
+
+import logging
+logger = logging.getLogger(__name__)
+
 
 
 
@@ -71,165 +77,161 @@ def send_tenant_email(email, username, password, subdomain):
 
 
 
-# def register_view(request):   
-#     ALLOWED_EMAIL_DOMAINS = ["mycompany.com", "trustedpartner.com"]
-#     current_tenant = None
-#     if hasattr(connection, 'tenant'):
-#         current_schema = connection.tenant.schema_name   
-#         current_tenant = connection.tenant  # or request.tenant or request.user.tenant form model tenant
-    
-#     if request.method == 'POST':
-#         registerForm= TenantUserRegistrationForm(request.POST, request.FILES, tenant=current_tenant)
-#         if registerForm.is_valid():
-#             with transaction.atomic():  
-#                 user = registerForm.save(commit=False)
-#                 user.email = registerForm.cleaned_data['email']
-#                 email_domain = user.email.split('@')[-1]
-#                 user.set_password(registerForm.cleaned_data['password1'])
-
-#                 if email_domain in ALLOWED_EMAIL_DOMAINS:
-#                     user.is_active = True
-#                     messages.success(request, "Registration successful. You can log in now.")
-#                 else:
-#                     user.is_active = False 
-#                     messages.info(request, "Your account is pending approval.")
-               
-#                 user.tenant = current_tenant
-#                 user.save()
-
-#                 current_site = get_current_site(request)
-#                 if connection.tenant.schema_name == 'public':
-#                     subdomain = ''  # Empty for public domain
-#                     domain = current_site.domain  # e.g., "localhost"
-#                 else:
-#                     subdomain = connection.tenant.schema_name  # e.g., "demo1"
-#                     domain = current_site.domain  # e.g., "localhost"
-#                 subject = 'Activate your Account'
-#                 message = render_to_string('accounts/registration/account_activation_email.html', {
-#                     'user': user,
-#                     'domain': domain,
-#                     'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-#                     'token': account_activation_token.make_token(user),
-#                     'subdomain':subdomain
-#                 })
-#                 user.email_user(subject=subject, message=message)
-#                 UserProfile.objects.create(
-#                         user=user,
-#                         tenant=Client.objects.filter(schema_name=current_tenant).first(),
-#                         profile_picture=registerForm.cleaned_data.get('profile_picture'),
-#                     )
-#             return render(request, 'accounts/registration/register_email_confirm.html', {'form': registerForm})
-#     else:
-#         registerForm = TenantUserRegistrationForm(tenant=current_tenant)
-#     return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
 
+
+import logging
+from django.core.mail import send_mail
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
+
+
+
+
+from django.core.exceptions import ValidationError
 
 def register_view(request):   
-    current_tenant = None
-    current_schema = None
-
-    if hasattr(connection, 'tenant') and connection.tenant:
-        current_tenant = connection.tenant
-        current_schema = connection.tenant.schema_name   
+    current_tenant = getattr(connection, 'tenant', None)
+    current_schema = current_tenant.schema_name if current_tenant else None
+    registerForm = TenantUserRegistrationForm()
 
     if request.method == 'POST':
         registerForm = TenantUserRegistrationForm(request.POST, request.FILES, tenant=current_tenant)
 
         if registerForm.is_valid():
-            with transaction.atomic():  
+            with transaction.atomic():
                 user = registerForm.save(commit=False)
-                user.email = registerForm.cleaned_data['email']
+                user.email = registerForm.cleaned_data.get('email', '').strip()
+                user.phone_number = registerForm.cleaned_data.get('phone_number', '').strip()
                 role = registerForm.cleaned_data['role']
-                email_domain = user.email.split('@')[-1] if '@' in user.email else ''
                 user.set_password(registerForm.cleaned_data['password1'])
-
-                if CustomUser.objects.filter(email=user.email).exists():
-                    messages.error(request, "This email is already registered.")
-                    return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
                 user.is_active = False
                 user.tenant = current_tenant
-                if role == 'patient':
-                    user.role = 'patient'
-                else:
-                    user.role = 'doctor'
+                user.role = 'patient' if role == 'patient' else 'doctor'
                 user.save()
 
-                current_site = get_current_site(request)
-                subdomain = current_schema if current_schema != 'public' else ''
-                domain = current_site.domain  # e.g., "localhost"
+                email_sent = False
+                sms_sent = False
 
-                subject = 'Activate your Account'
-                message = render_to_string('accounts/registration/account_activation_email.html', {
-                    'user': user,
-                    'domain': domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': account_activation_token.make_token(user),
-                    'subdomain': subdomain
-                })
-                user.email_user(subject=subject, message=message)            
+                if user.email:
+                    try:
+                        current_site = get_current_site(request)
+                        subdomain = f"{current_schema}" if current_schema != 'public' else ''
+                        domain = current_site.domain
 
-                messages.info(request, "Please check your email to activate your account.")
-                return render(request, 'accounts/registration/register_email_confirm.html', {'form': registerForm})  
+                        subject = 'Activate your Account'
+                        message = render_to_string('accounts/registration/account_activation_email.html', {
+                            'user': user,
+                            'domain': domain,
+                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                            'token': account_activation_token.make_token(user),
+                            'subdomain': subdomain
+                        })
+
+                        user.email_user(subject=subject, message=message)
+                        email_sent = True
+                    except Exception as e:
+                        messages.warning(request, f"Email sending failed: {e}")
+
+                if user.phone_number:
+                    try:
+                        return send_otp(request, user.phone_number)  # this returns redirect
+                    except Exception as e:
+                        messages.warning(request, f"SMS failed: {e}")
+
+                if not user.email and not user.phone_number:
+                    messages.error(request, "You must provide at least an email or a phone number.")
+                    user.delete()
+                    return render(request, 'accounts/registration/register.html', {'form': registerForm})
+
+                if email_sent:
+                    messages.info(request, "Please check your email to activate your account.")
+                    return render(request, 'accounts/registration/register_email_confirm.html', {'form': registerForm})
+
+                # If neither email nor SMS worked
+                messages.error(request, "We could not send activation via email or SMS. Please try again.")
+                user.delete()
+                return render(request, 'accounts/registration/register.html', {'form': registerForm})
+
     else:
-        registerForm = TenantUserRegistrationForm(tenant=current_tenant)    
+        registerForm = TenantUserRegistrationForm(tenant=current_tenant)
+
     return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
-
+from django.core.exceptions import ValidationError
 
 def register_patient(request):   
-    current_tenant = None
-    current_schema = None
-
-    if hasattr(connection, 'tenant') and connection.tenant:
-        current_tenant = connection.tenant
-        current_schema = connection.tenant.schema_name   
+    current_tenant = getattr(connection, 'tenant', None)
+    current_schema = current_tenant.schema_name if current_tenant else None
+    registerForm = TenantUserRegistrationForm()
 
     if request.method == 'POST':
         registerForm = TenantUserRegistrationForm(request.POST, request.FILES, tenant=current_tenant)
 
         if registerForm.is_valid():
-            with transaction.atomic():  
+            with transaction.atomic():
                 user = registerForm.save(commit=False)
-                user.email = registerForm.cleaned_data['email']
+                user.email = registerForm.cleaned_data.get('email', '').strip()
+                user.phone_number = registerForm.cleaned_data.get('phone_number', '').strip()
                 role = registerForm.cleaned_data['role']
-                email_domain = user.email.split('@')[-1] if '@' in user.email else ''
                 user.set_password(registerForm.cleaned_data['password1'])
-
-                if CustomUser.objects.filter(email=user.email).exists():
-                    messages.error(request, "This email is already registered.")
-                    return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
                 user.is_active = False
                 user.tenant = current_tenant
-                if role == 'patient':
-                    user.role = 'patient'
-                else:
-                    user.role = 'doctor'
+                user.role = 'patient' if role == 'patient' else 'doctor'
                 user.save()
 
-                current_site = get_current_site(request)
-                subdomain = current_schema if current_schema != 'public' else ''
-                domain = current_site.domain  # e.g., "localhost"
+                email_sent = False
+                sms_sent = False
 
-                subject = 'Activate your Account'
-                message = render_to_string('accounts/registration/account_activation_email.html', {
-                    'user': user,
-                    'domain': domain,
-                    'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                    'token': account_activation_token.make_token(user),
-                    'subdomain': subdomain
-                })
-                user.email_user(subject=subject, message=message)
+                if user.email:
+                    try:
+                        current_site = get_current_site(request)
+                        subdomain = f"{current_schema}" if current_schema != 'public' else ''
+                        domain = current_site.domain
 
-                tenant_instance = Client.objects.filter(schema_name=current_tenant.schema_name).first() if current_tenant else None
-               
-                messages.info(request, "Please check your email to activate your account.")
-                return render(request, 'accounts/registration/register_email_confirm.html', {'form': registerForm})  
+                        subject = 'Activate your Account'
+                        message = render_to_string('accounts/registration/account_activation_email.html', {
+                            'user': user,
+                            'domain': domain,
+                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                            'token': account_activation_token.make_token(user),
+                            'subdomain': subdomain
+                        })
+
+                        user.email_user(subject=subject, message=message)
+                        email_sent = True
+                    except Exception as e:
+                        messages.warning(request, f"Email sending failed: {e}")
+
+                if user.phone_number:
+                    try:
+                        return send_otp(request, user.phone_number)  # this returns redirect
+                    except Exception as e:
+                        messages.warning(request, f"SMS failed: {e}")
+
+                if not user.email and not user.phone_number:
+                    messages.error(request, "You must provide at least an email or a phone number.")
+                    user.delete()
+                    return render(request, 'accounts/registration/register.html', {'form': registerForm})
+
+                if email_sent:
+                    messages.info(request, "Please check your email to activate your account.")
+                    return render(request, 'accounts/registration/register_email_confirm.html', {'form': registerForm})
+
+                # If neither email nor SMS worked
+                messages.error(request, "We could not send activation via email or SMS. Please try again.")
+                user.delete()
+                return render(request, 'accounts/registration/register.html', {'form': registerForm})
+
     else:
-        registerForm = TenantUserRegistrationForm(tenant=current_tenant)    
+        registerForm = TenantUserRegistrationForm(tenant=current_tenant)
+
     return render(request, 'accounts/registration/register.html', {'form': registerForm})
+
+
 
 
 from.forms import PublicRegistrationForm
@@ -278,31 +280,38 @@ def register_public(request):
 
 
 
+
 def account_activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
-        user = CustomUser.objects.get(pk=uid)  
+        user = CustomUser.objects.get(pk=uid)
     except (TypeError, ValueError, OverflowError, CustomUser.DoesNotExist):
-        user = None  
+        user = None
 
     if user and account_activation_token.check_token(user, token):
+        tenant_schema = getattr(user.tenant, "schema_name", None)
 
-        if user.tenant.schema_name == "public":
+        if tenant_schema == "public":
             user.is_active = True
-            user.is_staff = False    
-       
-        elif user.groups.filter(name__in=['patient', 'job_seeker', 'public', 'customer']).exists():
-            user.is_active = True 
+            user.is_staff = False
+        elif user.role in ['doctor', 'patient']:
+            user.is_active = True
             user.is_staff = False
         else:
-            user.is_active = True 
-            user.is_staff = True  
+            user.is_active = True
+            user.is_staff = True
 
         user.save()
-        messages.success(request, "Your account has been activated! You can work now.")
-        login(request, user, backend='accounts.backends.TenantAuthenticationBackend')
-        return redirect('clients:tenant_expire_check')
 
+        if user.role == 'doctor':
+            login(request, user, backend='accounts.backends.TenantAuthenticationBackend')  # ✅ Ensure user is logged in
+            messages.success(request, "Thank you, your account has been successfully created. Please create your profile.")
+            return redirect('finance:enroll_doctor')
+
+        else:
+            login(request, user, backend='accounts.backends.TenantAuthenticationBackend')
+            messages.success(request, "Your account has been activated! You can work now.")
+            return redirect('clients:tenant_expire_check')
     return render(request, 'accounts/registration/activation_invalid.html')
 
 
@@ -364,6 +373,79 @@ def login_view(request):
     form = CustomLoginForm(initial={'tenant':  current_schema })    
     return render(request, 'accounts/registration/login.html', {'form': form})
 
+
+
+
+def send_otp(request, phone_number):
+    if not phone_number:
+        return render(request, "accounts/registration/register.html", {"error": "Phone number required."})
+
+    otp_obj, _ = PhoneOTP.objects.get_or_create(phone_number=phone_number)
+    otp_obj.generate_otp()
+
+    message = f"Your verification code is: {otp_obj.otp}"
+    try:
+        send_sms(tenant=getattr(request, "tenant", None), phone_number=phone_number, message=message)
+        print(f'your otp code is {otp_obj.otp}')
+    except Exception as e:
+        return render(request, "accounts/registration/register.html", {"error": f"SMS failed: {e}"})
+
+    return render(request, "accounts/verify_otp.html", {
+        "phone": phone_number,
+        "valid_until": otp_obj.valid_until,
+    })
+
+
+
+
+
+from django.utils.crypto import constant_time_compare
+
+def verify_otp(request):
+    phone = request.POST.get("phone")
+    otp_input = request.POST.get("otp")
+
+    if not phone or not otp_input:
+        return render(request, "accounts/verify_otp.html", {
+            "error": "Phone number and OTP are required.",
+            "phone": phone
+        })
+
+    otp_entry = PhoneOTP.objects.filter(phone_number=phone).first()
+    if not otp_entry:
+        return render(request, "accounts/verify_otp.html", {
+            "error": "OTP not found.",
+            "phone": phone
+        })
+
+    if constant_time_compare(otp_entry.otp, otp_input) and timezone.now() <= otp_entry.valid_until:
+        otp_entry.is_verified = True
+        otp_entry.save()
+
+        user = CustomUser.objects.filter(phone_number=phone).first()
+        if user:
+            user.is_phone_verified = True
+            user.is_active = True
+            user.save()
+
+            login(request, user, backend='accounts.backends.TenantAuthenticationBackend')
+
+            if user.role == 'doctor':
+                messages.success(request, "Thank you, your account has been successfully created. Please create your profile.")
+                return redirect('finance:enroll_doctor')
+            else:
+                messages.success(request, "Phone number verified successfully. You can now log in.")
+                return redirect("accounts:login")
+        else:
+            return render(request, "accounts/verify_otp.html", {
+                "error": "No user found for this phone number.",
+                "phone": phone
+            })
+    else:
+        return render(request, "accounts/verify_otp.html", {
+            "error": "Invalid or expired OTP.",
+            "phone": phone
+        })
 
 
 

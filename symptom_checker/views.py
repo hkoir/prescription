@@ -35,6 +35,7 @@ from django.utils.translation import gettext_lazy as _
 from symptom_checker.utils import translate_if_needed,translate_from_english,translate_to_english
 
 MAX_QA_ROUNDS = 5
+MAX_ALLOWED_QA=10
 FREE_LIMIT = 5
 
 
@@ -132,8 +133,10 @@ def is_yes_no_question(question: str) -> bool:
 
 
 
+
 def symptom_chat(request, session_id):
     free_limit = 5
+    low_confidence = None
     session = get_object_or_404(SymptomCheckSession, id=session_id, user=request.user)
     user = request.user
 
@@ -142,7 +145,6 @@ def symptom_chat(request, session_id):
     except Patient.DoesNotExist:
         patient = None
 
-    # Get Q&A history
     history = session.answers.order_by('created_at')
     #qa_history = [{"question": ans.question.strip(), "answer": ans.answer.strip()} for ans in history]
     qa_history = [{"question": ans.question.strip(), "answer": translate_from_english(ans.answer.strip())} for ans in history]
@@ -161,22 +163,26 @@ def symptom_chat(request, session_id):
             return redirect('symptom_checker:symptom_chat', session_id=session.id)
 
     # If all questions answered, process AI summary and prescription
-    if len(valid_answers) >= MAX_QA_ROUNDS:
+    #if MAX_QA_ROUNDS <= len(valid_answers) <= MAX_ALLOWED_QA:
+    next_question = get_next_symptom_question(valid_answers)
+    if next_question is None or len(valid_answers) >= MAX_ALLOWED_QA:
         # Generate AI Summary once
         if not session.ai_summary:
             result = get_final_symptom_summary(
                 valid_answers,
                 age=session.age,
                 gender=session.gender,
-
                 weight=session.weight_in_kg,
                 height=session.height_in_cm,
                 location=session.location
             )
+
+            low_confidence = not result.get("is_confident", False)
+
             session.probable_disease = result.get("probable_disease")
             session.probable_symptoms = result.get("probable_symptoms")
             session.ai_summary = result.get("ai_summary")
-            session.is_completed = True
+            session.is_completed = True            
             session.save()
 
         # Ensure patient object exists
@@ -212,7 +218,6 @@ def symptom_chat(request, session_id):
             medical_history=session.medical_history,
             allergies=session.allergies,
             current_medications=session.current_medications,
-
             vital_signs=session.vital_signs
         )
 
@@ -231,15 +236,17 @@ def symptom_chat(request, session_id):
                 'current_medications': session.current_medications,
                 'vital_signs': session.vital_signs,
                 'location': session.location,
+                'summary_of_findings':ai_data['summary'],
                 'diagnosis': ai_data['diagnosis'],
                 'medicines': ai_data['medicines'],
                 'tests': ai_data['tests'],
                 'advice': ai_data['advice'],
                 'recommended_specialty': ai_data['recommended_specialty'],
                 'warning_signs': ai_data.get('warning_signs', ''),
-		'raw_response':ai_data["raw_content"]
+                'raw_response':ai_data["raw_content"] 
             }
-        )
+        )      
+    
 
         # Handle free vs paid usage
         if patient.free_ai_prescriptions_used < free_limit:
@@ -287,6 +294,7 @@ def symptom_chat(request, session_id):
 
     progress_percent = int((len(valid_answers) / MAX_QA_ROUNDS) * 100)
     yes_no = is_yes_no_question(next_question)
+    progress_width = (len(valid_answers) + 1) * 20
 
 
     return render(request, 'symptom_checker/question.html', {
@@ -296,7 +304,9 @@ def symptom_chat(request, session_id):
         "current_step": len(valid_answers) + 1,
         "total_steps": MAX_QA_ROUNDS,
         "progress_percent": progress_percent,
-         "yes_no": yes_no,
+        "progress_width": progress_width,
+        "yes_no": yes_no,
+        "low_confidence": low_confidence,
     })
 
 

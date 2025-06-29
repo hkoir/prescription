@@ -366,31 +366,9 @@ h4 {
                 </svg>
             </div>
         </section>     
-        <div class="container my-5">
-            <div class="row justify-content-between align-items-center">
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="p-4 bg-white border border-success rounded shadow text-center">
-                        <h5 class="text-success mb-3">Are You a Doctor?</h5>
-                        <a href="{% url 'accounts:register' %}" class="btn btn-outline-success w-100">Register as Doctor</a>
-                    </div>
-                </div>
-                 <div class="col-12 col-md-4 mb-3">
-                    <div class="p-4 bg-white border border-success rounded shadow text-center">
-                        <h5 class="text-success mb-3">Are You a registered Doctor?</h5>
-                        <a href="{% url 'finance:create_doctor_profile' %}" class="btn btn-outline-success w-100">Create Doctor Profile</a>
-                    </div>
-                </div>
 
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="p-4 bg-white border border-primary rounded shadow text-center">
-                        <h5 class="text-primary mb-3">Are You a Patient?</h5>
-                        <a href="{% url 'accounts:register_patient' %}" class="btn btn-outline-primary w-100">Register as Patient</a>
-                    </div>
-                </div>
-            </div>
-        </div>
 
-        <!-- FEATURES -->
+ <!-- FEATURES -->
         <section class="py-5">
             <div class="container text-center">  
                          
@@ -401,15 +379,52 @@ h4 {
                         vetted by <strong>specialized doctors by choice</strong> via <strong>video consultation if you desire so</strong>.
                         Get expert care from your trusted provider — fast, reliable, and personal.
                     </p>
-                </div>    
-                             
-
+                </div>                               
          
                 <p class="mb-4">
                     A powerful combination of AI technology and experienced medical specialists.<br>
                     Bridging the gap between expert doctors and patients in need of quality healthcare.
                 </p>  
         </section>   
+
+      <div class="container my-5">
+            <!-- AI Doctor Intro Card -->
+            <div class="row justify-content-center">
+                <div class="col-12 col-md-6 col-lg-5">
+                    <div class="p-4 bg-white border border-success rounded-4 shadow-lg text-center">
+                        <div class="mb-3">
+                            <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2" style="border-radius: 50%;">
+                        </div>
+                        <h4 class="text-success fw-bold mb-3">👨‍⚕️ I am your AI Doctor</h4>
+                        <p class="text-muted mb-4">How are you feeling today? Tap below to start your health journey with me.</p>
+                        <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-outline-success w-100">
+                            🎙️ Tap to Start
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Benefits Section -->
+            <div class="row justify-content-center mt-5">
+                <div class="col-12 col-md-10 col-lg-8">
+                    <div class="p-4 bg-light border-start border-success border-4 rounded shadow-sm">
+                        <h5 class="text-success fw-semibold mb-3">🩺 What You Can Expect:</h5>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">✅ I will ask you health-related questions and listen to your answers</li>
+                            <li class="mb-2">✅ I will generate a <strong>summary of findings</strong> from your symptoms</li>
+                            <li class="mb-2">✅ I will suggest <strong>probable disease names</strong></li>
+                            <li class="mb-2">✅ I will give you a <strong>professional-like prescription</strong> including medicines, lab tests & advice</li>
+                            <li class="mb-2">✅ I will recommend the <strong>type of specialized doctor</strong> you need to consult</li>
+                            <li class="mb-2">✅ You can <strong>book specialized doctors, request video calls</strong>, upload images or short videos</li>
+                            <li class="mb-2">✅ Specialized doctors will <strong>analyze your records and give prescriptions</strong></li>
+                            <li class="mb-2">✅ You can <strong>view & download doctor prescriptions</strong> anytime from your profile</li>
+                            <li class="mb-2">✅ Enjoy all these healthcare services <strong>from the comfort of your home</strong></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
 
       <div class="d-flex justify-content-center">
         <div class="col-md-6">
@@ -469,16 +484,12 @@ h4 {
     <div class="col-md-10">
       <div class="alert alert-success text-center shadow-lg p-4 border border-primary rounded">
         <h3 class="fw-bold text-primary mb-3">
-          🧠 Get Your AI-Powered Prescription – First 2 Uses Free!
+          🧠 Get Your free AI-Powered Prescription and see the power of Ai!
         </h3>
         <p class="mb-2 text-muted fs-5">
-          Experience instant, intelligent health advice from our advanced AI model.
-        </p>
-        <p class="fs-4 text-dark">
-          <strong>After that, only ৳100 per use.</strong>
-        </p>
+          Experience instant, intelligent health advice from our advanced AI model.<br>
         <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
-            <i class="bi bi-robot"></i> Tri It Now
+            <i class="bi bi-robot"></i> Try It Now
             </a>
             <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
                 <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor

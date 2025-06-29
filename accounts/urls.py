@@ -67,8 +67,13 @@ urlpatterns = [
    # Custom views
     path('register/', views.register_view, name='register'),    
     path('register_patient/', views.register_patient, name='register_patient'),  
-     path("activate/<slug:uidb64>/<slug:token>)/", views.account_activate, name="activate"),
+    path("activate/<slug:uidb64>/<slug:token>)/", views.account_activate, name="activate"),
     path('common_search/', views.common_search, name='common_search'),
+  
+    path('send_otp/', views.send_otp, name='send_otp'),   
+    path('resend_otp/<str:phone_number>/', views.send_otp, name='resend_otp'),
+    path('verify_otp/', views.verify_otp, name='verify_otp'),   
+
 
     ###################################################################################################
   # Permission

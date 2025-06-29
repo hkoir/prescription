@@ -17,8 +17,10 @@
 <table width="100%" style="font-size: 12px; border-collapse: collapse; margin-bottom: 10px;">
 
  
-  
-     {% with ref=prescription.booking_ref|default:prescription.booking_folloup_ref|default:prescription.ai_prescription.bookings.first %}
+ {% with ref=prescription.get_booking_reference %}
+  {% if ref %}
+    {{ ref.patient.name }}
+  {% endif %}  
 
   <tr>
     <!-- Left Column -->
@@ -72,7 +74,7 @@
         <tbody>
             {% for med in prescription.pres_medicines.all %}
             <tr>
-                <td>{{ med.medicine_name.name }}</td>
+                <td>{{ med.get_display_name }}</td>
                 <td>{{ med.dosage }}</td>
                 <td>{{ med.dosage_schedule }}</td>
                 <td>{{ med.medication_duration }}</td>
@@ -87,7 +89,7 @@
     <div class="section-title">Suggested Lab Tests</div>
       <p>
         {% for test in prescription.lab_tests.all %}        
-            <strong>{{ test.lab_test_name.test_name }}</strong> - {{ test.lab_test_notes|default:"" }}<br>       
+            <strong>{{ test.get_display_name }}</strong><br>       
         {% empty %}
        No lab tests suggested.
         {% endfor %}

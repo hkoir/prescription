@@ -492,3 +492,9 @@ def thanks_for_application(request):
         'guidelines': guidelines,
     })
 
+
+
+
+
+def child_safety_policy(request):
+    return render(request, 'tenant/child_safety.html')

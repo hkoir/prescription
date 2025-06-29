@@ -36,6 +36,34 @@ from prescription.utils.zoom import create_zoom_meeting
 
 
 
+def about_us(request):
+    return render(request, 'prescription/about_us.html')
+
+
+from django.core.mail import send_mail
+from django.conf import settings
+
+def contact_us(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        subject = request.POST.get('subject')
+        message = request.POST.get('message')
+
+        full_message = f"Message from {name} ({email}):\n\n{message}"
+   
+        send_mail(
+            subject=subject,
+            message=full_message,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.CONTACT_EMAIL],  # set this in settings.py
+            fail_silently=False
+        )
+
+        messages.success(request, "Your message has been sent successfully. We'll get back to you soon.")
+        return redirect('prescription:contact_us')
+    return render(request, 'prescription/contact_us.html')
+
 
 
 
@@ -188,7 +216,8 @@ def create_ai_prescription(request):
                     current_medications=data.get('current_medications', ''),
                     vital_signs=data.get('vital_signs', ''),
                     location=data.get('location', ''),
-
+			
+                    summary_of_findings = ai_data['summary'],
                     diagnosis=ai_data['diagnosis'],
                     medicines=ai_data['medicines'],
                     tests=ai_data['tests'],
@@ -319,7 +348,6 @@ def ai_prescription_pdf(request, pk):
     return response
 
 
-
 @login_required
 def book_doctor(request, pk):
     try:
@@ -329,17 +357,23 @@ def book_doctor(request, pk):
         return redirect('prescription:home') 
 
     raw_specialty = (prescription.recommended_specialty or "").strip()
-    specialties = re.findall(r'\b(?:[A-Z][a-z]+(?:\s[A-Z][a-z]+)*)\s(?:Physician|Specialist)\b', raw_specialty)
+
+    # Match words like "Neurologist", "Cardiologist", "General Physician"
+    specialties = re.findall(r'[A-Z][a-zA-Z]+(?:\s[A-Z][a-zA-Z]+)*', raw_specialty)
+    if not specialties and raw_specialty:
+        specialties = [raw_specialty]
 
     query = Q()
     for term in specialties:
         query |= Q(specialization__icontains=term)
-    available_doctors = Doctor.objects.filter(query)
+
+    available_doctors = Doctor.objects.filter(query) if specialties else Doctor.objects.none()
 
     return render(request, 'prescription/book_doctor.html', {
         'prescription': prescription,
         'available_doctors': available_doctors,
     })
+
 
 
 
@@ -706,6 +740,18 @@ def create_doctor_prescription(request, booking_id, followup_id=None):
                     except LabTest.DoesNotExist:
                         pass
 
+                custom_tests_raw = request.POST.get('custom_lab_tests', '')
+                custom_tests = re.split(r'[\n,]+|\s{2,}', custom_tests_raw)             
+                custom_tests = [test.strip() for test in custom_tests if test.strip()]
+
+                for test_name in custom_tests:
+                    SuggestedLabTest.objects.create(
+                        prescription=doctor_prescription,
+                        custom_lab_test_name=test_name
+                    )
+
+
+
                 if followup_booking:
                     followup_booking.status = 'completed'
                     followup_booking.save()
@@ -836,7 +882,8 @@ def doctor_prescription_detail(request, pk):
 @login_required
 def doctor_prescription_detail_single(request, pk):
     prescription = get_object_or_404(DoctorPrescription, pk=pk)
-    medicines = prescription.pres_medicines.all()
+    #medicines = prescription.pres_medicines.all()
+    medicines = prescription.pres_medicines.select_related('medicine_name').all()
     lab_tests = prescription.lab_tests.all()
 
     return render(request, 'prescription/doctor_prescription_detail_single.html', {

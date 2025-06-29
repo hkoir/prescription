@@ -233,47 +233,51 @@ def doctor_profile(request):
 
 
 
-
 @login_required
 def create_doctor_profile(request):
-    if not request.user.is_authenticated:
-        messages.warning(request,'Please register as doctor first')
-        return redirect('accounts:register')
+    # Prevent duplicate profile creation
     doctor = Doctor.objects.filter(user=request.user).first()
     if doctor:
-        messages.warning(request,'You have already created doctor profile')
-        return redirect('finance:doctor_detail',doctor.id)
-    
+        messages.warning(request, 'You have already created a doctor profile.')
+        return redirect('finance:doctor_detail', doctor.id)
+
     if request.method == 'POST':
         form = DoctorForm(request.POST, request.FILES)
         if form.is_valid():
             doctor = form.save(commit=False)
             doctor.user = request.user
             doctor.save()
-            return redirect('finance:doctor_detail', pk=doctor.pk)
+            messages.success(request, 'Doctor profile created successfully.')
+            return redirect('finance:doctor_detail', doctor.id)
     else:
         form = DoctorForm()
-    
+
     return render(request, 'doctor/create_doctor_profile.html', {'form': form})
 
 
 
-
-
 from prescription.models import Doctor
+from django.core.exceptions import PermissionDenied
 
 @login_required
-def manage_doctor_profile(request, id=None):  
-    instance = get_object_or_404(Doctor, id=id) if id else None
-    message_text = "updated successfully!" if id else "added successfully!"  
+def manage_doctor_profile(request, id=None):
+    if id:
+        instance = get_object_or_404(Doctor, id=id)    
+        if instance.user != request.user:
+            raise PermissionDenied("You do not have permission to edit this profile.")
+        message_text = "Profile updated successfully!"
+    else:
+        instance = None
+        message_text = "Profile created successfully!"
+
     form = DoctorForm(request.POST or None, request.FILES or None, instance=instance)
 
     if request.method == 'POST' and form.is_valid():
-        form_intance=form.save(commit=False)
-        form_intance.user = request.user
-        form_intance.save()        
+        doctor = form.save(commit=False)
+        doctor.user = request.user
+        doctor.save()
         messages.success(request, message_text)
-        return redirect('prescription:home')
+        return redirect('finance:doctor_detail', doctor.id)
 
     datas = Doctor.objects.filter(user=request.user).order_by('-created_at')
     paginator = Paginator(datas, 5)
@@ -284,8 +288,9 @@ def manage_doctor_profile(request, id=None):
         'form': form,
         'instance': instance,
         'datas': datas,
-        'page_obj': page_obj
+        'page_obj': page_obj,
     })
+
 
 
 

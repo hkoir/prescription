@@ -43,36 +43,57 @@ class CustomLoginForm(AuthenticationForm):
     )
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)  # This ensures username & password are set correctly
-        self.fields['username'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Username'})
-        self.fields['password'].widget.attrs.update({'class': 'form-control', 'placeholder': 'Password'})
+        super().__init__(*args, **kwargs)
+        self.fields['username'].label = "Phone, Email, or Username"
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Phone, Email, or Username'
+        })
 
+        self.fields['password'].label = "Password"
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Password'
+        })
 
 
 from.models import CustomUser
+from django.core.exceptions import ValidationError
+
+
 
 class TenantUserRegistrationForm(UserCreationForm):
+    email = forms.EmailField(required=False)
+    phone_number = forms.CharField(required=False)
 
     class Meta:
         model = CustomUser
-        fields = ['role','username', 'email', 'password1', 'password2', 'photo_id']
+        fields = ['role', 'username', 'email', 'phone_number', 'password1', 'password2', 'photo_id']
 
     def __init__(self, *args, **kwargs):
-        self.tenant = kwargs.pop('tenant', None)  # Store tenant in the form instance
+        self.tenant = kwargs.pop('tenant', None)
         super().__init__(*args, **kwargs)
 
-        # Optional Bootstrap classes
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
 
-    def save(self, commit=True):
-        user = super().save(commit=False)
-        user.set_password(self.cleaned_data['password1'])
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        phone = cleaned_data.get('phone_number')
 
-        if commit:
-            user.save()
+        if not email and not phone:
+            raise ValidationError("Either email or phone number is required.")
 
-        return user
+        if email and CustomUser.objects.filter(email=email).exists():
+            raise ValidationError("A user with this email already exists.")
+
+        if phone and CustomUser.objects.filter(phone_number=phone).exists():
+            raise ValidationError("A user with this phone number already exists.")
+
+        return cleaned_data
+
+
 
     
 class PartnerJobSeekerRegistrationForm(UserCreationForm):

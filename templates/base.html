@@ -8,8 +8,8 @@
 {% load custom_filters %}
 
 <meta charset="UTF-8" name="color-scheme" content="light only">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>enova</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pnova</title>
 
 
 <!-- Include jQuery -->
@@ -43,6 +43,7 @@
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
+
 <link rel="stylesheet" href="{% static 'css/core.css' %}">
 
 <script src="{% static 'js/common.js' %}"></script>
@@ -51,7 +52,16 @@
 <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 
 
+
 <style>
+    
+html, body {
+    background-color: white;
+    color: #333333;
+    padding-top: 125px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
 
 
 #mainNav, #socialNav{
@@ -65,6 +75,11 @@
 /* Apply font to entire navbar, including dropdowns */
 
 
+#form-spinner {
+  width: 1rem;
+  height: 1rem;
+  vertical-align: middle;
+}
 
 
 
@@ -126,12 +141,6 @@ li a {
 
     
 
-/* Ensure the main dropdown opens on hover */
-.nav-item.dropdown:hover > .dropdown-menu {
-    display: block;
-    background-color: #2d2d2d; /* Darker gray */
-    color: #ffffff; 
-}
 
 
 /* Style for the main dropdown */
@@ -223,10 +232,53 @@ li a {
 }
 
 
+.sidebar {
+    min-height: 100vh;
+    background-color: #f8f9fa;
+    padding-top: 60px; /* to push below navbar */
+}
 
+
+
+.custom-sidebar {
+    width: 280px;         /* Default for desktop */
+    max-width: 80vw;      /* Limit width on small screens */
+    min-width: 220px;     /* Don't shrink too small */
+}
+
+@media (max-width: 576px) {
+    .custom-sidebar {
+        width: 50vw;      /* Responsive width on mobile */
+    }
+}
+
+.custom-sidebar .dropdown-menu {
+    min-width: 250px !important;
+    width: auto !important;
+    white-space: normal;
+
+    background-color: #2c3e50;
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+    color: white; /* This sets text color for the dropdown container */
+}
+
+/* Specifically target the links inside the submenu */
+.custom-sidebar .dropdown-menu .dropdown-item {
+    color: white;           /* White text */
+}
+
+.custom-sidebar .dropdown-menu .dropdown-item:hover,
+.custom-sidebar .dropdown-menu .dropdown-item:focus {
+    background-color: #34495e;  /* Slightly lighter background on hover/focus */
+    color: white;
+}
 
 
 </style>
+
+
 
 
 </head>
@@ -287,6 +339,17 @@ li a {
 <!-- Main Navbar -->
 <nav class="navbar navbar-expand-lg main-nav" id="mainNav">
     <div class="container-fluid">
+
+	 <!-- Custom Hamburger Button for side bar -->
+        <button class="btn float-end border border-primary text-primary rounded m-2"
+                style="background-color: white;"
+                data-bs-toggle="offcanvas"
+                data-bs-target="#offcanvas"
+                role="button"
+                aria-label="Toggle Sidebar">
+            &#9776; <!-- Unicode hamburger icon -->
+        </button>
+
         <a class="navbar-brand" href="{% url 'prescription:home' %}">Prescription</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
@@ -297,13 +360,13 @@ li a {
                   
                     {% if request.user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownNotifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 <i class="fas fa-bell {% if unread_notifications|length > 0 %}new-notification{% endif %}"></i>
                                 {% if unread_notifications|length > 0 %}
                                     <span class="badge bg-danger">{{ unread_notifications|length }}</span>
                                 {% endif %}
                             </a>
-                            <ul class="dropdown-menu notification-dropdown" aria-labelledby="navbarDropdown">
+                            <ul class="dropdown-menu notification-dropdown" aria-labelledby="navbarDropdownNotifications">
                                 <div class="notification-scroll">
                                     {% for notification in unread_notifications %}
                                         <li class="notification {% if not notification.is_read %}unread{% endif %}">
@@ -330,11 +393,11 @@ li a {
                 <!-- notification end -->
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle menu-color" style="color: white;" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle menu-color" style="color: white;" href="#" id="navbarDropdownNotices" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fa fa-bullhorn" aria-hidden="true"></i> Notices
                     </a>
 
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="max-height: 400px; overflow-y: auto;">
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownNotices" style="max-height: 400px; overflow-y: auto;">
                       
                         <li><a class="dropdown-item" href="" style="color:red"><i class="fas fa-eye"></i>&nbsp;View Notices</a></li>
                         <li><a class="dropdown-item" href="" style="color:blue"><i class="fas fa-plus-square"></i>&nbsp;Add notices</a></li>
@@ -343,10 +406,10 @@ li a {
                 </li>
                
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="" id="navbarDropdownZymptom" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class=" fas fa-users text-info"></i><span style="color:gray">Zymptom</span>   
                            </a>       
-                         <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="max-height: 400px; overflow-y: auto;">
+                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownZymptom" style="max-height: 400px; overflow-y: auto;">
                         <li><a class="dropdown-item" href="{% url 'symptom_checker:my_symptom_checks' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;My Symptom</a></li>          
                         <li><a class="dropdown-item" href="{% url 'symptom_checker:start_symptom_check' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Check my Symptom </a></li>
                         <li><a class="dropdown-item" href="{% url 'prescription:create_ai_prescription' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Create Ai Prescription</a></li>          
@@ -361,12 +424,12 @@ li a {
 
                
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdownServices" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class=" fas fa-users text-info"></i><span style="color:gray">Services</span>            
                                  
                     </a>                                       
                       
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="max-height: 400px; overflow-y: auto;">
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownServices" style="max-height: 400px; overflow-y: auto;">
                         <li><a class="dropdown-item" href="{% url 'prescription:available_doctors' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Available doctors</a></li>          
                         <li><a class="dropdown-item" href="{% url 'prescription:ai_prescription_list' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Ai Prescription List </a></li>
                         <li><a class="dropdown-item" href="{% url 'prescription:doctor_bookings_list' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Doctor booking List </a></li>
@@ -382,12 +445,12 @@ li a {
 
 
                  <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdownDashboard" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class=" fas fa-users text-info"></i><span style="color:gray">Dashboard</span>            
                                  
                     </a>                                       
                       
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="max-height: 400px; overflow-y: auto;">
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownDashboard" style="max-height: 400px; overflow-y: auto;">
                          {% if request.user.role == 'doctor' %}                     
                           <li><a class="dropdown-item" href="{% url 'finance:doctor_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Doctor Dashboard</a></li>  
                           <li><a class="dropdown-item" href="{% url 'finance:create_doctor_profile' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Create Doctor Profile</a></li>
@@ -401,37 +464,15 @@ li a {
                 </li> 
 
 
-                {% if request.user.is_staff %}
-                  <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class=" fas fa-users text-info"></i><span style="color:gray">Medicine & Labtest</span>            
-                                 
-                    </a>                                       
-                      
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="max-height: 400px; overflow-y: auto;">
-                                          
-                          <li><a class="dropdown-item" href="{% url 'prescription:create_medicine' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Add Medicine</a></li>  
-                          <li><a class="dropdown-item" href="{% url 'prescription:create_lab_test' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Add Labtest</a></li>         
-                     
-                         <li><hr class="dropdown-divider"style="background-color:gray;"></li>                       
-                       
-                    </ul>                 
-                </li> 
-                {% endif %}
-                       
-                       
-                       
-                      
-                               
                
                 <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class=" fas fa-user-cog text-info"></i>  &nbsp;<span style="color:gray">User Account</span>            
                                   
                     </a>   
                                     
                       
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown" style="max-height: 400px; overflow-y: auto;">
+                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownUser" style="max-height: 400px; overflow-y: auto;">
                         {% if user.is_authenticated %}                        
                         <li>
                             <form action="{% url 'accounts:logout' %}" method="post" style="display: inline;">
@@ -472,10 +513,49 @@ li a {
                                 
                                 
         </div>
-    </div>
-   
+    </div>  
 
 </nav>
+
+
+
+
+
+
+<!-- Side bar menu -->
+<div class="offcanvas offcanvas-start custom-sidebar" id="offcanvas" tabindex="-1" data-bs-keyboard="true" data-bs-backdrop="true">
+
+        <div class="offcanvas-header">
+            <h6 class="offcanvas-title d-none d-sm-block" id="offcanvas">Menu</h6>
+            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+
+        <div class="offcanvas-body px-0">
+            <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
+                <li class="nav-item"><a href="{% url 'prescription:home' %}" class="nav-link text-truncate"><i class="fs-5 bi-house"></i><span class="ms-1 text-dark">Home</span></a></li>
+                <li><a href="#submenu1" data-bs-toggle="collapse" class="nav-link text-truncate"><i class="fs-5 bi-speedometer2"></i><span class="ms-1 text-dark">Dashboard</span> </a></li>
+                                
+                
+                <li class="dropdown"><a href="#" class="nav-link dropdown-toggle  text-truncate" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false"> 
+                    <i class="fas fa-pills text-success"></i><i class="fas fa-vial text-danger"></i><span class="ms-1 text-success">Medicine & Lab test</span> </a>
+                    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdown">
+			 <li><hr class="dropdown-divider"style="background-color:gray;"></li>
+			 <li><hr class="dropdown-divider"style="background-color:gray;"></li>
+                          {% if request.user.is_staff %}
+                         <li><a class="dropdown-item" href="{% url 'prescription:create_medicine' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Add Medicine</a></li>  
+                          <li><a class="dropdown-item" href="{% url 'prescription:create_lab_test' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Add Labtest</a></li>  
+                          {% endif %}       
+			 <li><hr class="dropdown-divider"style="background-color:gray;"></li>
+			 <li><hr class="dropdown-divider"style="background-color:gray;"></li>
+
+                    </ul>
+                </li>
+                
+                <li><a href="#" class="nav-link text-truncate"> <i class="fs-5 bi-grid"></i><span class="ms-1 text-success">Docctors</span></a> </li>
+                <li><a href="#" class="nav-link text-truncate"><i class="fs-5 bi-people"></i><span class="ms-1 text-primary">Patients</span> </a></li>
+            </ul>
+     </div>
+ </div>
 
 
 
@@ -511,48 +591,49 @@ li a {
     </div>
 </div>
 
+
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    let dropdowns = document.querySelectorAll('.dropdown-submenu');
+document.addEventListener('DOMContentLoaded', function () {
+    const dropdowns = document.querySelectorAll('.nav-item.dropdown');
 
-    dropdowns.forEach(function(dropdown) {
-        dropdown.addEventListener('mouseenter', function() {
-            let submenu = this.querySelector('.dropdown-menu');
-            if (submenu) {
-                submenu.style.display = 'block';
+    dropdowns.forEach(function (dropdown) {
+        const toggle = dropdown.querySelector('.nav-link.dropdown-toggle');
+
+        toggle.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const isOpen = dropdown.classList.contains('show');
+
+            // Close all dropdowns first
+            dropdowns.forEach(d => {
+                d.classList.remove('show');
+                const menu = d.querySelector('.dropdown-menu');
+                if (menu) menu.classList.remove('show');
+            });
+
+            // If it wasn't already open, open this one
+            if (!isOpen) {
+                dropdown.classList.add('show');
+                const menu = dropdown.querySelector('.dropdown-menu');
+                if (menu) menu.classList.add('show');
             }
         });
+    });
 
-        dropdown.addEventListener('mouseleave', function() {
-            let submenu = this.querySelector('.dropdown-menu');
-            if (submenu) {
-                submenu.style.display = 'none';
-            }
+    // ✅ Close dropdowns when clicking anywhere else
+    document.addEventListener('click', function () {
+        dropdowns.forEach(d => {
+            d.classList.remove('show');
+            const menu = d.querySelector('.dropdown-menu');
+            if (menu) menu.classList.remove('show');
         });
     });
-
-
-    document.querySelectorAll('.dropdown-submenu').forEach((submenu) => {
-    let timeout;
-    submenu.addEventListener('mouseenter', function () {
-        clearTimeout(timeout);
-        this.querySelector('.dropdown-menu').style.display = 'block';
-    });
-    submenu.addEventListener('mouseleave', function () {
-        timeout = setTimeout(() => {
-            this.querySelector('.dropdown-menu').style.display = 'none';
-        }, 300); // Delay in milliseconds
-    });
 });
-
-
-
-
-});
-
-
-
 </script>
+
+
+
 
 
   <script>
@@ -647,6 +728,12 @@ $(document).ready(function () {
     });
 });
 </script>
+
+
+
+
+
+
 
 </body>
 </html>

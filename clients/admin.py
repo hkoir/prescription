@@ -1,6 +1,6 @@
 from django.contrib import admin
 from.models import Client,Domain,Tenant,TenantInfo,SubscriptionPlan,Subscription,DemoRequest,PaymentProfile
-from.models import UserRequestLog
+from.models import UserRequestLog,GlobalSMSConfig,TenantSMSConfig
 
 
 class DomainAdmin(admin.ModelAdmin):
@@ -38,4 +38,5 @@ admin.site.register(PaymentProfile)
 admin.site.register(DemoRequest)
 
 admin.site.register(UserRequestLog)
-
+admin.site.register(TenantSMSConfig)
+admin.site.register(GlobalSMSConfig)

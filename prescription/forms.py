@@ -81,9 +81,9 @@ class RequestVidelCallForm(forms.Form):
 class RequestVidelCallForm(forms.ModelForm):
     class Meta:
         model = DoctorBooking
-        fields = ["video_call_reuest_message"]
+        fields = ["video_call_request_message"]
         widgets = {           
-            "video_call_reuest_message":forms.TextInput(attrs={
+            "video_call_request_message":forms.TextInput(attrs={
             'style':'height:100px',
             'placeholder':"Write your request message  (Optional)"
             }),
@@ -93,7 +93,7 @@ class RequestVidelCallForm(forms.ModelForm):
 class ApproveRequestVidelCallForm(forms.ModelForm):
     class Meta:
         model = DoctorBooking
-        fields = ["video_call_reuest_approve",'video_call_time']
+        fields = ["video_call_request_approve",'video_call_time']
         widgets={
             'video_call_time': forms.DateTimeInput(attrs={'type':'datetime-local'})
         }
@@ -180,7 +180,7 @@ class SuggestedMedicineForm(forms.ModelForm):
 class SuggestedLabTestForm(forms.ModelForm):
     class Meta:
         model = SuggestedLabTest
-        fields = ['lab_test_name', 'lab_test_notes']
+        fields = ['lab_test_name', 'custom_lab_test_name']
         widgets={
             'lab_test_notes':forms.TextInput(attrs={
                 'style':'height:70px'

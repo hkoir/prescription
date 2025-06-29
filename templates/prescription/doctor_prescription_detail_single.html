@@ -28,7 +28,7 @@
         <dd class="col-sm-9">{{ prescription.prescribed_at|date:"M d, Y H:i" }}</dd>
       </dl>
 
-      {% if medicines %}
+      {% if prescription %}
       <hr>
 
       <h5 class="mt-4">Prescribed Medicines</h5>
@@ -44,9 +44,9 @@
           </tr>
         </thead>
         <tbody>
-          {% for med in medicines %}
+       {% for med in prescription.pres_medicines.all %}
           <tr>
-            <td>{{ med.medicine_name.name }}</td>
+            <td>{{ med.get_display_name}}</td>
             <td>{{ med.dosage }}</td>
             <td>{{ med.dosage_schedule }}</td>
             <td>{{ med.medication_duration }}</td>
@@ -61,22 +61,13 @@
       {% if lab_tests %}
       <hr>
       <h5 class="mt-4">Suggested Lab Tests</h5>
-      <table class="table table-bordered mt-2">
-        <thead class="table-light">
-          <tr>
-            <th>Lab Test</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody>
-          {% for test in lab_tests %}
-          <tr>
-            <td>{{ test.lab_test_name }}</td>
-            <td>{{ test.lab_test_notes|default:"-" }}</td>
-          </tr>
-          {% endfor %}
-        </tbody>
-      </table>
+
+     <ul>
+      {% for test in lab_tests %}
+        <li>🧪 {{ test.get_display_name }}</li>
+      {% endfor %}
+    </ul>
+
       {% endif %}
 
       <div class="d-flex justify-content-between">

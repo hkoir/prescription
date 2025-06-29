@@ -54,7 +54,7 @@ html, body {
 
 
 
-    .main-nav.fixed-top {
+ .main-nav.fixed-top {
         top: 0;
     }
 
@@ -69,7 +69,7 @@ html, body {
 
 
 
-    .nav-link, .navbar-brand {
+.nav-link, .navbar-brand {
         color: white;
     }
 

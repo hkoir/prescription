@@ -3,6 +3,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from clients.models import Client
 
+import random
+from django.utils import timezone
+from datetime import timedelta
 
 
 
@@ -22,12 +25,38 @@ class CustomUser(AbstractUser):
     ]
 
     role = models.CharField(max_length=15, choices=ROLE_CHOICES, default='patient')
-   
+    email = models.EmailField(blank=True, null=True, unique=False)
     phone_number = models.CharField(max_length=15, unique=True, null=True, blank=True)
-    email_verified = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
+    is_phone_verified = models.BooleanField(default=False)
     date_of_birth = models.DateField(null=True, blank=True)   
     photo_id = models.ImageField(upload_to='user_photo', null=True, blank=True)
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
 
+    USERNAME_FIELD = 'phone_number'
+    REQUIRED_FIELDS = ['username']  # keep username if still used internally
+
     def __str__(self):
-        return f"{self.username} - {self.role}"
+        return self.phone_number or self.email or self.username or "Unknown User"
+
+
+
+
+
+class PhoneOTP(models.Model):
+    phone_number = models.CharField(max_length=20, unique=True)
+    otp = models.CharField(max_length=6)
+    valid_until = models.DateTimeField() 
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+
+    def save(self, *args, **kwargs):     
+        if not self.valid_until:
+            self.valid_until = timezone.now() + timedelta(minutes=5)
+        super().save(*args, **kwargs)
+
+ 
+    def generate_otp(self):
+        self.otp = str(random.randint(100000, 999999))
+        self.valid_until = timezone.now() + timedelta(minutes=5)
+        self.save()

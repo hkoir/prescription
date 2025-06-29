@@ -17,7 +17,7 @@ urlpatterns = [
     path('demo_request/', views.demo_request, name='demo_request'), 
 
     path('public_tenant_login/', views.public_tenant_login, name='public_tenant_login'), 
-
+    path('child-safety/', views.child_safety_policy, name='child_safety'),
 
     
    

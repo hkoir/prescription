@@ -28,8 +28,11 @@ def get_ai_prescription(
     age = age or "Not available"
     location = location or "Not specified"
 
+
     prompt = f"""
 You are an experienced medical doctor.
+
+Please analyze the following patient data and provide a structured clinical response in the exact format described.
 
 Patient Details:
 - Age: {age}
@@ -44,22 +47,54 @@ Patient Details:
 - Body Height: {body_height} {body_height_unit}
 - Location: {location}
 
-Please provide a structured response with these sections:
+🧠 Please provide a **structured and clinically accurate response** in **this exact format**:
+
+---
+
+0. Summary of Findings:
+- [2–3 line clinical overview: include significant symptoms, vitals, and red flags.]
 
 1. Diagnosis:
-2. Recommended Medicines (format each line as: MedicineName Dosage, Frequency, Duration)
-3. Necessary Lab Tests:
-4. Medical Advice:
-5. Recommended Specialist (e.g., Cardiologist, ENT, Dermatologist, General Physician). Only give the specialty name, do not skip:
-6. Warning Signs requiring urgent attention:
+- [Insert specific diagnosis or differential diagnosis.]
 
-Do not skip or merge any section. Always number each section clearly from 1 to 6.
+2. Recommended Medicines:
+List each medicine **in the following exact structure**, one per line:
+- Name: Paracetamol  
+  Dosage: 500mg  
+  Frequency: 1-1-1 (three times daily)  
+  Duration: 5 days
+
+- Name: Omeprazole  
+  Dosage: 20mg  
+  Frequency: 1-0-0 (once daily before food)  
+  Duration: 7 days
+
+⚠️ Do not combine fields in a single line. Use separate fields: `Name`, `Dosage`, `Frequency`, and `Duration`.
+
+3. Necessary Lab Tests:
+- [List tests needed for further diagnosis or confirmation.]
+
+4. Medical Advice:
+- [Lifestyle, dietary, or general clinical advice.]
+
+5. Recommended Specialist:
+- [Only the specialty name, e.g., Cardiologist, ENT, General Physician.]
+
+6. Warning Signs requiring urgent attention:
+- [List any signs the patient must watch for.]
+
+---
+
+If there is no recommendation in any section, write **None**. Always number all sections clearly from 0 to 6. Follow the structure exactly.
+
 """
+
+
 
     response = client.chat.completions.create(
         model="anthropic/claude-sonnet-4",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.5,
+        temperature=0.3,
         max_tokens=800,
         extra_headers={
             "HTTP-Referer": "https://prescription.aiha.live",
@@ -70,6 +105,7 @@ Do not skip or merge any section. Always number each section clearly from 1 to 6
     content = response.choices[0].message.content
 
     # Use flexible regex patterns to extract each section
+    summary = extract_section(content, r"(?:[#*\s]*?)0\.\s*Summary of Findings:?\s*(.*?)(?=\n[#*\s]*?1\.)", "No summary available")
     diagnosis = extract_section(content, r"1\.\s*\**Diagnosis\**:?(.*?)(?:2\.|\Z)", "N/A")
     medicines_text = extract_section(content, r"2\.\s*\**Recommended Medicines\**:?(.*?)(?:3\.|\Z)", "None")
     tests = extract_section(content, r"3\.\s*\**Necessary Lab Tests\**:?(.*?)(?:4\.|\Z)", "None")
@@ -80,6 +116,7 @@ Do not skip or merge any section. Always number each section clearly from 1 to 6
 
 
     return {
+	"summary": summary.strip(),
         "diagnosis": diagnosis.strip(),
         "medicines": parse_medicines(medicines_text),
         "tests": tests.strip(),
@@ -105,33 +142,29 @@ def clean_specialty(text):
 
 def parse_medicines(medicines_text):
     medicines = []
-    lines = medicines_text.strip().splitlines()
+    current_medicine = {}
 
-    for line in lines:
-        line = line.strip("-* \n\t")
-        if not line or line.lower().startswith("none") or "name" in line.lower():
-            continue
+    for line in medicines_text.strip().splitlines():
+        line = line.strip()
 
-        parts = re.split(r'[,\t]+', line)
-        parts = [p.strip() for p in parts if p.strip()]
+        if line.startswith("- Name:"):
+            # Start of a new medicine
+            if current_medicine:
+                medicines.append(current_medicine)
+                current_medicine = {}
+            current_medicine["name"] = line.replace("- Name:", "").strip()
 
-        if len(parts) >= 3:
-            name_dosage = parts[0].rsplit(" ", 1)
-            if len(name_dosage) == 2:
-                name, dosage = name_dosage
-            else:
-                name, dosage = parts[0], ""
-            frequency, duration = parts[1], parts[2]
-        else:
-            name = parts[0]
-            dosage = frequency = duration = ""
+        elif line.startswith("Dosage:"):
+            current_medicine["dosage"] = line.replace("Dosage:", "").strip()
 
-        medicines.append({
-            "name": name,
-            "dosage": dosage,
-            "frequency": frequency,
-            "duration": duration,
-        })
+        elif line.startswith("Frequency:"):
+            current_medicine["frequency"] = line.replace("Frequency:", "").strip()
+
+        elif line.startswith("Duration:"):
+            current_medicine["duration"] = line.replace("Duration:", "").strip()
+
+    if current_medicine:
+        medicines.append(current_medicine)
 
     return medicines
 
