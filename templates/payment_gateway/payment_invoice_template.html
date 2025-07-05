@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Helvetica, sans-serif; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 6px; text-align: left; }
+        .header, .footer { text-align: center; margin-top: 10px; }
+        .total { text-align: right; font-weight: bold; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h2>{{ invoice.get_invoice_type_display }} Invoice</h2>
+        <p>Transaction ID: {{ invoice.tran_id }}</p>
+        <p>Date: {{ invoice.created_at|date:"Y-m-d H:i" }}</p>
+    </div>
+
+    <p><strong>Patient:</strong> {{ invoice.patient.full_name }}</p>
+    {% if invoice.doctor %}
+        <p><strong>Doctor:</strong> {{ invoice.doctor.full_name }}</p>
+    {% endif %}
+    <p><strong>Description:</strong> {{ invoice.description }}</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Amount (BDT)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ invoice.get_invoice_type_display }}</td>
+                <td>{{ invoice.amount }}</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p class="total">Total Paid: {{ invoice.amount }} BDT</p>
+
+    <div class="footer">
+        <p>Thank you for using our services.</p>
+    </div>
+</body>
+</html>

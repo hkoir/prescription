@@ -44,6 +44,14 @@
                 </a>
                 {% endif %}
 
+                {% if session.symptom_checker_invoice %}
+                <a href="{% url 'payment_gateway:download_payment_invoice_pdf' session.symptom_checker_invoice.id %}" 
+	            class="btn btn-sm btn-info">Download Invoice</a>
+                {% else %}
+                <span class="text-muted text-center btn btn-sm btn-info">Free Limit Usage</span>
+                {% endif %}
+
+
                 <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-sm btn-outline-secondary view-summary-link">
                   <i class="fas fa-redo-alt"></i> Start New Check
                    <span class="spinner-border spinner-border-sm d-none spinner-icon" role="status" aria-hidden="true"></span>

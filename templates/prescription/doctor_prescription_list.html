@@ -11,6 +11,50 @@
     <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
 
 
+
+<div class="row gy-4 my-2">
+  {% if doctor_pres_list %}
+    {% for pres in page_obj %}
+      <div class="col-12 col-md-6 col-lg-4 col-xl-3">
+         <div class="card shadow-sm border-0 rounded-4 h-100" style="background: linear-gradient(135deg, #e0e9ff, #f4f7ff);">
+          <div class="card-body d-flex flex-column justify-content-between">
+            
+            <h6 class="text-primary text-center mb-3 fw-bold">
+              🩺 Prescription #{{ forloop.counter }}
+            </h6>
+
+            <div class="text-dark small mb-3">
+              <p class="mb-1"><strong>🔢 Code:</strong> {{ pres.doctor_prescription_code|default:"N/A" }}</p>
+              <p class="mb-1"><strong>👨‍⚕️ Doctor:</strong> {{ pres.doctor.user.get_full_name|default:pres.doctor }}</p>
+              <p class="mb-1"><strong>🧑 Patient:</strong> {{ pres.patient.user.get_full_name|default:pres.patient }}</p>
+              <p class="mb-1"><strong>🧾 Diagnosis:</strong> {{ pres.diagnosis|truncatewords:6 }}</p>
+              <p class="mb-1"><strong>🩹 Advice:</strong> {{ pres.advice|truncatewords:6 }}</p>
+              <p class="text-muted small mt-2 text-center">📅 {{ pres.prescribed_at|date:"M d, Y H:i" }}</p>
+            </div>
+
+            <div class="d-grid gap-2 mt-auto">
+              <a href="{% url 'prescription:doctor_prescription_detail' pres.id %}" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold">
+                📊 View Timeline
+              </a>
+              <a href="{% url 'prescription:doctor_prescription_detail_single' pres.id %}" class="btn btn-outline-success btn-sm rounded-pill fw-semibold">
+                📄 View Prescription
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="col-12">
+      <div class="alert alert-info text-center">No doctor prescriptions found.</div>
+    </div>
+  {% endif %}
+</div>
+
+
+
+
+
   {% if doctor_pres_list %}  
     <div class="table-responsive mt-2">
       <table class="table table-bordered table-striped table-hover">

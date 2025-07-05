@@ -468,20 +468,19 @@ h4 {
         <div class="col-md-10">
            <div class="alert alert-success text-center shadow-lg p-4 border border-primary rounded">
                 <h3 class="fw-bold text-primary mb-3">
-                🧠 Get Your AI-Powered Prescription – First 2 Uses Free!
+                🧠 Get Your AI-Powered Prescription now
                 </h3>
                 <p class="mb-2 text-muted fs-5">
                 Experience instant, intelligent health advice from our advanced AI model.
                 </p>
-                <p class="fs-4 text-dark">
-                <strong>After that, only ৳100 per use.</strong>
-                </p>
-               <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
-                <i class="bi bi-robot"></i> Tyi It Now
-                </a>
-                <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
-                    <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
-                </a>
+
+		<a href="{% url 'prescription:initiate_ai_prescription_payment' %}" class="btn btn-primary btn-lg mt-3">
+                  <i class="bi bi-robot"></i> Get your Prescription now
+               </a>
+
+	    <a href="{% url 'symptom_checker:initiate_symptom_check_payment' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
+            </a>
             
           </div>
         </div>

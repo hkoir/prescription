@@ -218,6 +218,10 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 
+SSLZCOMMERZ_STORE_ID = "mymep684ff9c9b6d95"
+SSLZCOMMERZ_STORE_PASS = "mymep684ff9c9b6d95@ssl"
+SSLZCOMMERZ_IS_SANDBOX = True  # Set to False in production
+
 
 import os
 LOGGING = {

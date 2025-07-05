@@ -15,7 +15,7 @@ urlpatterns = [
     path('finance/',include('finance.urls',namespace='finance')),  
     path('messaging/',include('messaging.urls',namespace='messaging')),  
     path('symptom_checker/',include('symptom_checker.urls',namespace='symptom_checker')),  
-
+    path('payment_gateway/',include('payment_gateway.urls',namespace='payment_gateway')),
     path('i18n/', include('django.conf.urls.i18n')),
    
     

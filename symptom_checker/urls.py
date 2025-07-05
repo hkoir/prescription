@@ -26,6 +26,9 @@ urlpatterns = [
      path('disclaimer/', views.DisclaimerView.as_view(), name='disclaimer'),
     path('terms/', TemplateView.as_view(template_name="legal/terms.html"), name='terms'),
     path('privacy/', TemplateView.as_view(template_name="legal/privacy.html"), name='privacy'),
-  
+
+     path('initiate_symptom_check_payment/', views.initiate_symptom_check_payment, name='initiate_symptom_check_payment'),
+
+
 ]
 

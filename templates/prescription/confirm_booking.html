@@ -68,6 +68,12 @@
                             </div>
                         </div>
                     </div>
+		     <div class="mb-3">
+                        <label for="lab_files" class="form-label">Upload Lab Test Result/ old prescription(images or PDFs)</label>
+                        <input type="file" name="lab_files" id="lab_files" multiple accept="image/*,application/pdf" class="form-control">
+                        <small class="text-muted">You can upload multiple files at a time</small>
+                    </div>
+
 
                     </div>
 
@@ -84,6 +90,21 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+<script>
+document.getElementById('lab_files').addEventListener('change', function () {
+    if (this.files.length > 5) {
+        alert("You can only upload up to 5 files.");
+        this.value = ""; // clear the selection
+    }
+});
+</script>
+
 
 
 <script>

@@ -30,12 +30,15 @@ urlpatterns = [
     path('doctor_prescription_list/', views.doctor_prescription_list, name='doctor_prescription_list'),
     path('prescriptions/<int:pk>/', views.doctor_prescription_detail, name='doctor_prescription_detail'),
     path('doctor_prescription_pdf/<int:pk>/', views.doctor_prescription_pdf, name='doctor_prescription_pdf'), 
-     path('prescription_single/<int:pk>/', views.doctor_prescription_detail_single, name='doctor_prescription_detail_single'),
-  
+    path('prescription_single/<int:pk>/', views.doctor_prescription_detail_single, name='doctor_prescription_detail_single'),
+    path('followup/<int:followup_id>/', views.followup_prescription_detail_single, name='followup_prescription_detail_single'), 
+    path('doctor_followup_prescription_pdf/<int:pk>/', views.doctor_followup_prescription_pdf, name='doctor_followup_prescription_pdf'), 
+
     path('video-call/<int:booking_id>/', views.video_consultation_prescription, name='video_call'),
 
     path('request_doctor_followup_booking/<int:doctor_booking_id>/', views.request_doctor_followup_booking, name='request_doctor_followup_booking'),
     path('aprove_doctor_followup_booking/<int:followup_booking_id>/', views.aprove_doctor_followup_booking, name='aprove_doctor_followup_booking'),
+    path('doctor_followup_booking_detail/<int:pk>/', views.doctor_followup_booking_detail, name='doctor_followup_booking_detail'),
     path('request_zoom_meeting/<int:followup_booking_id>/', views.request_zoom_meeting, name='request_zoom_meeting'),
     path('approve_zoom_meeting/<int:zoom_booking_id>/', views.approve_zoom_meeting, name='approve_zoom_meeting'),
 
@@ -45,6 +48,8 @@ urlpatterns = [
     path('all_follow_up_schedules/<int:booking_id>/', views.all_follow_up_schedules, name='all_follow_up_schedules'),
     path('all_follow_up_zoom_schedules/<int:booking_id>/', views.all_follow_up_zoom_schedules, name='all_follow_up_zoom_schedules'),
 
+
+    path('create-patient-profile/', views.create_patient_profile, name='create_patient_profile'),
     path('create_medicine/', views.manage_medicine, name='create_medicine'),
     path('update_medicine/<int:id>/', views.manage_medicine, name='update_medicine'),
     path('delete_medicine/<int:id>/', views.delete_medicine, name='delete_medicine'),
@@ -52,6 +57,18 @@ urlpatterns = [
     path('create_lab_test/', views.manage_lab_test, name='create_lab_test'),
     path('update_lab_test/<int:id>/', views.manage_lab_test, name='update_lab_test'),
     path('delete_lab_test/<int:id>/', views.delete_lab_test, name='delete_lab_test'),
+
+
+    
+    path('initiate_ai_prescription_payment/', views.initiate_ai_prescription_payment, name='initiate_ai_prescription_payment'),
+    path('initiate_book_doctor_direct_payment/<int:doctor_id>/', views.initiate_book_doctor_direct_payment, name='initiate_book_doctor_direct_payment'),
+    path('initiate_confirm_booking_payment/<int:prescription_id>/<int:doctor_id>/', views.initiate_confirm_booking_payment, name='initiate_confirm_booking_payment'),
+
+    path('initiate_video_call_payment/<int:booking_id>/', views.initiate_video_call_payment, name='initiate_video_call_payment'),
+    path('initiate_doctor_followup_booking_payment/<int:doctor_booking_id>/', views.initiate_doctor_followup_booking_payment, name='initiate_doctor_followup_booking_payment'),
+    path('initiate_followup_video_consultation_payment/<int:followup_booking_id>/', views.initiate_followup_video_consultation_payment, name='initiate_followup_video_consultation_payment'),
+
+
 
     path('about/', views.about_us, name='about_us'),
     path('contact/', views.contact_us, name='contact_us'),

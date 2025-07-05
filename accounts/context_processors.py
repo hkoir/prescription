@@ -94,6 +94,5 @@ def unread_notifications(request):
         doctor = Doctor.objects.filter(user=request.user).first()
         if doctor:
             filters |= Q(doctor=doctor)
-
-    notifications = notifications.filter(filters)
+    notifications = notifications.filter(filters).order_by('-created_at')
     return {'unread_notifications': notifications}

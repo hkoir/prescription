@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-primary text-white rounded-top-4 py-3">
+                    <h3 class="mb-0 text-center">Payment Invoice</h3>
+                    <p class="text-center small">AI Doctor Consultation & Healthcare System</p>
+                </div>
+                <div class="card-body p-4">
+                    <form method="POST" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="{{ form.patient.id_for_label }}" class="form-label">Select Patient</label>
+                            {{ form.patient }}
+                            {% if form.patient.errors %}
+                                <div class="text-danger small">{{ form.patient.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.invoice_type.id_for_label }}" class="form-label">Invoice Type</label>
+                            {{ form.invoice_type }}
+                            {% if form.invoice_type.errors %}
+                                <div class="text-danger small">{{ form.invoice_type.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.related_object_id.id_for_label }}" class="form-label">Reference ID (optional)</label>
+                            {{ form.related_object_id }}
+                            {% if form.related_object_id.errors %}
+                                <div class="text-danger small">{{ form.related_object_id.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.amount.id_for_label }}" class="form-label">Amount (BDT)</label>
+                            {{ form.amount }}
+                            {% if form.amount.errors %}
+                                <div class="text-danger small">{{ form.amount.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <div class="text-danger small">{{ form.description.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                Proceed to Payment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center py-2 small">
+                    Secure Payment Gateway - Powered by SSLCommerz
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

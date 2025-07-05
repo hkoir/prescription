@@ -56,6 +56,22 @@
                   {{ booking.status }}
                 </span>
               </p>
+ 		{% if booking.followup_lab_files.exists %}
+                  <div class="mt-3">
+                    <strong>Uploaded Lab Files:</strong>
+                    <div class="d-flex flex-wrap gap-3 mt-2">
+                      {% for file in booking.followup_lab_files.all %}
+                        <div>
+                          <a href="{{ file.file.url }}" target="_blank">
+                            <img src="{{ file.file.url }}" class="img-thumbnail" style="width: 100px; border-radius: 10%;">
+                          </a>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% else %}
+                  <span>No Lab files uploaded</span>
+                {% endif %}
             </div>
           </div>
 
@@ -76,9 +92,17 @@
             {% if booking.status == 'completed' %}
               <span class="text-primary">
                 {% if booking.doctor_booking.doctor_booking_refs %}
-                <a href="{% url 'prescription:doctor_prescription_detail' booking.doctor_bookin.doctor_booking_refs.first.id %}"
-                class="btn btn-outline-primary">View doctor prescription</a>
-                {% elif booking.doctor_bookin.ai_prescription %}
+
+	     {% with booking.doctor_booking.doctor_booking_refs.first as prescription %}
+   		   {% if prescription %}
+        	     <a href="{% url 'prescription:doctor_prescription_detail' prescription.id %}">View Prescription</a>
+   		  {% else %}
+        	   <span>No Prescription Found</span>
+    		  {% endif %}
+	      {% endwith %}
+
+         
+	       {% elif booking.doctor_bookin.ai_prescription %}
                  <a href="{% url 'prescription:doctor_prescription_detail' booking.doctor_booking.doctor_prescriptions.first.id %}"
                  class="btn btn-sm btn-outline-secondary">View doctor prescription</a>
                 {% endif %}

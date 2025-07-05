@@ -4,6 +4,59 @@
 <div class="container">
     <h2 class="mb-4">AI-Generated Prescriptions</h2>
 
+
+
+ <div class="row mb-4">
+        {% if prescriptions %}
+            {% for prescription in page_obj %}
+            <div class="col-12 col-sm-6 col-lg-4 col-xl-3">
+                <div class="card shadow-sm rounded-4 border-0 h-100" style="background: linear-gradient(135deg, #e0f7fa, #ffffff);">
+                <div class="card-body d-flex flex-column justify-content-between">
+                    
+                    <div class="mb-3">
+                    <h5 class="text-primary text-center mb-3 fw-bold">📝 Prescription #{{ forloop.counter }}</h5>
+
+                    <div class="small text-dark">
+                        <p class="mb-1"><strong>👤 Patient:</strong> {{ prescription.patient.full_name }}</p>
+                        <p class="mb-1"><strong>🎂 Age:</strong> {{ prescription.age }} &nbsp; | &nbsp; <strong>⚥ Gender:</strong> {{ prescription.gender }}</p>
+                        <p class="mb-1"><strong>🤒 Symptom:</strong> {{ prescription.symptoms|truncatewords:6 }}</p>
+                        <p class="mb-2"><strong>⏳ Duration:</strong> {{ prescription.normalized_duration }}</p>
+                    </div>
+
+                    <p class="text-muted small mt-3 mb-0">🕒 {{ prescription.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-auto">
+                    <a href="{% url 'prescription:ai_prescription_detail' prescription.id %}" class="btn btn-sm btn-primary rounded-pill fw-semibold">
+                        👁️ View Details
+                    </a>
+                    <a href="{% url 'prescription:ai_prescription_pdf' prescription.id %}" class="btn btn-sm btn-secondary rounded-pill fw-semibold">
+                        📄 Download PDF
+                    </a>
+                    {% if prescription.ai_prescription_invoice %}
+                        <a href="{% url 'payment_gateway:download_payment_invoice_pdf' prescription.ai_prescription_invoice.id %}" class="btn btn-sm btn-success rounded-pill fw-semibold">
+                        🧾 Invoice
+                        </a>
+                    {% else %}
+                        <span class="btn btn-sm btn-outline-danger rounded-pill disabled">No Invoice</span>
+                    {% endif %}
+                    </div>
+                </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+            <div class="alert alert-info text-center">No AI prescriptions found.</div>
+            </div>
+        {% endif %}
+        </div>
+
+
+
+
+
+
     {% if prescriptions %}
     <div class="col-12 table-responsive">
     
@@ -33,7 +86,13 @@
                     <td>
                         <a href="{% url 'prescription:ai_prescription_detail' prescription.id %}" class="btn btn-sm btn-info">View</a>
                         <a href="{% url 'prescription:ai_prescription_pdf' prescription.id %}" class="btn btn-sm btn-info">download</a>
-                       
+			 {% if prescription.ai_prescription_invoice %}
+                        <a href="{% url 'payment_gateway:download_payment_invoice_pdf' prescription.ai_prescription_invoice.id %}" class="btn btn-sm btn-info">Download Invoice</a>
+                        {% else %}
+                        <span class="text-muted text-center btn btn-sm btn-info">No invoice, Free limit usage</span>
+                        {% endif %}
+
+
 
                     </td>
                 </tr>

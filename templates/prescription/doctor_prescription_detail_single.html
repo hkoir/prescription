@@ -9,6 +9,8 @@
     <div class="card-body p-4">
 
       <dl class="row">
+	<dt class="col-sm-3">Date</dt>
+        <dd class="col-sm-9">{{ prescription.prescribed_at }}</dd>
         <dt class="col-sm-3">Prescription Code</dt>
         <dd class="col-sm-9">{{ prescription.doctor_prescription_code|default:"N/A" }}</dd>
 

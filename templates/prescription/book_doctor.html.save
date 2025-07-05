@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+
+<h2 class="text-center">Book Doctor for: {{ prescription.patient }}</h2>
+<h4 class="text-center"><strong>Recommended Specialization:</strong></h4>
+
+{% if available_doctors %}
+  <div class="row">
+    {% for doctor in available_doctors %}
+      <div class="col-md-4 mb-4">
+        <div class="card h-100 text-center">
+          {% if doctor.photo %}
+            <img src="{{ doctor.photo.url }}" class="card-img-top" alt="Dr. {{ doctor.full_name }}">
+          {% else %}
+            <img src="{% static 'images/default_doctor.png' %}" class="card-img-top" alt="Default doctor">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">Dr.{{ doctor.full_name }}</h5>
+            <p class="card-text">{{ doctor.specialization|truncatechars:40 }}</p>
+            <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#doctorModal{{ doctor.id }}">
+              View Details
+            </button>
+            <a href="{% url 'prescription:confirm_booking' prescription.id doctor.id %}" 
+		class="btn btn-primary btn-sm mt-2">Select & Book</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal fade" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ doctor.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="doctorModalLabel{{ doctor.id }}">Dr. {{ doctor.full_name }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-md-4">
+                  {% if doctor.photo %}
+                    <img src="{{ doctor.photo.url }}" class="img-fluid rounded" alt="Dr. {{ doctor.full_name }}">
+                  {% else %}
+                    <img src="{% static 'images/default_doctor.png' %}" class="img-fluid rounded" alt="Default doctor">
+                  {% endif %}
+                </div>
+                <div class="col-md-8">
+                  <p><strong>Specialization:</strong> {{ doctor.specialization }}</p>
+                  {% if doctor.description %}
+                    <p><strong>Bio:</strong> {{ doctor.description }}</p>
+                  {% endif %}
+                  {% if doctor.education %}
+                    <p><strong>Education:</strong> {{ doctor.education }}</p>
+                  {% endif %}
+                  {% if doctor.experience_years %}
+                    <p><strong>Experience:</strong> {{ doctor.experience_years }} years</p>
+                  {% endif %}
+                  {% if doctor.hospital_affiliations %}
+                    <p><strong>Affiliations:</strong> {{ doctor.hospital_affiliations }}</p>
+                  {% endif %}
+                  {% if doctor.memberships %}
+                    <p><strong>Memberships:</strong> {{ doctor.memberships }}</p>
+                  {% endif %}
+                  {% if doctor.awards %}
+                    <p><strong>Awards:</strong> {{ doctor.awards }}</p>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <a href="{% url 'prescription:confirm_booking' prescription.id doctor.id %}" class="btn btn-success">Book This Doctor</a>
+               <a href="{% url 'prescription:home' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <p>No exactly matching doctors as recommended by Ai is available right now. You can find our listed doctors suitable for you</p>
+  <a href="{% url 'prescription:available_doctors' %}?prescription_id={{ prescription.id }}" class="btn btn-success">Available Doctors</a>
+  <a href="{% url 'prescription:ai_prescription_list' %}" class="btn btn-secondary">Back to Prescriptions</a>
+{% endif %}
+
+
+{% endblock %}

@@ -104,12 +104,15 @@
             <p class="text-muted">
             Get unbiased, data-driven recommendations instantly with our advanced AI model.
             </p>
-            <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
-            <i class="bi bi-robot"></i> Generate Now
-            </a>
-            <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
-                <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
-            </a>
+	      <a href="{% url 'prescription:initiate_ai_prescription_payment' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-robot"></i> Get your Prescription now
+              </a>
+		
+
+	      <a href="{% url 'symptom_checker:initiate_symptom_check_payment' %}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
+                </a>
+
 
          </div>
       </div>
@@ -161,10 +164,12 @@
                         <p class="text-muted fw-bold">{{ doctor.specialization }}</p>
 
                         {% if ai_prescription %}
-                        <a href="{% url 'prescription:confirm_booking' ai_prescription.id doctor.id %}" class="btn btn-primary btn-sm mt-2">Select & Book</a>
-                        {% else %}
-
-                        <p><a href="{% url 'prescription:book_doctor_direct' doctor.id %}">Book now</a></p>
+                        <a href="{% url 'prescription:confirm_booking' ai_prescription.id doctor.id %}" 
+				class="btn btn-primary btn-sm mt-2">Select & Book</a>
+                        <p><a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}">Book Now</a></p>
+			{% else %}
+			 <p><a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}">Book now</a></p>
+                        
                         {% endif %}
 
                         <p class="card-text text-secondary" style="font-size: 14px;">

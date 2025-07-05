@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <style>
+        body { font-family: DejaVu Sans, sans-serif; margin: 20px; font-size: 12px; }
+        h2 { color: #2e6c80; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+        th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+        .rx { font-size: 24px; font-weight: bold; color: darkgreen; margin-top: 20px; }
+        .section-title { font-size: 16px; font-weight: bold; color: #2e6c80; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <h2 align="center">Doctor's Prescription</h2>
+
+<table width="100%" style="font-size: 12px; border-collapse: collapse; margin-bottom: 10px;">
+
+ {% with ref=prescription.get_booking_reference %}
+  {% if ref %}
+    {{ ref.patient.name }}
+  {% endif %}
+
+
+  <tr>
+    <!-- Left Column -->
+    <td style="width: 50%; vertical-align: top;">
+      <p>
+        <strong>Prescription Code:</strong> {{ prescription.doctor_prescription_code }}<br>
+        <strong>Date:</strong> {{ prescription.prescribed_at|date:"M d, Y H:i" }}<br>
+        <strong>Age:</strong> {{ prescription.patient.age|default:"N/A" }} |
+        <strong>Gender:</strong> {{prescription.patient.gender|capfirst|default:"N/A" }}<br>
+        <strong>Location:</strong> {{ prescription.booking_folloup_ref.doctor_booking.location|default:"N/A" }}<br>
+        <strong>Patient:</strong> {{ prescription.patient }}<br>
+      </p>
+    </td>
+
+    <!-- Right Column -->
+    <td style="width: 50%; vertical-align: top;">
+      <p>
+        <strong>Medical History:</strong> {{ prescription.booking_folloup_ref.doctor_booking.medical_history|default:"N/A" }}<br>
+        <strong>Current Medications:</strong> {{ prescription.booking_folloup_ref.doctor_booking.current_medications|default:"N/A" }}<br>
+     
+        <strong>Vital Signs:</strong> {{ prescription.booking_folloup_ref.doctor_booking.vital_signs|default:"N/A" }}<br>
+        <strong>Symptoms:</strong> {{ prescription.booking_folloup_ref.doctor_booking.symptoms_summary|default:"N/A" }}<br>
+        <strong>Duration:</strong> {{ prescription.booking_folloup_ref.doctor_booking.duration|default:"N/A" }}
+      </p>
+    </td>
+  </tr>
+</table>
+{% endwith %}
+
+    </td>
+  </tr>
+</table>
+
+
+
+    <div class="section-title" style="margin-top: 20px;">Diagnosis</div>
+    <p>{{ prescription.diagnosis|linebreaksbr }}</p>
+
+    <div class="rx mt-4" style="margin-top: 20px;">Rx</div>
+
+    <div class="section-title">Prescribed Medicines</div>
+    <table> 
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+                <th>Duration (Days)</th>
+                <th>Instructions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for med in prescription.pres_medicines.all %}
+            <tr>
+                <td>{{ med.get_display_name }}</td>
+                <td>{{ med.dosage }}</td>
+                <td>{{ med.dosage_schedule }}</td>
+                <td>{{ med.medication_duration }}</td>
+                <td>{{ med.instructions }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5">No medicines prescribed.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="section-title">Suggested Lab Tests</div>
+      <p>
+        {% for test in prescription.lab_tests.all %}        
+            <strong>{{ test.get_display_name }}</strong> - {{ test.lab_test_notes|default:"" }}<br>       
+        {% empty %}
+       No lab tests suggested.
+        {% endfor %}
+      </p>
+
+    <div class="section-title">Advice</div>
+    <p>{{ prescription.advice|linebreaksbr }}</p>
+
+
+  <hr style="margin-top: 10px;">
+
+<div style="display: flex; justify-content: space-between; font-size: 12px; padding-top: 10px;">
+  <div>
+    <strong>Dr. {{ prescription.doctor.full_name }}</strong><br>
+    {{ prescription.doctor.education|default:"" }}<br>
+    Reg. No: {{ prescription.doctor.medical_license_number|default:"N/A" }}<br>
+    {{ prescription.doctor.hospital_affiliations|default:"" }}
+  </div>
+<br>
+___________________________<br>
+Signature
+
+
+  <div style="text-align: right;">
+    Phone: {{ prescription.doctor.phone|default:"N/A" }}<br>
+    Email: {{ prescription.doctor.email|default:"N/A" }}<br>
+    {{ prescription.doctor.memberships|default:"" }}
+  </div>
+</div>
+
+
+
+</body>
+</html>

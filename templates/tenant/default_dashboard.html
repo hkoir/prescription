@@ -345,6 +345,18 @@ h4 {
         transform: scale(1.03);
         transition: all 0.3s ease;
     }
+
+
+.spin {
+  animation: spin 10s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+
 </style>
 
 
@@ -380,14 +392,13 @@ h4 {
           <div class="card h-100 border-0 shadow-sm transition hover-shadow position-relative">
             <div class="card-body text-center p-4">
               <img src="{% static 'images/Logo.png' %}" alt="{{ tenant.name }}"
-                   class="img-fluid mb-3 rounded-circle shadow-sm"
+                   class="img-fluid mb-3 rounded-circle shadow-sm spin"
                    style="width: 80px; height: 80px; object-fit: contain; background: #fff; padding: 10px;">
 
               <h5 class="card-title text-dark mb-1">{{ tenant.name }}</h5>
-              <p class="card-text text-muted small">Trusted by patients across the region.</p>
-              <a href="https://{{ tenant.schema_name }}.aiha.live"
-                 target="_blank"
-                 class="btn btn-outline-primary btn-sm mt-2">
+	      <p class="text-primary fw-bold"> {{ tenant.register_name }}</p>
+              <p class="card-text text-muted small">Trusted by patients and Doctors across the region.</p>
+              <a href="https://{{ tenant.schema_name }}.aiha.live"target="_blank" class="btn btn-outline-primary btn-sm mt-2">
                  Visit Provider <i class="fas fa-arrow-right ms-1"></i>
               </a>
             </div>

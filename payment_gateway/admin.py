@@ -1,3 +1,7 @@
 from django.contrib import admin
+from.models import PaymentSystem,TenantPaymentConfig,PaymentInvoice,Payment
 
-# Register your models here.
+admin.site.register(PaymentSystem)
+admin.site.register(TenantPaymentConfig)
+admin.site.register(PaymentInvoice)
+admin.site.register(Payment)

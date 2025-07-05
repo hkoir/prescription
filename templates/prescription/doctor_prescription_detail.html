@@ -12,6 +12,8 @@
       <div class="border p-3 mb-4">
         <h5 class="text-primary">Prescription #{{ forloop.counter }}</h5>
         <dl class="row">
+	<dt class="col-sm-3">Date</dt>
+        <dd class="col-sm-9">{{ prescription.prescribed_at }}</dd>
           <dt class="col-sm-3">Prescription Code</dt>
           <dd class="col-sm-9">{{ prescription.doctor_prescription_code|default:"N/A" }}</dd>
 
@@ -74,8 +76,8 @@
       </div>
       {% endfor %}
 
-      <div class="text-end">
-	 <a href="{% url 'prescription:doctor_prescription_pdf' main_prescription.id %}" class="btn btn-secondary">Download</a>
+      <div class="text-end d-flex justify-content space-between">
+	 <a href="{% url 'prescription:doctor_prescription_pdf' main_prescription.id %}" class="btn btn-secondary m-2">Download</a>
         <a href="{% url 'prescription:doctor_prescription_list' %}" class="btn btn-secondary">Back to List</a>
       </div>
     </div>

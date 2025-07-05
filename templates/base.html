@@ -276,6 +276,7 @@ li a {
 }
 
 
+
 </style>
 
 
@@ -359,27 +360,35 @@ li a {
                 <!-- notification menue -->               
                   
                     {% if request.user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownNotifications" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-bell {% if unread_notifications|length > 0 %}new-notification{% endif %}"></i>
-                                {% if unread_notifications|length > 0 %}
-                                    <span class="badge bg-danger">{{ unread_notifications|length }}</span>
-                                {% endif %}
-                            </a>
-                            <ul class="dropdown-menu notification-dropdown" aria-labelledby="navbarDropdownNotifications">
-                                <div class="notification-scroll">
-                                    {% for notification in unread_notifications %}
-                                        <li class="notification {% if not notification.is_read %}unread{% endif %}">
-                                            <a href="#" class="dropdown-item mark-as-read" data-id="{{ notification.id }}">
-                                                <p>{{ notification.get_notification_type_display }}:{{ notification.message }}</p>
-                                            </a>
-                                        </li>
-                                    {% empty %}
-                                        <li><a class="dropdown-item" href="#">No new notifications</a></li>
-                                    {% endfor %}
-                                </div>
-                                </ul>
-                            </li>                     
+
+
+
+
+<li class="nav-item dropdown">
+  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    <span class="position-relative d-inline-block">
+      <i class="fas fa-bell {% if unread_notifications|length > 0 %}new-notification{% endif %}"></i>
+      {% if unread_notifications|length > 0 %}
+        <span class="badge bg-danger notification-badge">{{ unread_notifications|length }}</span>
+      {% endif %}
+    </span>
+  </a>
+
+  <ul class="dropdown-menu notification-dropdown" aria-labelledby="navbarDropdown">
+    <div class="notification-scroll">
+      {% for notification in unread_notifications %}
+        <li class="notification {% if not notification.is_read %}unread{% endif %}">
+          <a href="#" class="dropdown-item mark-as-read" data-id="{{ notification.id }}">
+            <p>{{ notification.get_notification_type_display }}: {{ notification.message }}</p>
+          </a>
+        </li>
+      {% empty %}
+        <li><a class="dropdown-item" href="#">No new notifications</a></li>
+      {% endfor %}
+    </div>
+  </ul>
+</li>
+
                                               
                         {% else %}
                         <li class="nav-item">

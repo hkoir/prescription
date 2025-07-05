@@ -21,16 +21,29 @@ from django.core.paginator import Paginator
 #     Notification.objects.create(user,message=message,notification_type=notification_type)
 
 
-
-
-    
 def create_notification(user, notification_type, message, patient=None, doctor=None):
-    if patient:
-        Notification.objects.create(student=patient, message=message, notification_type=notification_type)
+    if patient and doctor:
+        Notification.objects.create(
+            user=user, patient=patient, doctor=doctor,
+            message=message, notification_type=notification_type
+        )
+    elif patient:
+        Notification.objects.create(
+            user=user, patient=patient,
+            message=message, notification_type=notification_type
+        )
     elif doctor:
-        Notification.objects.create(doctor=doctor, message=message, notification_type=notification_type)
+        Notification.objects.create(
+            user=user, doctor=doctor,
+            message=message, notification_type=notification_type
+        )
     else:
-        Notification.objects.create(user=user, message=message, notification_type=notification_type)
+        Notification.objects.create(
+            user=user,
+            message=message, notification_type=notification_type
+        )
+
+
 
 
 

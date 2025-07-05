@@ -68,6 +68,50 @@ from django.urls import reverse
 
 
 
+from payment_gateway.utils import create_payment_invoice
+#========================================================================================
+
+
+@login_required
+def initiate_symptom_check_payment(request):
+    patient = request.user.patient_profile     
+    free_limit = getattr(patient, 'free_ai_prescription_limit', 5)
+
+    existing_payment = AIPrescriptionPayment.objects.filter(
+        patient=patient,
+        used_for_prescription=False,
+        successful=True
+    ).first()
+
+    if existing_payment:
+        messages.info(request, "You already have a paid AI prescription available.")
+        return redirect('symptom_checker:start_symptom_check')
+
+    if patient.free_ai_prescriptions_used < free_limit:
+        messages.info(request, f"You are within your free limit ({patient.free_ai_prescriptions_used}/{free_limit}). No payment required.")
+        return redirect('symptom_checker:start_symptom_check')
+ 
+    messages.warning(request, 'You’ve exceeded the free AI usage limit. Please complete the payment process.')
+    amount = 100.0
+    invoice = create_payment_invoice(
+        patient=patient,
+        invoice_type='symptom-check',
+        amount=amount,
+        description="Symptom Check Fee",
+        related_object_id=0,
+        symptom_checker=None
+    )
+    request.session['symptom_checker_invoice_id'] = invoice.id
+    return redirect(reverse('payment_gateway:review_invoice') + f'?tran_id={invoice.tran_id}')
+
+
+#===============================================================================================
+
+
+
+
+from payment_gateway.models import PaymentInvoice
+
 @login_required
 def start_symptom_check(request):     
     user = request.user   
@@ -75,9 +119,31 @@ def start_symptom_check(request):
 
     if patient and patient.needs_profile_update():
         return redirect(f"{reverse('finance:update_patient_profile', args=[patient.id])}?next={request.path}")
-
-
     session, created = SymptomCheckSession.objects.get_or_create(user=user, is_completed=False)
+    if request.method != 'POST' and patient:
+        free_limit = getattr(patient, 'free_ai_prescription_limit', 5) 
+        if patient.free_ai_prescriptions_used >= free_limit:
+            has_payment = AIPrescriptionPayment.objects.filter(
+                patient=patient,
+                used_for_prescription=False,
+                successful=True
+            ).exists()          
+            if not has_payment:
+                messages.warning(request, 'You’ve exceeded the free AI usage limit. Please pay to proceed.')
+                print('you have exceeded free usage limit, Please complete payment process')
+                return redirect('symptom_checker:initiate_symptom_check_payment')
+ 
+
+    #=========================================================================================
+    invoice_id = request.session.get('doctor_booking_invoice_id')             
+    invoice = None
+    if invoice_id:
+        try:
+            invoice = PaymentInvoice.objects.get(id=invoice_id, patient=patient, invoice_type='direct-consultation')
+        except PaymentInvoice.DoesNotExist:
+            messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
+            return redirect('prescription:doctor_bookings_list')
+    #===============================================================================================
 
     if request.method == "POST":
         form = SymptomCheckForm(request.POST, instance=session)
@@ -96,6 +162,12 @@ def start_symptom_check(request):
 
             session.is_completed = True
             session.save()
+             #==============================================================
+            if invoice:
+                invoice.symptom_checker = session
+                invoice.save()
+                del request.session['symptom_checker_invoice_id']
+            #================================================================
             return redirect("symptom_checker:symptom_chat", session_id=session.id)
     else:
         form = SymptomCheckForm(instance=session)

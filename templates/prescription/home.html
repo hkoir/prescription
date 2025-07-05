@@ -347,16 +347,17 @@ h4 {
 
 <div class="container-fluid main-content">
     <div class="row">                 
-        <section class="hero-section">
+      <section class="hero-section">
             <div class="hero-overlay"></div>
             <div class="hero-content">
                <h2 class="display-5 fw-bold">Ai Power health assistance</h2>
                 <p class="lead">Get personalized, AI-enhanced prescriptions backed by licensed doctors. Empower your wellness journey — anytime, anywhere.</p>
 
-                <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
+                <a href="{% url 'prescription:initiate_ai_prescription_payment' %}" class="btn btn-primary btn-lg mt-3">
                 <i class="bi bi-robot"></i> Get your Prescription now
                 </a>
-                <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
+
+                 <a href="{% url 'symptom_checker:initiate_symptom_check_payment' %}" class="btn btn-primary btn-lg mt-3">
                     <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
                 </a>
             </div>
@@ -366,7 +367,6 @@ h4 {
                 </svg>
             </div>
         </section>     
-
 
  <!-- FEATURES -->
         <section class="py-5">
@@ -389,9 +389,10 @@ h4 {
 
       <div class="container my-5">
             <!-- AI Doctor Intro Card -->
-            <div class="row justify-content-center">
-                <div class="col-12 col-md-6 col-lg-5">
-                    <div class="p-4 bg-white border border-success rounded-4 shadow-lg text-center">
+            <div class="row g-0 d-flex justify-content-center">
+           
+             <div class="col-12 col-md-4 col-lg-3">
+                    <div class="p-2 bg-white border border-success rounded-4 shadow-lg text-center">
                         <div class="mb-3">
                             <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2" style="border-radius: 50%;">
                         </div>
@@ -402,13 +403,102 @@ h4 {
                         </a>
                     </div>
                 </div>
-            </div>
+
+		<div class="col-6 col-md-4 col-lg-3">
+		  <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
+    		   <div class="mb-3">
+      			<img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" 
+			  class="mb-2 rounded-circle">
+    		   </div>
+    		  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Specialized Doctor</h4>
+    		  <p class="mb-3">🎙️ Book specialised doctor </p>
+    		 <a href="{% url 'prescription:available_doctors' %}" class="stretched-link"></a>
+  	        </div>
+	      </div>
+
+                <div class="col-6 col-md-4 col-lg-3">
+                  <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
+                   <div class="mb-3">
+                    <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" 
+			class="mb-2 rounded-circle">
+		   </div>
+                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Specialized Doctor booking History</h4>
+                  <p class="mb-3">🎙️ Booking history</p>
+                 <a href="{% url 'prescription:doctor_bookings_list' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+
+	      <div class="col-6 col-md-4 col-lg-3">
+               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
+                   <div class="mb-3">
+                        <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" class="mb-2 rounded-circle">
+                   </div>
+                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Prescription History</h4>
+                  <p class="mb-3">🎙️ Your Prescriptions </p>
+                 <a href="{% url 'prescription:doctor_prescription_list' %}" class="stretched-link"></a>
+                </div>
+              </div>	
+
+
+            <div class="col-6 col-md-4 col-lg-3">
+               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
+                   <div class="mb-3">
+                        <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2 rounded-circle">
+                   </div>
+                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Symptom's History</h4>
+                  <p class="mb-3">🎙️ Your Symptom's History </p>
+                 <a href="{% url 'symptom_checker:my_symptom_checks' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+	     <div class="col-6 col-md-4 col-lg-3">
+               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
+                   <div class="mb-3">
+                        <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2 rounded-circle">
+                   </div>
+                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Ai generated Prescription History</h4>
+                  <p class="mb-3">🎙️Your Ai Prescriptions </p>
+                 <a href="{% url 'prescription:ai_prescription_list' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+             <div class="col-6 col-md-4 col-lg-3">
+               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
+                   <div class="mb-3">
+                        <img src="{% static 'images/doctor-3.jpg' %}" alt="AI Doctor" width="70" height="70"
+                        class="mb-2 rounded-circle">
+                   </div>
+                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">
+                        👨 Nearby Services, Hospital, Ambulance,Nursing, Medicine etc</h4>
+                  <p class="mb-3">🎙️ Other services</p>
+                 <a href="#" class="stretched-link"></a>
+                </div>
+              </div>
+
+
+             <div class="col-12 col-md-4 col-lg-3">
+               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
+                   <div class="mb-3">
+                        <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2 rounded-circle">
+                   </div>
+                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Get your Ai generated prescription now</h4>
+                  <p class="mb-3"> Instant professional like Medical grade Ai Prescription. </p>
+                 <a href="{% url 'prescription:create_ai_prescription' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+
+
+         </div>
+
+         </div>
 
             <!-- Additional Benefits Section -->
             <div class="row justify-content-center mt-5">
                 <div class="col-12 col-md-10 col-lg-8">
                     <div class="p-4 bg-light border-start border-success border-4 rounded shadow-sm">
-                        <h5 class="text-success fw-semibold mb-3">🩺 What You Can Expect:</h5>
+                        <h5 class="text-success fw-semibold mb-3">🩺 I am Ai.What Can you Expect:</h5>
                         <ul class="list-unstyled text-muted">
                             <li class="mb-2">✅ I will ask you health-related questions and listen to your answers</li>
                             <li class="mb-2">✅ I will generate a <strong>summary of findings</strong> from your symptoms</li>
@@ -488,12 +578,13 @@ h4 {
         </h3>
         <p class="mb-2 text-muted fs-5">
           Experience instant, intelligent health advice from our advanced AI model.<br>
-        <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
-            <i class="bi bi-robot"></i> Try It Now
-            </a>
-            <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
+	 <a href="{% url 'prescription:initiate_ai_prescription_payment' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="bi bi-robot"></i> Try now
+         </a>
+	     <a href="{% url 'symptom_checker:initiate_symptom_check_payment' %}" class="btn btn-primary btn-lg mt-3">
                 <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
             </a>
+
          
       </div>
     </div>

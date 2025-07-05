@@ -1,108 +1,239 @@
+
 {% extends 'base.html' %}
 {% block content %}
 
-<div class="container">
-    <a href="{% url 'prescription:create_ai_prescription' %}"class="text-center btn btn-sm btn-outline-success">See the power of Ai </a>
+<div class="container-fluid">
+    <a href="{% url 'prescription:create_ai_prescription' %}" class="text-center btn btn-sm btn-outline-success">See the power of AI</a>
     <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-primary">Your appointments</a>
     <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
     <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-success">Create Followup Schedule with doctor</a>
-    <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
+    <a href="{% url 'prescription:doctor_prescription_list' %}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
 
-    <div class="row">
-        <div class="card">
-            <div class="card-body">
-                <div class="col-12 table-responsive">              
-                <h2>Your follow-up Appointments</h2>
-                <table class="table">
-                    <thead class="table-info">
-                        <tr>
-                            <th>Parent booking</th>
-                            <th>Patient</th>
-                            <th>Followup booking code</th>
-                            <th>Patient current status</th>
-                            <th>Requested meeting time</th>
-                            <th>Doctor approved time</th>
-                             <th>Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for booking in page_obj %}
-                        <tr>
-                            <td>{{ booking.doctor_booking.booking_code }}</td>
-                            <td>{{ booking.doctor_booking.patient.full_name }}</td>
-                            <td>
-	                        <a href="{% url 'prescription:doctor_followup_booking_detail' booking.id %}"><i class="fas fa-eye"></i>
-                                  {{ booking.booking_code }}
-                                </a>
-			    </td>
 
-                            <td>{{ booking.patient_Current_status }}</td>
-                            <td>{{ booking.proposed_followup_datetime }}</td>
-                            <td>{{ booking.approved_followup_datetime }}</td>
-                            <td>{{ booking.status }}</td>
-                            <td>   
-                                
 
-                                {% if booking.status == 'pending' %}    
-                                  <a href="{% url 'prescription:aprove_doctor_followup_booking' booking.id %}" class="btn btn-sm btn-outline-success">Doctor to approve</a>   
-                                  {% elif booking.status == 'confirmed' %}     
-                                 <a href="{% url 'prescription:create_followup_doctor_prescription' booking.doctor_booking.id booking.id %}" class="btn btn-sm btn-outline-primary">Doctor to Prescribe</a>  
-                                  {% elif booking.status == 'completed' %}       
-                                <span class="fas fa-check fw-bold text-success">Followup Scheduled Completed</span>                                 
-                                   {% elif booking.status == 'cancelled' %}       
-                                <span class="fas fa-check fw-bold text-success">Followup Scheduled Cancelled</span>                                 
-                                {% endif %}       
-                                    
-                           
-                                {% if booking.zoom_folloup_schedule and booking.zoom_folloup_schedule.status == 'pending' %}
-                                <a href="{% url 'prescription:approve_zoom_meeting' booking.zoom_folloup_schedule.id %}" class="btn btn-sm btn-outline-primary">Doctor to approve Conf Call</a>  
-                                   {% elif booking.zoom_folloup_schedule.status == 'approved' %}  
-                                   {% if booking.status != 'completed' %}
-                                     <a href="{{ booking.zoom_folloup_schedule.zoom_meeting_link }}" class="btn btn-sm btn-outline-primary" target="_blank">Click to start Conf</a>
-                                     {% endif %}
-                                    
-                                  {% elif booking.zoom_folloup_schedule.status == 'executed' %}
-                                <span class="fas fa-check fw-bold text-success">Video Conf done</span>
-                                    {% elif booking.zoom_folloup_schedule.status == 'rejected' %}
-                                <span class="fas fa-check fw-bold text-success">Video call rejected</span>
-                                {% else %}
-                                    {% if request.user.role == 'patient' %}
-                                <a href="{% url 'prescription:request_zoom_meeting' booking.id %}" class="btn btn-sm btn-outline-success">Request Video Consultation</a>  
-                                    {% endif %}   
-                                {% endif %}    
-                                                            
-                             
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr>
-                            <td colspan="4">No bookings found.</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                  <!-- Pagination Controls -->
-        <div class="pagination">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+<div class="row gy-4 mt-3">
+ <h2 class="text-center">Your follow-up Appointments</h2>
+  {% for booking in page_obj %}
+  <div class="col-12 col-md-6 col-lg-4 col-xl-4">
+    <div class="card shadow border-0 rounded-4 h-100" style="background: linear-gradient(135deg, #d0e9ff, #f0faff);">
+        <h6 class="text-primary fw-bold mt-4 ms-2">
+         🩺 followup appointment #{{ forloop.counter }}
+         </h6>
+
+
+      <h6 class="text-muted ms-2">
+          📅 
+          {% if booking.doctor_folloup_booking_refs.first.prescribed_at %}
+            {{ booking.doctor_folloup_booking_refs.first.prescribed_at|date:"M d, Y H:i" }}
+          {% else %}
+            Not prescribed yet
+          {% endif %}
+      </h6>
+
+        <div class="card-body d-flex flex-column">
+          <h5 class="card-title text-primary">👨‍⚕️ {{ booking.doctor_booking.patient.full_name }}</h5>
+          
+          <p class="mb-1"><strong>Parent Booking:</strong> {{ booking.doctor_booking.booking_code }}</p>
+          <p class="mb-1">
+            <strong>Follow-up Code:</strong>
+            <a href="{% url 'prescription:doctor_followup_booking_detail' booking.id %}">
+              {{ booking.booking_code }}
+            </a>
+          </p>
+          <p class="mb-1"><strong>Current Status:</strong> {{ booking.patient_Current_status }}</p>
+          <p class="mb-1"><strong>Requested Time:</strong> {{ booking.proposed_followup_datetime }}</p>
+          <p class="mb-1"><strong>Doctor Approved:</strong> {{ booking.approved_followup_datetime|default:"—" }}</p>
+
+          <p class="mb-1">
+            <strong>Status:</strong>
+            {% if booking.status == 'completed' %}
+ 		<span class="badge bg-success my-2">Completed</span>
+
+	    {% with prescription=booking.doctor_folloup_booking_refs.first %}
+              {% if prescription %}
+               <a href="{% url 'prescription:followup_prescription_detail_single' booking.id %}" 
+                 class="btn btn-sm btn-outline-primary">
+                  View Prescription
+                  </a>
+                {% else %}
+                  <span class="text-muted">No prescription yet</span>
                 {% endif %}
+              {% endwith %}
+	
+            {% elif booking.status == 'cancelled' %}
+              <span class="badge bg-danger mb-2">Cancelled</span>
+            {% elif booking.status == 'confirmed' %}
+              <span class="badge bg-primary mb-2">Confirmed</span>
+            {% else %}
+              <span class="badge bg-warning text-dark">Pending</span>
+            {% endif %}
+          </p>
 
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
+          <div class="mt-2 d-grid gap-2">
+            {# === Booking Status Actions === #}
+            {% if booking.status == "pending" and request.user.role == "doctor" %}
+              <a href="{% url 'prescription:aprove_doctor_followup_booking' booking.id %}" 
+		class="btn btn-sm btn-outline-success">Approve Follow-up</a>
+            {% elif booking.status == "confirmed" and request.user.role == "doctor" %}
+              <a href="{% url 'prescription:doctor_followup_booking_detail' booking.id %}" 
+		class="btn btn-sm btn-outline-primary">Prescribe</a>
+            {% endif %}
 
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+
+            {# === Zoom Follow-up Actions === #}
+
+ 	   {% if booking.zoom_folloup_schedule %}
+                {% if booking.zoom_folloup_schedule.status == "pending" and request.user.role == "doctor" %}
+                    <a href="{% url 'prescription:approve_zoom_meeting' booking.zoom_folloup_schedule.id %}" class="btn btn-sm btn-outline-primary">Approve Video Call</a>
+
+                {% elif booking.zoom_folloup_schedule.status == "approved" %}
+                    <a href="{{ booking.zoom_folloup_schedule.zoom_meeting_link }}" target="_blank" class="btn btn-sm btn-outline-success">Join Conference</a>
+
+                {% elif booking.zoom_folloup_schedule.status == "executed" %}
+                    <span class="text-success fw-bold">🎥 Video Call Done</span>
+
+                {% elif booking.zoom_folloup_schedule.status == "rejected" %}
+                    <span class="text-danger fw-bold">❌ Video Call Rejected</span>
                 {% endif %}
-            </span>
+            {% else %}
+                {% if request.user.role == "patient" and booking.status != "completed" %}
+                    <a href="{% url 'prescription:initiate_followup_video_consultation_payment' booking.id %}" 
+		    class="btn btn-sm btn-outline-success">Request Video Call</a>
+                {% endif %}
+            {% endif %}
+
+
+          </div>
         </div>
-                  </div>
-            </div>
+      </div>
+    </div>
+  {% empty %}
+    <div class="col-12">
+      <div class="alert alert-info">No follow-up bookings found.</div>
+    </div>
+  {% endfor %}
+</div>
 
+
+
+
+    <div class="row mt-3">
+        <div class="card w-100">
+            <div class="card-body">
+                <div class="col-12 table-responsive">
+                    <h2>Your follow-up Appointments</h2>
+                    <table class="table">
+                        <thead class="table-info">
+                            <tr>
+                                <th>Parent booking</th>
+                                <th>Patient</th>
+                                <th>Followup booking code</th>
+                                <th>Patient current status</th>
+                                <th>Requested meeting time</th>
+                                <th>Doctor approved time</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+
+
+			<tbody>
+                            {% for booking in page_obj %}
+                                <tr>
+                                <td>{{ booking.doctor_booking.booking_code }}</td>
+                                <td>{{ booking.doctor_booking.patient.full_name }}</td>
+                                <td>
+                                    <a href="{% url 'prescription:doctor_followup_booking_detail' booking.id %}">
+                                    <i class="fas fa-eye"></i> {{ booking.booking_code }}
+                                    </a>
+                                </td>
+                                <td>{{ booking.patient_Current_status }}</td>
+                                <td>{{ booking.proposed_followup_datetime }}</td>
+                                <td>{{ booking.approved_followup_datetime }}</td>
+                                <td>{{ booking.status }}</td>
+
+
+
+
+
+<td>
+  {# === Booking Status Actions === #}
+  {% if booking.status == "pending" %}
+    {% if request.user.role == "doctor" %}
+      <a href="{% url 'prescription:aprove_doctor_followup_booking' booking.id %}" 
+         class="btn btn-sm btn-outline-success">Doctor to approve</a>
+    {% endif %}
+
+  {% elif booking.status == "confirmed" %}
+    {% if request.user.role == "doctor" %}
+      <a href="{% url 'prescription:doctor_followup_booking_detail' booking.id %}"
+         class="btn btn-sm btn-outline-primary">Doctor to prescribe</a>
+    {% endif %}
+
+  {% elif booking.status == "completed" %}
+    <span class="fas fa-check fw-bold text-success">Follow-up Schedule Completed</span>
+
+  {% elif booking.status == "cancelled" %}
+    <span class="fas fa-times fw-bold text-danger">Follow-up Schedule Cancelled</span>
+  {% endif %}
+
+  {# === Zoom Follow-up Actions === #}
+
+
+{% if booking.zoom_folloup_schedule %}
+    {% if booking.zoom_folloup_schedule.status == "pending" and request.user.role == "doctor" %}
+        <a href="{% url 'prescription:approve_zoom_meeting' booking.zoom_folloup_schedule.id %}" class="btn btn-sm btn-outline-primary">Approve Video Call</a>
+
+    {% elif booking.zoom_folloup_schedule.status == "approved" %}
+        <a href="{{ booking.zoom_folloup_schedule.zoom_meeting_link }}" target="_blank" class="btn btn-sm btn-outline-success">Join Conference</a>
+
+    {% elif booking.zoom_folloup_schedule.status == "executed" %}
+        <span class="text-success fw-bold">🎥 Video Call Done</span>
+
+    {% elif booking.zoom_folloup_schedule.status == "rejected" %}
+        <span class="text-danger fw-bold">❌ Video Call Rejected</span>
+
+    {% endif %}
+{% else %}
+    {% if request.user.role == "patient" %}
+        <a href="{% url 'prescription:initiate_followup_video_consultation_payment' booking.id %}" class="btn btn-sm btn-outline-success">Request Video Call</a>
+    {% endif %}
+{% endif %}
+
+
+</td>
+
+
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                <td colspan="8" class="text-center">No follow-up bookings found.</td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+
+                    </table>
+
+                    <!-- Pagination Controls -->
+                    <div class="pagination">
+                        <span class="step-links">
+                            {% if page_obj.has_previous %}
+                                <a href="?page=1">&laquo; first</a>
+                                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                            {% endif %}
+
+                            <span class="current">
+                                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                            </span>
+
+                            {% if page_obj.has_next %}
+                                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

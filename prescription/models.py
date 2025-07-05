@@ -93,6 +93,7 @@ class Doctor(models.Model):
     start_time = models.TimeField(help_text="Doctor's available start time", null=True, blank=True)
     end_time = models.TimeField(help_text="Doctor's available end time", null=True, blank=True)
     consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    video_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     folloup_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     followup_validity_days = models.PositiveIntegerField(default=10, help_text="Follow-up discount validity in days",null=True,blank=True)
     payment_wallet_number = models.CharField(max_length=11, blank=True, null=True)
@@ -240,7 +241,7 @@ class DoctorBooking(models.Model):
         if not self.booking_code:
             self.booking_code = f"BC-{uuid.uuid4().hex[:8].upper()}"   
 
-        if not self.video_link and self.video_call_reuest_message:
+        if not self.video_link and self.video_call_request_message:
             try:
                 zoom_data = create_zoom_meeting(topic=f"Appointment #{self.booking_code}", duration=30)
                 self.video_link = zoom_data["join_url"]  # Patient and doctor can use this
@@ -408,6 +409,35 @@ class SuggestedLabTest(models.Model):
 
     def __str__(self):
          return str(self.lab_test_name)
+
+
+
+
+class LabResultFile(models.Model):
+    main_booking = models.ForeignKey(
+        DoctorBooking,
+        on_delete=models.CASCADE,
+        related_name='main_lab_files',null=True,blank=True
+    )
+    followup_booking = models.ForeignKey(
+        DoctorFolloupBooking,
+        on_delete=models.CASCADE,
+        related_name='followup_lab_files',null=True,blank=True
+    )
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True
+    )
+    file = models.FileField(upload_to='lab_results/',null=True,blank=True)
+    notes = models.TextField(blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+
+
+
+
+
 
 
 

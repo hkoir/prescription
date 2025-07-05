@@ -21,16 +21,20 @@ class Notification(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True, blank=True)
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='student_notifications', null=True, blank=True)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name='teacher_notifications', null=True, blank=True)
-    notification_type=models.CharField(max_length=20,choices=[('attendance','Attendance'),('payment-due','Payment_due'),('notice','Notice'),('general','General')], null=True, blank=True)
+    notification_type=models.CharField(max_length=100,choices=[('attendance','Attendance'),('payment-due','Payment_due'),('notice','Notice'),('general','General')], null=True, blank=True)
     message = models.CharField(max_length=255) 
     created_at = models.DateTimeField(auto_now_add=True)
-    is_read = models.BooleanField(default=False)  
+    is_read = models.BooleanField(default=False)
+
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __str__(self):
         if self.patient:
-            return f"Notification for {self.patient.name}: {self.message}"
+            return f"Notification for {self.patient.full_name}: {self.message}"
         elif self.doctor:
-            return f"Notification for {self.doctor.name}: {self.message}"
+            return f"Notification for {self.doctor.full_name}: {self.message}"
         else:
             return f"Notification for {self.user}: {self.message}"
 

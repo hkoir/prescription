@@ -23,6 +23,7 @@
               View Details
             </button>
             <a href="{% url 'prescription:confirm_booking' prescription.id doctor.id %}" class="btn btn-primary btn-sm mt-2">Select & Book</a>
+	    <a href="{% url 'prescription:initiate_confirm_booking_payment' prescription.id doctor.id %}" class="btn btn-primary btn-sm mt-2">Initiate Payment and Book</a>
           </div>
         </div>
       </div>

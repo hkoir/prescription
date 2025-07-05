@@ -89,8 +89,6 @@ If there is no recommendation in any section, write **None**. Always number all 
 
 """
 
-
-
     response = client.chat.completions.create(
         model="anthropic/claude-sonnet-4",
         messages=[{"role": "user", "content": prompt}],
@@ -110,7 +108,7 @@ If there is no recommendation in any section, write **None**. Always number all 
     medicines_text = extract_section(content, r"2\.\s*\**Recommended Medicines\**:?(.*?)(?:3\.|\Z)", "None")
     tests = extract_section(content, r"3\.\s*\**Necessary Lab Tests\**:?(.*?)(?:4\.|\Z)", "None")
     advice = extract_section(content, r"4\.\s*\**Medical Advice\**:?(.*?)(?:5\.|\Z)", "Follow general guidelines")
-    #specialty_raw = extract_section(content, r"5\.\s*\**Recommended Specialist\**:?(.*?)(?:6\.|\Z)", "General Physician")
+    specialty_raw = extract_section(content, r"5\.\s*\**Recommended Specialist\**:?(.*?)(?:6\.|\Z)", "General Physician")
     warning_signs = extract_section(content, r"6\.\s*\**Warning Signs.*?\**:?(.*)", "None specified")
     recommended_specialty = extract_recommended_specialty_from_raw(content)
 
@@ -121,8 +119,8 @@ If there is no recommendation in any section, write **None**. Always number all 
         "medicines": parse_medicines(medicines_text),
         "tests": tests.strip(),
         "advice": advice.strip(),
-        #"recommended_specialty": clean_specialty(specialty_raw),
-	"recommended_specialty": recommended_specialty,
+	#"recommended_specialty": recommended_specialty,
+        "recommended_specialty": specialty_raw.strip(),
         "warning_signs": warning_signs.strip(),
         "raw_content": content
     }
@@ -136,8 +134,15 @@ def extract_section(text, pattern, fallback=""):
         return fallback
 
 
+
 def clean_specialty(text):
-    return text.strip().split("\n")[0].split(".")[0].strip()
+    if not text:
+        return "General Physician"
+    line = next((l.strip() for l in text.strip().splitlines() if l.strip()), "")
+    line = re.sub(r"^[-•*:\.]+\s*", "", line)
+    return line.rstrip(":.").strip() or "General Physician"
+
+
 
 
 def parse_medicines(medicines_text):

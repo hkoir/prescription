@@ -1,6 +1,6 @@
 from django.contrib import admin
 from.models import AIPrescription,Patient,Doctor,SuggestedLabTest,SuggestedMedicine,DoctorPrescription
-from.models import LabTest,Medicine,DoctorBooking,DoctorFolloupBooking,ZoomMeeting
+from.models import LabTest,Medicine,DoctorBooking,DoctorFolloupBooking,ZoomMeeting,LabResultFile
 
 admin.site.register(AIPrescription)
 admin.site.register(Patient)
@@ -15,4 +15,4 @@ admin.site.register(DoctorBooking)
 
 admin.site.register(DoctorFolloupBooking)
 admin.site.register(ZoomMeeting)
-
+admin.site.register(LabResultFile)

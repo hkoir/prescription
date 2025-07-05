@@ -18,7 +18,7 @@
         <p><strong>License:</strong> {{ doctor.medical_license_number }}</p>
         <p><strong>Phone:</strong> {{ doctor.phone }}</p>
         <p><strong>Email:</strong> {{ doctor.email }}</p><br><br>
-        <a href="{% url 'prescription:book_doctor_direct' doctor.id %}">Book now</a>
+        <a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}">Book now</a>
       </div>
       <div class="col-md-8 p-4">
         <h5 class="mb-3">👨‍⚕️ About</h5>

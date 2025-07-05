@@ -338,76 +338,57 @@ table th{
 
 
 
-    .notification-dropdown {
-        max-height: 400px; 
-        overflow-y: auto; 
-        width: 500px; 
-        padding: 10px; 
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); 
-        border-radius: 8px; 
-        background-color: black; 
-       }
-       
-    .notification-scroll {
-        max-height: 300px; 
-        overflow-y: auto; 
-       }
-       
-    .notification.unread {
-        font-weight: bold; 
-        background-color: gray; 
-        padding: 8px;
-        border-radius: 5px;
-        margin-bottom: 5px; 
-         }
-    
-       
-    .notification p:hover  {
-        
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        cursor: pointer; 
-       }
-    
-    .notification p {
-        margin: 0; 
-        white-space: normal; 
-        word-break: break-word; 
-       }
-    
-   
-.badge.bg-danger {
-    position: absolute;
-    top: 8px; 
-    right: 5px;
-    font-size: 0.75rem;
-    padding: 0.3em 0.4em;
-    border-radius: 50%;
-   }
-   
-
-
-.navbar .nav-link .fas.fa-bell.new-notification {
-    color: #FF5733; 
-    animation: shake 1s ease-in-out infinite;
-
-   }
-
-.navbar .nav-link .badge {
-    font-size: 12px;
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: red;
-    color: white;
+.notification-dropdown {
+  max-height: 400px;
+  overflow-y: auto;
+  width: 90vw;
+  max-width: 500px;
+  padding: 10px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  background-color: black;
 }
 
+.notification-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  font-size: 0.7rem;
+  padding: 0.25em 0.45em;
+  border-radius: 50%;
+  background-color: red;
+  color: white;
+  z-index: 10;
+}
 
+.notification-scroll {
+  max-height: 300px;
+  overflow-y: auto;
+}
 
+.notification.unread {
+  font-weight: bold;
+  background-color: gray;
+  padding: 8px;
+  border-radius: 5px;
+  margin-bottom: 5px;
+}
 
-   .fas.fa-bell.new-notification {
-    color: #FF5733; 
-    animation: spin 5s ease-in-out infinite;
-   
+.notification p {
+  margin: 0;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.notification p:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+
+.navbar .nav-link .fas.fa-bell.new-notification {
+  color: #FF5733;
+  animation: shake 1s ease-in-out infinite;
 }
 
 

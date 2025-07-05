@@ -70,7 +70,7 @@ class DirectDoctorBookingForm(forms.ModelForm):
 
 
 
-class RequestVidelCallForm(forms.Form):
+class RequestVideoCallForm(forms.Form):
     video_call_message = forms.CharField(
         widget=forms.Textarea(attrs={'style':'height:100px'}),
         help_text="Write your request message  (Optional)"
@@ -78,7 +78,7 @@ class RequestVidelCallForm(forms.Form):
 
 
 
-class RequestVidelCallForm(forms.ModelForm):
+class RequestVideoCallForm(forms.ModelForm):
     class Meta:
         model = DoctorBooking
         fields = ["video_call_request_message"]
@@ -90,7 +90,7 @@ class RequestVidelCallForm(forms.ModelForm):
             
 
         }
-class ApproveRequestVidelCallForm(forms.ModelForm):
+class ApproveRequestVideoCallForm(forms.ModelForm):
     class Meta:
         model = DoctorBooking
         fields = ["video_call_request_approve",'video_call_time']
