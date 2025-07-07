@@ -24,6 +24,13 @@
             </h6>
 
             <div class="text-dark small mb-3">
+
+	     {% if pres.booking_ref %}
+              <strong>Booking ref:</strong> Online Automation
+              {% elif pres.appointment_ref %}
+              <strong>Booking ref:</strong> Semi Automation
+              {% endif %}
+
               <p class="mb-1"><strong>🔢 Code:</strong> {{ pres.doctor_prescription_code|default:"N/A" }}</p>
               <p class="mb-1"><strong>👨‍⚕️ Doctor:</strong> {{ pres.doctor.user.get_full_name|default:pres.doctor }}</p>
               <p class="mb-1"><strong>🧑 Patient:</strong> {{ pres.patient.user.get_full_name|default:pres.patient }}</p>

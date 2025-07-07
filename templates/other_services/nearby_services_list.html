@@ -1,0 +1,263 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+
+
+<style>
+  .user-location-tooltip,.service-name-tooltip{
+    background-color: #2a9df4;
+    color: white;
+    font-weight: bold;
+    border-radius: 4px;
+    padding: 4px 8px;
+    box-shadow: 0 0 6px rgba(42, 157, 244, 0.8);
+  }
+
+  .service-name-tooltip {
+    background-color: #444;
+    color: #fff;
+    font-weight: bold;
+    padding: 4px 8px;
+    border-radius: 4px;
+    box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .service-details-tooltip {
+    background-color: white;
+    color: #333;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    line-height: 1.4;
+    max-width: 250px;
+  }
+</style>
+
+
+<div class="container my-5">
+  <h3 class="mb-4">Nearby Healthcare Services</h3>
+
+  <!-- Filter Form -->
+  <form method="get" action="{% url 'other_services:service_list' %}" class="row g-3 mb-4">
+    <input type="hidden" name="lat" id="lat" value="{{ user_lat }}">
+    <input type="hidden" name="lng" id="lng" value="{{ user_lng }}">
+
+    <div class="col-md-4">
+      <label for="radius" class="form-label">Search Radius (km)</label>
+      <input type="number" name="radius" id="radius" class="form-control" value="{{ radius|default:10 }}" placeholder="e.g. 5">
+    </div>
+
+    <div class="col-md-4">
+      <label for="service_type" class="form-label">Service Type</label>
+      <select name="service_type" id="service_type" class="form-select">
+        <option value="">-- All Services --</option>
+        <option value="hospital" {% if service_type == 'hospital' %}selected{% endif %}>Hospital</option>
+        <option value="clinic" {% if service_type == 'clinic' %}selected{% endif %}>Clinic</option>
+        <option value="lab" {% if service_type == 'lab' %}selected{% endif %}>Lab</option>
+        <option value="pharmacy" {% if service_type == 'pharmacy' %}selected{% endif %}>Pharmacy</option>
+        <option value="ambulance" {% if service_type == 'ambulance' %}selected{% endif %}>Ambulance</option>
+      </select>
+    </div>
+
+    <div class="col-md-4 d-grid align-items-end">
+      <button type="submit" class="btn btn-primary mt-2">Search Services</button>
+    </div>
+  </form>
+
+  <!-- Services Table -->
+  {% if services %}
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered">
+        <thead class="table-light">
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Address</th>
+            <th>Contact</th>
+            <th>Distance (km)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for entry in services %}
+            <tr>
+              <td><strong>{{ entry.service.name }}</strong></td>
+              <td>{{ entry.service.get_service_type_display }}</td>
+              <td>{{ entry.service.address }}</td>
+              <td>{{ entry.service.contact_number }}</td>
+              <td>{{ entry.distance }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+
+<div id="map-container"
+     data-user-lat="{{ user_lat|default:'' }}"
+     data-user-lng="{{ user_lng|default:'' }}"
+     data-radius="{{ radius }}"
+     data-services='{{ services|json_script:"nearby-services" }}'>
+</div>
+
+
+<div id="map" style="height: 500px; width: 100%;"></div>
+{{ services|json_script:"nearby-services" }}
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+
+
+
+<script>
+  const userLat = parseFloat("{{ user_lat|default:'NaN' }}");
+  const userLng = parseFloat("{{ user_lng|default:'NaN' }}");
+
+  const defaultLat = 23.8103;
+  const defaultLng = 90.4125;
+
+  const map = L.map('map').setView([defaultLat, defaultLng], 12);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors'
+  }).addTo(map);
+
+  function addUserMarker(lat, lng) {
+    const marker = L.marker([lat, lng]).addTo(map);
+    marker.bindTooltip("📍 You are here", {
+      permanent: true,
+      direction: 'top',
+      offset: [0, -10],
+      className: 'user-location-tooltip'
+    }).openTooltip();
+  }
+
+  function addServiceMarkers(nearbyServices) {
+    nearbyServices.forEach(entry => {
+      const s = entry.service;
+      const marker = L.marker([s.latitude, s.longitude]).addTo(map);
+
+      // Name shown permanently (always visible)
+      const nameTooltip = marker.bindTooltip(`${s.name} — 🚗 ${entry.distance} km`, {
+        permanent: true,
+        direction: 'right',
+        offset: [10, 0],
+        className: 'service-name-tooltip'
+      }).openTooltip();
+
+      // Prepare detailed floating tooltip
+      const detailsTooltip = L.tooltip({
+        direction: 'top',
+        offset: [0, -10],
+        className: 'service-details-tooltip',
+        sticky: true
+      });
+
+      const detailsContent = `
+        <strong>${s.name}</strong><br/>
+        ${s.service_type}<br/>
+        📍 ${s.address}<br/>
+        📞 ${s.contact_number}<br/>
+        🚗 ${entry.distance} km
+      `;
+
+      // Show on hover (desktop)
+      marker.on('mouseover', () => {
+        detailsTooltip.setLatLng(marker.getLatLng()).setContent(detailsContent).addTo(map);
+      });
+
+      marker.on('mouseout', () => {
+        map.removeLayer(detailsTooltip);
+      });
+
+      // Show on tap/click (mobile support)
+      marker.on('click', () => {
+        if (map.hasLayer(detailsTooltip)) {
+          map.removeLayer(detailsTooltip);
+        } else {
+          detailsTooltip.setLatLng(marker.getLatLng()).setContent(detailsContent).addTo(map);
+        }
+      });
+
+      // Add hover support on tooltip label (for desktop)
+      map.whenReady(() => {
+        const tooltipEl = nameTooltip.getElement();
+        if (tooltipEl) {
+          tooltipEl.style.cursor = 'pointer';
+          tooltipEl.addEventListener('mouseenter', () => {
+            detailsTooltip.setLatLng(marker.getLatLng()).setContent(detailsContent).addTo(map);
+          });
+          tooltipEl.addEventListener('mouseleave', () => {
+            map.removeLayer(detailsTooltip);
+          });
+          tooltipEl.addEventListener('click', () => {
+            // toggle for mobile/touch
+            if (map.hasLayer(detailsTooltip)) {
+              map.removeLayer(detailsTooltip);
+            } else {
+              detailsTooltip.setLatLng(marker.getLatLng()).setContent(detailsContent).addTo(map);
+            }
+          });
+        }
+      });
+    });
+  }
+
+  const nearbyServices = JSON.parse(document.getElementById('nearby-services').textContent);
+
+  function initMap() {
+    if (!isNaN(userLat) && !isNaN(userLng)) {
+      map.setView([userLat, userLng], 12);
+      addUserMarker(userLat, userLng);
+      addServiceMarkers(nearbyServices);
+    } else if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(position => {
+        userLat = position.coords.latitude;
+        userLng = position.coords.longitude;
+        map.setView([userLat, userLng], 12);
+        addUserMarker(userLat, userLng);
+        addServiceMarkers(nearbyServices);
+      }, () => {
+        map.setView([defaultLat, defaultLng], 12);
+        addServiceMarkers(nearbyServices);
+      });
+    } else {
+      map.setView([defaultLat, defaultLng], 12);
+      addServiceMarkers(nearbyServices);
+    }
+  }
+
+  initMap();
+</script>
+
+
+{% elif user_lat %}{% if user_lng %}
+    <div class="alert alert-warning mt-4">⚠️ No services found within {{ radius }} km.</div>
+  {% endif %}{% endif %}
+</div>
+
+<!-- Auto geolocation script -->
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    const latInput = document.getElementById("lat");
+    const lngInput = document.getElementById("lng");
+
+    if (!latInput.value || !lngInput.value) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function (position) {
+          latInput.value = position.coords.latitude;
+          lngInput.value = position.coords.longitude;
+        }, function (error) {
+          console.warn("Geolocation error:", error.message);
+        });
+      }
+    }
+  });
+</script>
+
+{% endblock %}
+

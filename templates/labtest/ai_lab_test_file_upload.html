@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container my-5">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white">
+      <h3 class="mb-0">🧪 AI Lab Test Interpretation</h3>
+    </div>
+    <div class="card-body">
+
+      <form method="POST" enctype="multipart/form-data" novalidate>
+        {% csrf_token %}
+
+        <!-- Lab File Upload -->
+        <div class="mb-4">
+          <label for="lab_files" class="form-label fw-semibold">Upload Lab Test Images or PDFs</label>
+          <input type="file" name="lab_files" id="lab_files" multiple accept="image/*,application/pdf" class="form-control" aria-describedby="labFilesHelp" />
+          <div id="labFilesHelp" class="form-text text-muted">
+            You can upload multiple files (e.g., JPG, PNG, PDF).
+          </div>
+        </div>
+
+        <!-- Webcam Capture -->
+        <div class="mb-4 text-center">
+          <label class="form-label fw-semibold d-block mb-2">Or Capture Using Camera</label>
+          <div class="btn-group mb-3" role="group" aria-label="Camera controls">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="startCamera()">Use Camera</button>
+            <button type="button" class="btn btn-outline-info btn-sm" onclick="takePhoto()">Capture</button>
+            <button type="button" id="retakeBtn" class="btn btn-outline-warning btn-sm" onclick="retakePhoto()" style="display:none;">Retake</button>
+          </div>
+
+          <div class="mx-auto" style="max-width: 320px;">
+            <video id="video" autoplay class="w-100 rounded border shadow-sm" style="display:none;"></video>
+            <canvas id="canvas" style="display:none;"></canvas>
+            <img id="captured_preview" class="img-thumbnail mt-3" style="display:none;" alt="Captured Image Preview" />
+          </div>
+
+          <input type="hidden" name="captured_image" id="captured_image" />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 fw-semibold py-2 fs-5">Get Interpretation</button>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('lab_files').addEventListener('change', function () {
+      if (this.files.length > 5) {
+          alert("You can only upload up to 3 files.");
+          this.value = ""; // clear the selection
+      }
+  });
+
+  let videoStream = null;
+
+  function startCamera() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const retakeBtn = document.getElementById('retakeBtn');
+
+      canvas.style.display = 'none';
+      video.style.display = 'block';
+      retakeBtn.style.display = 'none';
+
+      navigator.mediaDevices.getUserMedia({ video: true })
+          .then(stream => {
+              videoStream = stream;
+              video.srcObject = stream;
+          })
+          .catch(err => {
+              alert("Could not access camera: " + err);
+          });
+  }
+
+  function takePhoto() {
+      const video = document.getElementById('video');
+      const canvas = document.getElementById('canvas');
+      const hiddenInput = document.getElementById('captured_image');
+      const retakeBtn = document.getElementById('retakeBtn');
+      const previewImg = document.getElementById('captured_preview');
+
+      const scale = 0.6;
+      canvas.width = video.videoWidth * scale;
+      canvas.height = video.videoHeight * scale;
+      canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      // Stop video stream
+      if (video.srcObject) {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      }
+
+      video.style.display = 'none';
+      canvas.style.display = 'none'; // keep canvas hidden, using image preview instead
+      retakeBtn.style.display = 'inline-block';
+
+      const dataURL = canvas.toDataURL('image/png');
+      hiddenInput.value = dataURL;
+
+      previewImg.src = dataURL;
+      previewImg.style.display = 'inline-block';
+  }
+
+  function retakePhoto() {
+      const canvas = document.getElementById('canvas');
+      const hiddenInput = document.getElementById('captured_image');
+      const previewImg = document.getElementById('captured_preview');
+
+      hiddenInput.value = '';
+      previewImg.src = '#';
+      previewImg.style.display = 'none';
+      canvas.style.display = 'none';
+
+      startCamera();
+  }
+</script>
+
+{% endblock %}

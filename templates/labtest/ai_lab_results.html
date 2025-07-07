@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-5">
+  <div class="card shadow-sm border-0">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">🧠 AI Lab Test Interpretation Results</h4>
+    </div>
+    <div class="card-body">
+      {% if results %}
+        <div class="row">
+          {% for result in results %}
+            <div class="col-md-6 mb-4">
+              <div class="card h-100 border rounded shadow-sm">
+                <img src="{{ result.lab_images.url }}" class="card-img-top img-fluid" alt="Lab Image" style="max-height: 300px; object-fit: contain;">
+                <div class="card-body">
+                  <h6 class="card-title fw-bold text-primary">AI Interpretation</h6>
+                  <p class="card-text text-dark small" style="white-space: pre-line;">{{ result.interpretation_text|default:"No interpretation available." }}</p>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted">No lab test results available yet.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -11,7 +11,7 @@ from prescription.utils.zoom import create_zoom_meeting
 from django.utils import timezone
 from datetime import timedelta
 from symptom_checker.models import SymptomCheckSession
-
+from appointments.models import Appointment
 
 class LabTest(models.Model):  # New model
     lab_test_code = models.CharField(max_length=30,null=True,blank=True,unique=True)   
@@ -90,8 +90,12 @@ class Doctor(models.Model):
         null=True, blank=True, 
         help_text="Provide a short  bio"
     )
-    start_time = models.TimeField(help_text="Doctor's available start time", null=True, blank=True)
-    end_time = models.TimeField(help_text="Doctor's available end time", null=True, blank=True)
+    start_time = models.TimeField(help_text="Doctor's chamber start time", null=True, blank=True)
+    end_time = models.TimeField(help_text="Doctor's chamber end time", null=True, blank=True)
+    hospital_start_time = models.TimeField(help_text="Doctor's hospital duto start time", null=True, blank=True)
+    hospital_end_time = models.TimeField(help_text="Doctor's hospital duty end time", null=True, blank=True)
+    chamber_location =  models.TextField(null=True, blank=True, help_text="Enter your chamber address if any")
+
     consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     video_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     folloup_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
@@ -176,6 +180,7 @@ class AIPrescription(models.Model):
     recommended_specialty = models.TextField(blank=True, null=True)
     warning_signs = models.TextField(blank=True, null=True) 
     raw_response = models.TextField(blank=True, null=True)
+    diet_chart = models.TextField(blank=True, null=True)
 
     created_by_ai = models.BooleanField(default=True)
     reviewed_by = models.ForeignKey(Doctor, on_delete=models.SET_NULL, blank=True, null=True)
@@ -190,6 +195,23 @@ class AIPrescription(models.Model):
 
     def __str__(self):
         return f"AI Prescription #{self.ai_prescription_code} for {self.patient}"
+
+
+
+class AiLabImageInterpretation(models.Model):
+    ai_prescription = models.ForeignKey(
+        AIPrescription, on_delete=models.CASCADE, related_name='ai_lab_test',null=True, blank=True
+    )
+    patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True, blank=True)
+    lab_images = models.FileField(upload_to='Ai_lab_image')  
+    uploaded_at = models.DateTimeField(auto_now_add=True)  
+    interpretation_text = models.TextField(blank=True, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True,blank=True) 
+
+    def __str__(self):
+        return f"Lab Image Interpretation  uploaded at {self.uploaded_at}"
 
 
 
@@ -341,7 +363,7 @@ class DoctorPrescription(models.Model):
    
     booking_ref = models.ForeignKey(DoctorBooking, on_delete=models.CASCADE,null=True,blank=True,related_name='doctor_booking_refs')
     booking_folloup_ref = models.ForeignKey(DoctorFolloupBooking, on_delete=models.CASCADE,null=True,blank=True,related_name='doctor_folloup_booking_refs')
-   
+    appointment_ref = models.ForeignKey(Appointment, on_delete=models.SET_NULL, null=True, blank=True, related_name="appointment_prescriptions")
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name="patient_prescriptions",null=True,blank=True)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE, related_name="doctor_prescriptions",null=True,blank=True)
     diagnosis = models.TextField(verbose_name="Clinical Diagnosis",null=True,blank=True)

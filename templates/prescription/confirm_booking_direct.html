@@ -247,6 +247,7 @@ function retakePhoto() {
 
 
 
+
 <script>
 let mediaRecorder;
 let recordedChunks = [];
@@ -258,19 +259,22 @@ const playback = document.getElementById('playback');
 const recordedInput = document.getElementById('recordedVideoInput');
 
 startBtn.addEventListener('click', async () => {
+    // Start webcam
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     recordPreview.srcObject = stream;
+    recordPreview.style.display = "block"; // ✅ show live preview
+    playback.classList.add("d-none");      // hide old playback preview
 
     recordedChunks = [];
-    mediaRecorder = new MediaRecorder(stream);
-    let currentSize = 0; // track size in bytes
+    let currentSize = 0;
     const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    mediaRecorder = new MediaRecorder(stream);
 
     mediaRecorder.ondataavailable = e => {
         if (e.data && e.data.size > 0) {
             currentSize += e.data.size;
 
-            // If the size exceeds the limit, stop recording and alert
             if (currentSize > maxSizeBytes) {
                 alert("Recording exceeded 5 MB. Stopping automatically.");
                 mediaRecorder.stop();
@@ -283,23 +287,29 @@ startBtn.addEventListener('click', async () => {
         }
     };
 
-        mediaRecorder.onstop = () => {
-            const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const videoURL = URL.createObjectURL(blob);
-            playback.src = videoURL;
-            playback.classList.remove('d-none');
+    mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const videoURL = URL.createObjectURL(blob);
+        playback.src = videoURL;
+        playback.classList.remove('d-none');
 
-            // Store as base64 for hidden input (optional)
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                recordedInput.value = reader.result;
-            };
-            reader.readAsDataURL(blob);
-
-            // Reset size tracker
-            currentSize = 0;
+        // Optional: convert to base64 and store in hidden input
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            recordedInput.value = reader.result;
         };
+        reader.readAsDataURL(blob);
 
+        // Reset size tracker
+        currentSize = 0;
+
+        // ✅ Stop webcam and hide preview
+        if (recordPreview.srcObject) {
+            recordPreview.srcObject.getTracks().forEach(track => track.stop());
+            recordPreview.srcObject = null;
+        }
+        recordPreview.style.display = "none"; // ✅ hide black box
+    };
 
     mediaRecorder.start();
     startBtn.disabled = true;
@@ -307,8 +317,9 @@ startBtn.addEventListener('click', async () => {
 });
 
 stopBtn.addEventListener('click', () => {
-    mediaRecorder.stop();
-    recordPreview.srcObject.getTracks().forEach(track => track.stop());
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+    }
     startBtn.disabled = false;
     stopBtn.disabled = true;
 });

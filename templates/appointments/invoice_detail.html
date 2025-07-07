@@ -1,0 +1,69 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow-lg border-0">
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+      <h4 class="mb-0">Invoice #{{ invoice.id }}</h4>
+      <span class="badge bg-light text-dark">{{ invoice.get_invoice_type_display }}</span>
+    </div>
+
+    <div class="card-body">
+      <div class="row mb-3">
+        <div class="col-md-6">
+          <h5 class="text-secondary">Patient Information</h5>
+          <p><strong>Name:</strong> {{ invoice.patient.full_name }}</p>
+          <p><strong>Phone:</strong> {{ invoice.patient.phone }}</p>
+          <p><strong>Gender:</strong> {{ invoice.patient.gender }}</p>
+        </div>
+
+        <div class="col-md-6">
+          <h5 class="text-secondary">Doctor Information</h5>
+          {% if invoice.doctor %}
+            <p><strong>Name:</strong> Dr. {{ invoice.doctor.full_name }}</p>
+            <p><strong>Specialization:</strong> {{ invoice.doctor.specialization|default:"N/A" }}</p>
+          {% else %}
+            <p class="text-muted">No doctor assigned.</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <hr>
+
+      <h5 class="mb-3 text-secondary">Invoice Summary</h5>
+      <table class="table table-bordered">
+        <tbody>
+          <tr>
+            <th scope="row">Status</th>
+            <td>
+              {% if invoice.is_paid %}
+                <span class="badge bg-success">Paid</span>
+             
+              {% else %}
+                <span class="badge bg-warning text-dark">UnPaid</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">Total Amount</th>
+            <td>{{ invoice.amount }} ৳</td>
+          </tr>
+          <tr>
+            <th scope="row">Amount Paid</th>
+            <td>{{ invoice.amount }} ৳</td>
+          </tr>
+          
+        </tbody>
+      </table>
+
+      {% if not invoice.is_paid %}
+      <div class="text-end mt-4">
+        <a href="" class="btn btn-success">
+          💳 Make Payment
+        </a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

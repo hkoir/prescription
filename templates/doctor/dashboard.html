@@ -160,14 +160,14 @@
                 <span class="badge bg-warning text-dark">
                   {{ appointment.status|capfirst }}
                 </span>
-                 <a href="{% url 'prescription:doctor_booking_detail' appointment.id %}"class="badge bg-primary">View booking</a>
-                <a href="{% url 'prescription:create_doctor_prescription' appointment.id %}"class="badge bg-primary">Create Prescription</a>
-               
-                <a href="{% url 'prescription:video_call' appointment.id %}" class="badge bg-success" target="_blank">
-                  Join Video Call
-              </a>
+                 <a href="{% url 'prescription:doctor_booking_detail' appointment.id %}" 
+		     class="badge bg-primary">View and Prescribe</a>
 
-              
+              {% if appointment.video_link %}
+                <a href="{{ appointment.video_link }}" class="badge bg-success" target="_blank">
+                  Join Video Call
+               {% endif %}
+               
 
             {% elif appointment.status == 'completed' %}            
               <span class="badge bg-success">

@@ -49,7 +49,9 @@ TENANT_APPS = [
    'finance',
    'messaging',
    'payment_gateway',
-   'symptom_checker'
+   'symptom_checker',
+   'other_services',
+   'appointments'
     
 ]
 

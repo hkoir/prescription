@@ -259,11 +259,14 @@ def create_doctor_profile(request):
 from prescription.models import Doctor
 from django.core.exceptions import PermissionDenied
 
+
 @login_required
 def manage_doctor_profile(request, id=None):
     if id:
-        instance = get_object_or_404(Doctor, id=id)    
-        if instance.user != request.user:
+        instance = get_object_or_404(Doctor, id=id)
+
+        # 👇 Allow staff or superuser to bypass restriction
+        if instance.user and instance.user != request.user and not request.user.is_staff and not request.user.is_superuser:
             raise PermissionDenied("You do not have permission to edit this profile.")
         message_text = "Profile updated successfully!"
     else:
@@ -279,7 +282,7 @@ def manage_doctor_profile(request, id=None):
         messages.success(request, message_text)
         return redirect('finance:doctor_detail', doctor.id)
 
-    datas = Doctor.objects.filter(user=request.user).order_by('-created_at')
+    datas = Doctor.objects.all()
     paginator = Paginator(datas, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -290,6 +293,7 @@ def manage_doctor_profile(request, id=None):
         'datas': datas,
         'page_obj': page_obj,
     })
+
 
 
 

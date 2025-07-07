@@ -11,7 +11,11 @@ urlpatterns = [
     path('<int:pk>/', views.ai_prescription_detail, name='ai_prescription_detail'),
     path('ai_prescription_list/', views.ai_prescription_list, name='ai_prescription_list'), 
     path('ai_prescription_pdf/<int:pk>/', views.ai_prescription_pdf, name='ai_prescription_pdf'), 
-       
+
+    path('create_ai_prescription_with_image/', views.create_ai_prescription_with_image, name='create_ai_prescription_with_image'),
+    path('lab_image_interpretation_view/', views.lab_image_interpretation_view, name='lab_image_interpretation_view'),
+    path('lab-test-interpretations/history/', views.lab_interpretation_history, name='lab_interpretation_history'),
+
 
     path('prescription/<int:pk>/book_doctor/', views.book_doctor, name='book_doctor'),
     path('book_doctor_direct/<int:pk>/', views.book_doctor_direct, name='book_doctor_direct'),

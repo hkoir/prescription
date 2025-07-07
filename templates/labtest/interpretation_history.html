@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="container mt-4">
+  <h2>Your Lab Test Interpretation History</h2>
+
+  {% if interpretations %}
+    <div class="row">
+      {% for item in interpretations %}
+        <div class="col-md-6 mb-4">
+          <div class="card shadow-sm">
+            <a href="{{ item.lab_images.url }}" target="_blank">
+            <img src="{{ item.lab_images.url }}" class="card-img-top img-fluid" alt="Lab Test Image" style="max-height:300px; object-fit:contain;">
+            </a>
+            <div class="card-body">
+              <h5 class="card-title">Interpretation</h5>
+              <p class="card-text" style="white-space: pre-line;">{{ item.interpretation_text }}</p>
+              <small class="text-muted">Uploaded on {{ item.created_at|date:"M d, Y H:i" }}</small>
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <p class="text-muted">No lab test interpretations found yet.</p>
+  {% endif %}
+</div>
+
+{% endblock %}

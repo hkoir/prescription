@@ -74,22 +74,37 @@ class DoctorPaymentLog(models.Model):
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
-
+from django.utils import timezone
 
 class DoctorServiceLog(models.Model):
     user= models.ForeignKey(CustomUser, on_delete=models.CASCADE,null=True,blank=True)
     ai_prescription = models.ForeignKey(AIPrescription, on_delete=models.CASCADE, related_name="doctor_service_logs",null=True, blank=True,)
     doctor = models.ForeignKey(Doctor, on_delete=models.CASCADE,related_name='doctor_logs')    
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True, blank=True,related_name='patient_logs')
-    service_date = models.DateField()
+    service_date = models.DateField(default=timezone.now)
     service_fee = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
     is_paid = models.BooleanField(default=False)    
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)
 
+
     def save(self, *args, **kwargs):
         if not self.service_fee:
-            self.service_fee = self.doctor.consultation_fees
+            # Get last service date of this patient with this doctor, excluding current instance if update
+            last_service = DoctorServiceLog.objects.filter(
+                doctor=self.doctor,
+                patient=self.patient
+            ).exclude(pk=self.pk).order_by('-service_date').first()
+
+            if last_service and self.service_date and last_service.service_date:
+                days_since_last_visit = (self.service_date - last_service.service_date).days
+                if days_since_last_visit <= (self.doctor.followup_validity_days or 0):
+                    self.service_fee = self.doctor.folloup_consultation_fees
+                else:
+                    self.service_fee = self.doctor.consultation_fees
+            else:
+                # No last visit, charge regular fee
+                self.service_fee = self.doctor.consultation_fees
 
         super().save(*args, **kwargs)
 
@@ -101,6 +116,8 @@ class DoctorServiceLog(models.Model):
             DoctorPayment.objects.filter(doctor=self.doctor).update(
                 total_due_amount=F('total_due_amount') + self.service_fee
             )
+
+
 
     def __str__(self):
         return f"Consultatin by {self.doctor} on {self.service_date} for patient--{self.patient}"

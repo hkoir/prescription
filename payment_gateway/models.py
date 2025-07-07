@@ -6,7 +6,7 @@ from prescription.models import Patient,Doctor
 from prescription.models import DoctorBooking,DoctorFolloupBooking,ZoomMeeting,DoctorPrescription,AIPrescription
 
 from symptom_checker.models import SymptomCheckSession
-
+from appointments.models import Appointment
 
 
 class PaymentSystem(models.Model):
@@ -82,7 +82,7 @@ class PaymentInvoice(models.Model):
 
     doctor_followup_booking = models.OneToOneField(DoctorFolloupBooking,on_delete=models.SET_NULL, null=True, blank=True,related_name='doctor_followup_invoice')
     zoom_meeting = models.OneToOneField(ZoomMeeting, on_delete=models.SET_NULL, null=True, blank=True,related_name='zoom_meeting_invoice')
-
+    appointment= models.OneToOneField(Appointment, on_delete=models.SET_NULL, null=True, blank=True,related_name='appointment_invoice')
 
     related_object_id = models.PositiveIntegerField(blank=True, null=True)
     invoice_type = models.CharField(max_length=30, choices=INVOICE_TYPES)

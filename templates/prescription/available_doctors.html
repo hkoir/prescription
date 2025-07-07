@@ -187,51 +187,65 @@
                 </div>
             </div>               
             
-       <!-- Doctor Details Modal -->
-            <div class="modal fade" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ doctor.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-scrollable">
-                    <div class="modal-content">
-                        <div class="modal-header bg-primary text-white">
-                            <h5 class="modal-title" id="doctorModalLabel{{ doctor.id }}">Dr &nbsp;{{ doctor.full_name }}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="text-center mb-3">
-                                <img src="{{ doctor.photo.url }}" alt="{{ doctor.name }}" class="rounded-circle border shadow" style="width: 120px; height: 120px;">
-                            </div>
-                            <h4 class="text-center text-primary">{{ doctor.specialization }}</h4>
-                            <p class="text-center"><strong>License No:</strong> {{ doctor.medical_license_number }}</p>
-                            <hr>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <p><strong>Experience:</strong> {{ doctor.experience_years }} years</p>
-                                    <p><strong>Education:</strong> {{ doctor.education }}</p>
-                                    <p><strong>Consultation fees:</strong> {{ doctor.consultation_fees }}</p>
-                                    <p><strong>Follow-up Consultation fees:</strong> {{ doctor.folloup_consultation_fees }}</p>
-                                    <p><strong>Follow-up validation:</strong> {{ doctor.followup_validity_days}}&nbsp;days</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <p><strong>Available Time:</strong> {{ doctor.start_time|default:"Not available" }} - {{ doctor.end_time|default:"Not available" }}</p>
-                                    <p><strong>Hospital Affiliations:</strong> {{ doctor.hospital_affiliations }}</p>
-                                    <p><strong>Memberships:</strong> {{ doctor.memberships }}</p>
-                                    <p><strong>Awards:</strong> {{ doctor.awards }}</p>
-                                </div>
-                            </div>
-                            <hr>
-                            <p><strong>About:</strong></p>
-                            <div class="text-muted justify-content" style="text-align: justify;" id="doctorDescription{{ doctor.id }}">
-                                {{ doctor.description|truncatewords:30 }} 
-                                <span id="moreText{{ doctor.id }}" style="display: none; white-space: pre-line;">{{ doctor.description }}</span>
-                            </div>
-                            <a href="javascript:void(0);" onclick="toggleDescription('{{ doctor.id }}')" id="readMoreBtn{{ doctor.id }}"> Read More</a>
 
+    <!-- Doctor Details Modal -->
+        <div class="modal fade" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ doctor.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="doctorModalLabel{{ doctor.id }}">Dr &nbsp;{{ doctor.full_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+
+                    <div class="modal-body">
+                        <div class="text-center mb-3">
+                            <img src="{{ doctor.photo.url }}" alt="{{ doctor.name }}" class="rounded-circle border shadow" style="width: 120px; height: 120px;">
                         </div>
-                        <div class="modal-footer d-flex justify-content-between bg-info">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                        <h4 class="text-center text-primary">{{ doctor.specialization }}</h4>
+                        <p class="text-center"><strong>License No:</strong> {{ doctor.medical_license_number }}</p>
+
+                        <hr>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Experience:</strong> {{ doctor.experience_years }} years</p>
+                                <p><strong>Education:</strong> {{ doctor.education }}</p>
+                                <p><strong>Consultation Fees:</strong> {{ doctor.consultation_fees }}</p>
+                                <p><strong>Follow-up Fees:</strong> {{ doctor.folloup_consultation_fees }}</p>
+                                <p><strong>Follow-up Validity:</strong> {{ doctor.followup_validity_days }} days</p>
+                                <p><strong>Chamber Location:</strong><br>{{ doctor.chamber_location|default:"N/A" }}</p>
+                            </div>
+
+                            <div class="col-md-6">
+                                <p><strong>Chamber Time:</strong> 
+                                    {{ doctor.start_time|default:"N/A" }} - {{ doctor.end_time|default:"N/A" }}</p>
+                                <p><strong>Hospital Duty Time:</strong>
+                                    {{ doctor.hospital_start_time|default:"N/A" }} - {{ doctor.hospital_end_time|default:"N/A" }}</p>
+                                <p><strong>Hospital Affiliations:</strong> {{ doctor.hospital_affiliations }}</p>
+                                <p><strong>Memberships:</strong> {{ doctor.memberships }}</p>
+                                <p><strong>Awards:</strong> {{ doctor.awards }}</p>
+                            </div>
                         </div>
+
+                        <hr>
+                        <p><strong>About:</strong></p>
+                        <div class="text-muted justify-content" style="text-align: justify;" id="doctorDescription{{ doctor.id }}">
+                            {{ doctor.description|truncatewords:30 }} 
+                            <span id="moreText{{ doctor.id }}" style="display: none; white-space: pre-line;">
+                                {{ doctor.description }}
+                            </span>
+                        </div>
+                        <a href="javascript:void(0);" onclick="toggleDescription('{{ doctor.id }}')" id="readMoreBtn{{ doctor.id }}">Read More</a>
+                    </div>
+
+                    <div class="modal-footer d-flex justify-content-between bg-info">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
+        </div>
+
 
             <!-- end of modal -->
             {% endfor %}            

@@ -17,8 +17,10 @@ urlpatterns = [
     path('symptom_checker/',include('symptom_checker.urls',namespace='symptom_checker')),  
     path('payment_gateway/',include('payment_gateway.urls',namespace='payment_gateway')),
     path('i18n/', include('django.conf.urls.i18n')),
-   
-    
+    path('other_services/',include('other_services.urls',namespace='other_services')),
+    path('appointments/',include('appointments.urls',namespace='appointments')),
+
+
 ]
 
 

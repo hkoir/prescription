@@ -1,7 +1,6 @@
 from django.db.models import Q
 from django.utils import timezone
 from django.contrib import messages
-from .ai import get_ai_prescription  
 import json
 from django.http import HttpResponse
 from django.template.loader import get_template
@@ -36,6 +35,20 @@ from prescription.utils.zoom import create_zoom_meeting
 from payment_gateway.utils import is_payment_enabled_for_tenant
 
 from.models import LabResultFile
+
+
+
+from django.core.mail import send_mail
+from django.conf import settings
+from django.core.files.storage import default_storage
+from tempfile import NamedTemporaryFile
+import mimetypes
+from.models import AiLabImageInterpretation
+from .ai import get_ai_prescription  
+from prescription.ai import get_ai_prescription_with_image  
+from .ai import interpret_lab_images_only  
+
+
 
 
 def about_us(request):
@@ -294,6 +307,7 @@ def create_ai_prescription(request):
                     advice=ai_data['advice'],
                     recommended_specialty=ai_data['recommended_specialty'],
                     warning_signs=ai_data.get('warning_signs', ''),
+		    diet_chart=ai_data.get('diet_chart'),
                     raw_response=ai_data["raw_content"] 
                 )
 	  #========================================================================
@@ -367,27 +381,341 @@ def extract_recommended_specialty_from_raw(content):
 
 
 @login_required
-def ai_prescription_detail(request, pk):
-    prescription = get_object_or_404(AIPrescription, pk=pk)
+def create_ai_prescription_with_image(request):
+    form = AIPrescriptionForm()
+    patient_form = PatientForm()
+    user = request.user
+    patient = None
+    patient_missing = False
+    free = False
+    payment = None
 
-    # Permissions check
-    if prescription.user != request.user and not prescription.bookings.filter(doctor__user=request.user).exists():
-        raise PermissionDenied("You do not have permission to view this AI prescription.")
+    try:
+        patient = user.patient_profile
+    except Exception:
+        patient_missing = True
 
-    # Attempt to extract recommended specialty if missing or placeholder
-    raw_value = (prescription.recommended_specialty or "").strip()
-    if raw_value.lower() in {"", "**", "none", "n/a"}:
-        recommended_specialty = extract_recommended_specialty_from_raw(prescription.raw_response)
-        prescription.recommended_specialty = recommended_specialty
-        prescription.save(update_fields=['recommended_specialty'])  # ✅ fixed typo here
-    else:
-        recommended_specialty = raw_value
+    if patient and patient.needs_profile_update():
+        return redirect(f"{reverse('finance:update_patient_profile', args=[patient.id])}?next={request.path}")
 
-    return render(request, 'prescription/detail.html', {
-        'prescription': prescription,
-        'recommended_specialty': recommended_specialty,
-        'normalized_duration': normalize_duration_text(prescription.duration),
+    free_limit = getattr(patient, 'free_ai_prescription_limit', 5)
+    if request.method != 'POST' and patient and patient.free_ai_prescriptions_used >= free_limit:
+        has_payment = AIPrescriptionPayment.objects.filter(
+            patient=patient,
+            used_for_prescription=False,
+            successful=True
+        ).exists()
+        if not has_payment:
+            messages.warning(request, 'Your free AI prescription limit has been reached. Please make a payment to continue.')
+            return redirect('prescription:home')
+
+    if request.method == 'POST':
+        if 'create_patient' in request.POST:
+            patient_form = PatientForm(request.POST)
+            if patient_form.is_valid():
+                patient_instance = patient_form.save(commit=False)
+                patient_instance.user = user
+                patient_instance.save()
+                messages.success(request, "Patient profile created.")
+                return redirect('prescription:create_ai_prescription')
+        else:
+            form = AIPrescriptionForm(request.POST, request.FILES)
+            if not patient:
+                messages.error(request, "Please complete your patient profile before proceeding.")
+                return redirect('prescription:create_ai_prescription')
+
+            if patient.free_ai_prescriptions_used < free_limit:
+                free = True
+            else:
+                payment = AIPrescriptionPayment.objects.filter(
+                    patient=patient,
+                    used_for_prescription=False,
+                    successful=True
+                ).first()
+                if not payment:
+                    messages.warning(request, 'Your free usage has ended. Please make a payment to generate a new AI prescription.')
+                    return redirect('prescription:home')
+
+            if form.is_valid():
+                data = form.cleaned_data.copy()
+                data.pop('lab_image', None)  # clean unused field
+
+                # Fill missing values from patient profile
+                data['age'] = data.get('age') or patient.age
+                data['gender'] = data.get('gender') or patient.gender
+                data['body_weight'] = data.get('body_weight') or patient.body_weight
+                data['body_height'] = data.get('body_height') or patient.body_height
+                data['location'] = data.get('location') or patient.city
+                data['medical_history'] = data.get('medical_history') or patient.medical_history
+                data['allergies'] = data.get('allergies') or patient.allergies
+
+                uploaded_files = request.FILES.getlist('lab_files')
+
+                # 🧠 Call AI ONCE with all images
+                all_image_payloads = []
+                for uploaded_file in uploaded_files:
+                    with NamedTemporaryFile(delete=False, suffix=".tmp") as tmp_file:
+                        for chunk in uploaded_file.chunks():
+                            tmp_file.write(chunk)
+                        tmp_path = tmp_file.name
+
+                    with open(tmp_path, "rb") as f:
+                        image_bytes = f.read()
+
+                    mime_type, _ = mimetypes.guess_type(uploaded_file.name)
+                    if not mime_type:
+                        mime_type = "image/jpeg"
+
+                    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
+
+                    all_image_payloads.append({
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:{mime_type};base64,{encoded_image}",
+                            "detail": "high"
+                        }
+                    })
+
+                # Main AI Prescription (with all images as general context)
+                ai_data = get_ai_prescription_with_image(
+                    **data,
+                    image_payloads=all_image_payloads
+                )
+
+                # Invoice check
+                invoice = None
+                invoice_id = request.session.get('ai_prescription_invoice_id')
+                if invoice_id:
+                    try:
+                        invoice = PaymentInvoice.objects.get(id=invoice_id, patient=patient, invoice_type='ai_prescription')
+                    except PaymentInvoice.DoesNotExist:
+                        messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
+                        return redirect('prescription:ai_prescription_list')
+
+                # Save AIPrescription
+               # ✅ Save prescription first (without lab images)
+                prescription = AIPrescription.objects.create(
+                    user=user,
+                    patient=patient,
+                    symptoms=data['symptoms'],
+                    duration=data['duration'],
+                    age=data['age'],
+                    gender=data['gender'],
+                    medical_history=data.get('medical_history', ''),
+                    allergies=data.get('allergies', ''),
+                    current_medications=data.get('current_medications', ''),
+                    vital_signs=data.get('vital_signs', ''),
+                    location=data.get('location', ''),
+                    summary_of_findings="Pending",  # placeholder
+                    diagnosis="Pending",  # placeholder
+                    medicines="Pending",  # placeholder
+                    tests="Pending",
+                    advice="Pending",
+                    recommended_specialty="",
+                    warning_signs="",
+                    diet_chart="",
+                    raw_response=""
+                )
+
+                # ✅ For each file: call AI separately and save its interpretation
+                for uploaded_file in uploaded_files:
+                    with NamedTemporaryFile(delete=False, suffix=".tmp") as tmp_file:
+                        for chunk in uploaded_file.chunks():
+                            tmp_file.write(chunk)
+                        tmp_path = tmp_file.name
+
+                    with open(tmp_path, "rb") as f:
+                        image_bytes = f.read()
+
+                    mime_type, _ = mimetypes.guess_type(uploaded_file.name)
+                    if not mime_type:
+                        mime_type = "image/jpeg"
+
+                    encoded_image = base64.b64encode(image_bytes).decode("utf-8")
+                    image_payload = [{
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:{mime_type};base64,{encoded_image}",
+                            "detail": "high"
+                        }
+                    }]
+
+                    # 🧠 AI Call per image
+                    ai_result = get_ai_prescription_with_image(**data, image_payloads=image_payload)
+                    interpretation = ai_result.get('lab_image_interpretation', '')
+
+                    uploaded_file.seek(0)
+                    AiLabImageInterpretation.objects.create(
+                        ai_prescription=prescription,
+                        lab_images=uploaded_file,
+                        interpretation_text=interpretation
+                    )
+
+                # ✅ Optional: Update AIPrescription with summary fields from the last image
+                prescription.summary_of_findings = ai_result.get('summary', '')
+                prescription.diagnosis = ai_result.get('diagnosis', '')
+                prescription.medicines = ai_result.get('medicines', '')
+                prescription.tests = ai_result.get('tests', '')
+                prescription.advice = ai_result.get('advice', '')
+                prescription.recommended_specialty = ai_result.get('recommended_specialty', '')
+                prescription.warning_signs = ai_result.get('warning_signs', '')
+                prescription.diet_chart = ai_result.get('diet_chart', '')
+                prescription.raw_response = ai_result.get('raw_content', '')
+                prescription.save()
+
+
+                # Payment handling
+                if invoice:
+                    invoice.ai_prescription = prescription
+                    invoice.save()
+                    del request.session['ai_prescription_invoice_id']
+
+                if free:
+                    patient.free_ai_prescriptions_used += 1
+                    patient.save()
+                    AIPrescriptionPayment.objects.create(
+                        patient=patient,
+                        ai_prescription=prescription,
+                        amount=0.0,
+                        payment_status='free',
+                        transaction_id='FREE',
+                        used_for_prescription=True
+                    )
+                else:
+                    payment.ai_prescription = prescription
+                    payment.used_for_prescription = True
+                    payment.save()
+
+                return redirect('prescription:ai_prescription_detail', pk=prescription.pk)
+
+    return render(request, 'prescription/create.html', {
+        'form': form,
+        'patient_form': patient_form,
+        'patient_missing': patient_missing
     })
+
+
+
+@login_required
+def lab_image_interpretation_view(request):
+    patient = request.user.patient_profile
+    interpretation_results = []
+
+    if request.method == "POST":
+        uploaded_files = request.FILES.getlist('lab_files')
+        captured_image_data = request.POST.get("captured_image")
+
+        if not uploaded_files and not captured_image_data:
+            messages.error(request, "Please upload a lab file or capture an image.")
+            return redirect('prescription:lab_test_interpretation')
+
+        # Handle uploaded files
+        for uploaded_file in uploaded_files:
+            with NamedTemporaryFile(delete=False, suffix=".tmp") as tmp_file:
+                for chunk in uploaded_file.chunks():
+                    tmp_file.write(chunk)
+                tmp_path = tmp_file.name
+
+            with open(tmp_path, "rb") as f:
+                image_bytes = f.read()
+
+            mime_type, _ = mimetypes.guess_type(uploaded_file.name)
+            if not mime_type:
+                mime_type = "image/jpeg"
+
+            encoded_image = base64.b64encode(image_bytes).decode("utf-8")
+
+            image_payload = [{
+                "type": "image_url",
+                "image_url": {
+                    "url": f"data:{mime_type};base64,{encoded_image}",
+                    "detail": "high"
+                }
+            }]
+
+            interpretation_text = interpret_lab_images_only(
+                image_payloads=image_payload,
+                gender=patient.gender
+            )
+
+            uploaded_file.seek(0)
+            result = AiLabImageInterpretation.objects.create(
+                ai_prescription=None,
+                patient=patient,
+                lab_images=uploaded_file,
+                interpretation_text=interpretation_text
+            )
+            interpretation_results.append(result)
+
+        # Handle captured image
+        if captured_image_data and captured_image_data.startswith("data:image"):
+            try:
+                format, imgstr = captured_image_data.split(';base64,')
+                ext = format.split('/')[-1]
+                file_data = ContentFile(base64.b64decode(imgstr), name=f"captured_lab.{ext}")
+
+                image_payload = [{
+                    "type": "image_url",
+                    "image_url": {
+                        "url": f"{captured_image_data}",
+                        "detail": "high"
+                    }
+                }]
+
+                interpretation_text = interpret_lab_images_only(
+                    image_payloads=image_payload,
+                    gender=patient.gender
+                )
+
+                result = AiLabImageInterpretation.objects.create(
+                    ai_prescription=None,
+                    patient=patient,
+                    lab_images=file_data,
+                    interpretation_text=interpretation_text
+                )
+                interpretation_results.append(result)
+
+            except Exception as e:
+                messages.warning(request, f"Could not interpret captured image: {e}")
+
+
+        messages.success(request, "AI interpretation completed.")
+        return render(request, 'labtest/ai_lab_results.html', {
+            'results': interpretation_results
+        })
+    return render(request, 'labtest/ai_lab_test_file_upload.html')
+
+
+
+@login_required
+def lab_interpretation_history(request):
+    patient = request.user.patient_profile
+    interpretations = AiLabImageInterpretation.objects.filter(patient=patient).order_by('-created_at')  # or your timestamp field
+    
+    return render(request, 'labtest/interpretation_history.html', {
+        'interpretations': interpretations
+    })
+
+
+
+@login_required
+def ai_prescription_detail(request, pk):
+    prescription = get_object_or_404(AIPrescription, pk=pk,user=request.user)
+    if prescription.user == request.user:
+        pass
+    elif prescription.bookings.filter(doctor__user=request.user).exists():
+        pass
+    else:
+        raise PermissionDenied("You do not have permission to view this AI prescription.")    
+  
+    lab_images_with_interpretation = prescription.ai_lab_test.all()
+  
+    return render(request, 'prescription/detail.html', 
+        {
+        'prescription': prescription,   
+        'normalized_duration':normalize_duration_text(prescription.duration),
+        'lab_images_with_interpretation': lab_images_with_interpretation,
+        })
 
 
 
@@ -613,7 +941,7 @@ def book_doctor_direct(request, pk):
                     if invoice:
                         invoice.doctor_booking = doctor_booking
                         invoice.save()
-                    del request.session['doctor_booking_invoice_id']
+                        request.session.pop('doctor_booking_invoice_id', None)
             #================================================================
 
                     messages.success(request, "Doctor appointment booked successfully.")

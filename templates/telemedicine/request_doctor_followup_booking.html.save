@@ -1,0 +1,222 @@
+
+
+{% extends "base.html" %}
+{% load custom_filters %}
+
+
+{% block content %}
+
+
+
+
+
+
+<!-- Patient Registration Modal -->
+<div class="modal fade" id="patientModal" tabindex="-1" aria-labelledby="patientModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post">
+        {% csrf_token %}
+        <div class="modal-header bg-primary text-white rounded-top">
+          <h5 class="modal-title fw-semibold" id="patientModalLabel">🩺 Complete Your Patient Profile</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="container-fluid">
+            <div class="row">
+              {% for field in patient_form %}
+                <div class="col-md-6 col-12">
+                  <label for="{{ field.id_for_label }}" class="form-label fw-semibold">{{ field.label }}</label>
+                  {{ field }}
+                  {% if field.errors %}
+                    <div class="small text-danger">{{ field.errors }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer bg-info">
+          <button type="submit" name="create_patient" class="btn btn-success">Save</button>
+           <a href="{% url 'prescription:home' %}" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+
+</div>
+
+
+
+<script>
+document.getElementById('lab_files').addEventListener('change', function () {
+    if (this.files.length > 5) {
+        alert("You can only upload up to 5 files.");
+        this.value = ""; // clear the selection
+    }
+});
+</script>
+
+
+
+
+{% if patient_missing %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const modal = new bootstrap.Modal(document.getElementById('patientModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        modal.show();
+    });
+</script>
+{% endif %}
+
+<script>
+let videoStream = null;
+
+function startCamera() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const retakeBtn = document.getElementById('retakeBtn');
+
+    canvas.style.display = 'none';
+    video.style.display = 'block';
+    retakeBtn.style.display = 'none';
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            videoStream = stream;
+            video.srcObject = stream;
+        })
+        .catch(err => {
+            alert("Could not access camera: " + err);
+        });
+}
+function takePhoto() {
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const hiddenInput = document.getElementById('captured_image');
+    const retakeBtn = document.getElementById('retakeBtn');
+    const previewImg = document.getElementById('captured_preview');
+
+    // Resize canvas to a smaller dimension (optional)
+    const scale = 0.6;  // 20% of original size
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Stop video stream
+    video.srcObject.getTracks().forEach(track => track.stop());
+    video.style.display = 'none';
+    canvas.style.display = 'none';  // hide canvas if only using img preview
+    retakeBtn.style.display = 'inline-block';
+
+    const dataURL = canvas.toDataURL('image/png');
+    hiddenInput.value = dataURL;
+
+    // Show preview
+    previewImg.src = dataURL;
+    previewImg.style.display = 'inline-block';
+}
+function retakePhoto() {
+    const canvas = document.getElementById('canvas');
+    const hiddenInput = document.getElementById('captured_image');
+    const previewImg = document.getElementById('captured_preview');
+
+    hiddenInput.value = '';
+    previewImg.src = '#';
+    previewImg.style.display = 'none';
+    canvas.style.display = 'none';
+
+    startCamera();
+}
+
+
+</script>
+
+
+
+
+<script>
+let mediaRecorder;
+let recordedChunks = [];
+
+const recordPreview = document.getElementById('recordPreview');
+const startBtn = document.getElementById('startRecording');
+const stopBtn = document.getElementById('stopRecording');
+const playback = document.getElementById('playback');
+const recordedInput = document.getElementById('recordedVideoInput');
+
+startBtn.addEventListener('click', async () => {
+    // Start webcam
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    recordPreview.srcObject = stream;
+    recordPreview.style.display = "block"; // ✅ show live preview
+    playback.classList.add("d-none");      // hide old playback preview
+
+    recordedChunks = [];
+    let currentSize = 0;
+    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    mediaRecorder = new MediaRecorder(stream);
+
+    mediaRecorder.ondataavailable = e => {
+        if (e.data && e.data.size > 0) {
+            currentSize += e.data.size;
+
+            if (currentSize > maxSizeBytes) {
+                alert("Recording exceeded 5 MB. Stopping automatically.");
+                mediaRecorder.stop();
+                startBtn.disabled = false;
+                stopBtn.disabled = true;
+                return;
+            }
+
+            recordedChunks.push(e.data);
+        }
+    };
+
+    mediaRecorder.onstop = () => {
+        const blob = new Blob(recordedChunks, { type: 'video/webm' });
+        const videoURL = URL.createObjectURL(blob);
+        playback.src = videoURL;
+        playback.classList.remove('d-none');
+
+        // Optional: convert to base64 and store in hidden input
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            recordedInput.value = reader.result;
+        };
+        reader.readAsDataURL(blob);
+
+        // Reset size tracker
+        currentSize = 0;
+
+        // ✅ Stop webcam and hide preview
+        if (recordPreview.srcObject) {
+            recordPreview.srcObject.getTracks().forEach(track => track.stop());
+            recordPreview.srcObject = null;
+        }
+        recordPreview.style.display = "none"; // ✅ hide black box
+    };
+
+    mediaRecorder.start();
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+});
+
+stopBtn.addEventListener('click', () => {
+    if (mediaRecorder && mediaRecorder.state === "recording") {
+        mediaRecorder.stop();
+    }
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+});
+</script>
+
+
+{% endblock %}

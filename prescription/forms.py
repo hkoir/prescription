@@ -4,6 +4,22 @@ from.models import DoctorPrescription,SuggestedMedicine,SuggestedLabTest,Patient
 from.models import DoctorBooking
 from.models import ZoomMeeting,DoctorFolloupBooking
 from .models import Medicine, LabTest
+from .models import Doctor 
+
+
+
+class DoctorAdminForm(forms.ModelForm):
+    class Meta:
+        model = Doctor
+        fields = '__all__'
+        widgets = {
+            'start_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
+            'end_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
+            'hospital_start_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
+            'hospital_end_time': forms.TimeInput(format='%H:%M', attrs={'type': 'time'}),
+        }
+
+
 
 
 
@@ -46,6 +62,12 @@ class AIPrescriptionForm(forms.Form):
         required=False,
         help_text="Enter vital signs (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)"
     )
+
+
+class LabTestInterpretationForm(forms.Form):
+    # No need to define lab_files in the form
+    dummy = forms.CharField(required=False)  # Optional: to keep form non-empty if needed
+
 
 
 

@@ -342,6 +342,64 @@ h4 {
     }
 
 
+/* Card styling.................................................................... */
+
+
+.card-android {
+  background-color: #ffffff;
+  padding: 1rem;
+  border-radius: 1.2rem;
+  border: 1px solid #e2f5ea; /* soft success border */
+  box-shadow: 0 4px 10px rgba(0, 128, 0, 0.08);
+  transition: all 0.25s ease-in-out;
+  text-align: center;
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.card-android:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 20px rgba(0, 128, 0, 0.12);
+  cursor: pointer;
+}
+
+.card-android img {
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border-radius: 50%;
+  margin-bottom: 0.75rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.card-android:hover img {
+  transform: scale(1.05);
+}
+
+.card-android h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #198754;
+  margin-bottom: 0.5rem;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.card-android p {
+  font-size: 0.85rem;
+  color: #555;
+  margin-bottom: 0.5rem;
+}
+
+.card-android .stretched-link {
+  z-index: 1;
+}
+
+
+
 </style>
 
 
@@ -391,10 +449,12 @@ h4 {
             <!-- AI Doctor Intro Card -->
             <div class="row g-0 d-flex justify-content-center">
            
-             <div class="col-12 col-md-4 col-lg-3">
-                    <div class="p-2 bg-white border border-success rounded-4 shadow-lg text-center">
-                        <div class="mb-3">
-                            <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2" style="border-radius: 50%;">
+
+              <div class="col-12 col-md-4 col-lg-3">
+                 <div class="card-android text-center position-relative h-100">
+                    <div class="mb-3">
+                       <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70"
+                         class="mb-2 rounded-circle shadow-sm" />
                         </div>
                         <h4 class="text-success fw-bold mb-3">👨‍⚕️ I am your AI Doctor</h4>
                         <p class="text-muted mb-4">How are you feeling today? Tap below to start your health journey with me.</p>
@@ -404,91 +464,162 @@ h4 {
                     </div>
                 </div>
 
-		<div class="col-6 col-md-4 col-lg-3">
-		  <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
-    		   <div class="mb-3">
-      			<img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" 
-			  class="mb-2 rounded-circle">
-    		   </div>
-    		  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Specialized Doctor</h4>
-    		  <p class="mb-3">🎙️ Book specialised doctor </p>
+
+            <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+                  <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70"
+                     class="mb-2 rounded-circle shadow-sm" />
+                </div>
+    		  <h4 class="text-success fw-bold mb-3">👨 Specialized Doctor</h4>
+    		  <p class="mb-3 text-primary fw-bold d-none d-md-block">🎙️ Book specialised doctor </p>
     		 <a href="{% url 'prescription:available_doctors' %}" class="stretched-link"></a>
   	        </div>
 	      </div>
 
-                <div class="col-6 col-md-4 col-lg-3">
-                  <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
-                   <div class="mb-3">
-                    <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" 
-			class="mb-2 rounded-circle">
-		   </div>
-                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Specialized Doctor booking History</h4>
-                  <p class="mb-3">🎙️ Booking history</p>
+
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+                  <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70"
+                     class="mb-2 rounded-circle shadow-sm" />
+                </div>
+                  <h4 class="text-success fw-bold mb-3">👨 Booking History</h4>
+                  <p class="mb-3 text-primary fw-bold d-none d-md-block">🎙️ Your Specialized Doctor Booking history </p>
                  <a href="{% url 'prescription:doctor_bookings_list' %}" class="stretched-link"></a>
                 </div>
               </div>
 
 
-	      <div class="col-6 col-md-4 col-lg-3">
-               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
-                   <div class="mb-3">
-                        <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" class="mb-2 rounded-circle">
-                   </div>
-                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Prescription History</h4>
-                  <p class="mb-3">🎙️ Your Prescriptions </p>
-                 <a href="{% url 'prescription:doctor_prescription_list' %}" class="stretched-link"></a>
+
+         <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+		  <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70"
+		     class="mb-2 rounded-circle shadow-sm" />
                 </div>
-              </div>	
+                <h4 class="text-success fw-bold mb-3">👨 Your Prescription History</h4>
+                <p class="mb-3 text-success fw-bold d-none d-md-block">🎙️ Your Prescriptions</p>
+                <a href="{% url 'prescription:doctor_prescription_list' %}" class="stretched-link"></a>
+               </div>
+            </div>
 
 
-            <div class="col-6 col-md-4 col-lg-3">
-               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
-                   <div class="mb-3">
-                        <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2 rounded-circle">
-                   </div>
-                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Symptom's History</h4>
-                  <p class="mb-3">🎙️ Your Symptom's History </p>
-                 <a href="{% url 'symptom_checker:my_symptom_checks' %}" class="stretched-link"></a>
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3"> 
+                  <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70"
+                    class="mb-2 rounded-circle shadow-sm" />
                 </div>
+
+                <h5 class="fw-bold text-primary mb-1">Your Symptom History</h5>  
+                <p class="text-muted small d-none d-md-block">🎙️ Track your previous symptom checks</p> 
+                <a href="{% url 'symptom_checker:my_symptom_checks' %}" class="stretched-link"></a>
               </div>
+            </div>
 
-	     <div class="col-6 col-md-4 col-lg-3">
-               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
-                   <div class="mb-3">
-                        <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2 rounded-circle">
-                   </div>
-                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Your Ai generated Prescription History</h4>
-                  <p class="mb-3">🎙️Your Ai Prescriptions </p>
+
+
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+                   <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70" 
+		     class="mb-2 rounded-circle shadow-sm" />
+                </div>
+                  <h4 class="text-primary fw-bold mb-3">👨 Prescription History</h4>
+                  <p class="mb-3 d-none d-md-block">🎙️Your Ai Pgenerated prescription hisory </p>
                  <a href="{% url 'prescription:ai_prescription_list' %}" class="stretched-link"></a>
                 </div>
               </div>
 
-             <div class="col-6 col-md-4 col-lg-3">
-               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
-                   <div class="mb-3">
-                        <img src="{% static 'images/doctor-3.jpg' %}" alt="AI Doctor" width="70" height="70"
-                        class="mb-2 rounded-circle">
-                   </div>
-                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">
-                        👨 Nearby Services, Hospital, Ambulance,Nursing, Medicine etc</h4>
-                  <p class="mb-3">🎙️ Other services</p>
-                 <a href="#" class="stretched-link"></a>
+
+
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+                   <img src="{% static 'images/doctor-3.jpg' %}" alt="AI Doctor" width="70" height="70" 
+			class="mb-2 rounded-circle shadow-sm" />
+                </div>
+
+                  <p class="text-success fw-bold mb-3 d-none d-md-block">
+                        👨 Nearby Services, Hospital, Ambulance,Nursing, Medicine etc</p>
+                  <h4 class="mb-3 fw-bold">🎙️ Other services</h4>
+                 <a href="{% url 'other_services:service_list' %}" class="stretched-link"></a>
                 </div>
               </div>
 
 
-             <div class="col-12 col-md-4 col-lg-3">
-               <div class="p-3 bg-white border border-success rounded-4 shadow-lg text-center position-relative h-100">
-                   <div class="mb-3">
-                        <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="80" class="mb-2 rounded-circle">
-                   </div>
-                  <h4 class="text-success fw-bold mb-3 d-none d-md-block">👨 Get your Ai generated prescription now</h4>
-                  <p class="mb-3"> Instant professional like Medical grade Ai Prescription. </p>
+           <div class="col-12 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3"> 
+                  <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70"
+			class="mb-2 rounded-circle shadow-sm" />
+                </div>
+
+                  <h4 class="text-Primary fw-bold mb-3">👨 Get your Ai generated prescription now</h4>
+                  <p class="mb-3 text-success fw-bold"> Instant professional like Medical grade Ai Prescription. </p>
                  <a href="{% url 'prescription:create_ai_prescription' %}" class="stretched-link"></a>
                 </div>
               </div>
 
 
+
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+                 <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70" 
+		     class="mb-2 rounded-circle shadow-sm" />
+                </div>
+                  <h4 class="text-primary fw-bold mb-3">👨 Interpret your lab test result with Ai</h4>
+                  <p class="mb-3 d-none d-md-block text-success fw-bold "> Scan or Upload your lab test result and get Ai generated interpretation </p>
+                 <a href="{% url 'prescription:lab_image_interpretation_view' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+
+
+
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+                   <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70" 
+		    class="mb-2 rounded-circle shadow-sm" />
+                </div>
+                  <p class="text-primary fw-bold mb-3 d-none d-md-block "> View your lab test result interpretation history</p>
+                  <h4 class="mb-3 text-primary fw-bold "> 👨 Click to view labtest interpretation history </h4> 
+                  <a href="{% url 'prescription:lab_interpretation_history' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+
+
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3">
+                  <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" 
+		    class="mb-2 rounded-circle shadow-sm" />
+                </div>
+                  <h4 class="text-success fw-bold mb-3">👨 Book and Visit Doctor Chamber </h4>
+                  <p class="mb-3 d-none d-md-block"> You can now book Docctor Time slots and Visit Doctor Chamber as per your Schedule. </p>
+                 <a href="{% url 'appointments:available_doctors' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+
+           <div class="col-6 col-md-4 col-lg-3">
+              <div class="card-android text-center position-relative h-100">
+                <div class="mb-3"> 
+                   <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" 
+		     class="mb-2 rounded-circle shadow-sm" />
+                </div>
+
+                  <h4 class="text-success fw-bold mb-3">👨 Your Doctor Chamber Visit history </h4>
+                  <p class="mb-3 d-none d-md-block"> Click here to view all of your Doctor Chamber visit appointments, prescription, labtest etc. </p>
+                 <a href="{% url 'appointments:appointment_list' %}" class="stretched-link"></a>
+                </div>
+              </div>
+
+	
 
          </div>
 

@@ -23,7 +23,19 @@
       <div class="col-md-8 p-4">
         <h5 class="mb-3">👨‍⚕️ About</h5>
         <p>{{ doctor.description|linebreaks }}</p>
+        <hr>
+          <h6>📍 Chamber Location</h6>
+          <p>{{ doctor.chamber_location|linebreaks }}</p>
 
+        <hr>      
+        <h6>🕒 Availability</h6>
+          <p><strong>Chamber Start Time:</strong> {{ doctor.start_time }}</p>
+          <p><strong>Chamber End Time:</strong> {{ doctor.end_time }}</p>
+
+          {% if doctor.hospital_start_time and doctor.hospital_end_time %}
+            <p><strong>Hospital Duty Time:</strong> {{ doctor.hospital_start_time|time:"H:i" }} - {{ doctor.hospital_end_time|time:"H:i" }}</p>
+          {% endif %}
+   
         <hr>
         <h6>🕒 Availability</h6>
         <p><strong>Start Time:</strong> {{ doctor.start_time }}</p>

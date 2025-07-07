@@ -126,6 +126,121 @@ If there is no recommendation in any section, write **None**. Always number all 
     }
 
 
+
+
+
+
+
+def get_ai_prescription_with_image(
+    symptoms, duration, gender,
+    medical_history=None, allergies=None, age=None,
+    current_medications=None, vital_signs=None,
+    body_weight=None, body_weight_unit=None,
+    body_height=None, body_height_unit=None,
+    location=None,
+    image_payloads=None
+):
+    medical_history = medical_history or "No significant medical history"
+    allergies = allergies or "No known drug allergies"
+    current_medications = current_medications or "None"
+    vital_signs = vital_signs or "Not available"
+    body_weight = body_weight or "Not available"
+    body_weight_unit = body_weight_unit or ""
+    body_height = body_height or "Not available"
+    body_height_unit = body_height_unit or ""
+    age = age or "Not available"
+    location = location or "Not specified"
+
+    prompt_text = f"""
+You are an expert medical doctor.
+Please analyze the patient's clinical information and the lab test image (if provided), then generate a structured clinical prescription.
+
+Patient Details:
+- Age: {age}
+- Gender: {gender}
+- Symptoms: {symptoms}
+- Duration of symptoms: {duration} days
+- Medical History: {medical_history}
+- Allergies: {allergies}
+- Current Medications: {current_medications}
+- Vital Signs: {vital_signs}
+- Body Weight: {body_weight} {body_weight_unit}
+- Body Height: {body_height} {body_height_unit}
+- Location: {location}
+
+If an image is provided, interpret it and integrate the findings.
+
+🧠 Your structured clinical response should follow **exactly this format**:
+
+---
+
+0. Summary of Findings  
+- [2–3 line clinical overview: include significant symptoms, vitals, and red flags.]
+1. Diagnosis  
+- [Insert specific diagnosis or differential diagnosis.]
+2. Recommended Medicines:
+List each medicine **in the following exact structure**, one per line:
+- Name: Paracetamol  
+  Dosage: 500mg  
+  Frequency: 1-1-1 (three times daily)  
+  Duration: 5 days
+
+- Name: Omeprazole  
+  Dosage: 20mg  
+  Frequency: 1-0-0 (once daily before food)  
+  Duration: 7 days
+
+3. Necessary Lab Tests  
+- [List tests needed for further diagnosis or confirmation.]
+4. Medical Advice  
+5. Recommended Specialist  
+- [Only the specialty name, e.g., Cardiologist, ENT, General Physician.]
+6. Warning Signs requiring urgent attention  
+- [List any signs the patient must watch for.]
+7. Lab Image Interpretation (if any image was uploaded)  
+8. Suggested Diet Chart (basic healthy weekly plan)
+
+---
+
+If any section is not applicable, write "None". Be clear and professional.
+"""
+
+    messages = [{"role": "user", "content": [{"type": "text", "text": prompt_text}]}]
+    
+    if image_payloads:
+        messages[0]["content"].extend(image_payloads)
+
+    response = client.chat.completions.create(
+        model="anthropic/claude-3-sonnet-20240229",  
+        messages=messages,
+        temperature=0.3,
+        max_tokens=1500,
+        extra_headers={
+            "HTTP-Referer": "https://prescription.aiha.live",
+            "X-Title": "PrescriptionApp"
+        }
+    )
+
+
+    content = response.choices[0].message.content
+
+    return {
+        "raw_content": content,
+        "summary": extract_section(content, r"0\.\s*Summary of Findings\s*:?([\s\S]*?)1\.", "Not available").strip(),
+        "diagnosis": extract_section(content, r"1\.\s*Diagnosis\s*:?([\s\S]*?)2\.", "N/A").strip(),
+        "medicines": parse_medicines(extract_section(content, r"2\.\s*Recommended Medicines\s*:?([\s\S]*?)3\.", "None")),
+        "tests": extract_section(content, r"3\.\s*Necessary Lab Tests\s*:?([\s\S]*?)4\.", "None").strip(),
+        "advice": extract_section(content, r"4\.\s*Medical Advice\s*:?([\s\S]*?)5\.", "Follow general advice").strip(),
+        "recommended_specialty": clean_specialty(extract_section(content, r"5\.\s*Recommended Specialist\s*:?([\s\S]*?)6\.", "General Physician")).strip(),
+        "warning_signs": extract_section(content, r"6\.\s*Warning Signs.*?:\s*([\s\S]*?)7\.", "None specified").strip(),
+        "lab_image_interpretation": extract_section(content, r"7\.\s*Lab Image Interpretation\s*:?([\s\S]*?)8\.", "None").strip(),
+        "diet_chart": extract_section(content, r"8\.\s*Suggested Diet Chart\s*:?([\s\S]*)", "None").strip()
+    }
+
+
+
+
+
 def extract_section(text, pattern, fallback=""):
     try:
         match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
@@ -190,5 +305,52 @@ def extract_recommended_specialty_from_raw(content):
         if specialty_cleaned and specialty_cleaned.lower() not in {"none", "n/a"}:
             return specialty_cleaned
     return "General"
+
+
+
+
+
+
+def interpret_lab_images_only(image_payloads, gender="Not specified"):
+    """
+    Send only lab images to AI model and get interpretation.
+    """
+    prompt_text = f"""
+You are an expert medical doctor.
+
+Please analyze the uploaded lab test image(s) and provide a clear, concise interpretation of what the image(s) suggest medically.
+
+- Patient Gender: {gender}
+
+Respond with only the interpretation. No diagnosis, no prescription, no formatting. Avoid any sections or headings.
+If nothing is visible or conclusive, say so.
+"""
+
+    messages = [{"role": "user", "content": [{"type": "text", "text": prompt_text}]}]
+
+    if image_payloads:
+        messages[0]["content"].extend(image_payloads)
+
+    response = client.chat.completions.create(
+        model="anthropic/claude-3-sonnet-20240229",
+        messages=messages,
+        temperature=0.2,
+        max_tokens=600,
+        extra_headers={
+            "HTTP-Referer": "https://prescription.aiha.live",
+            "X-Title": "LabTestInterpretation"
+        }
+    )
+
+    return response.choices[0].message.content.strip()
+
+
+
+
+
+
+
+
+
 
 
