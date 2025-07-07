@@ -852,115 +852,93 @@ def book_doctor_direct(request, pk):
     doctor = get_object_or_404(Doctor, pk=pk)
     user = request.user
     patient = None
-    patient_missing = False
-    patient_form = None
-    invoice = None
-
-    payment_amount = doctor.consultation_fees
+    invoice=None
+    form = DirectDoctorBookingForm()
 
     try:
         patient = user.patient_profile
     except Patient.DoesNotExist:
-        patient_missing = True
-        patient_form = PatientForm()
+        return redirect(f"{reverse('prescription:create_patient_profile')}?next={request.path}")
 
-    form = DirectDoctorBookingForm()
-
-   #=========================================================================================
-    if is_payment_enabled_for_tenant(request.tenant):
-        invoice_id = request.session.get('doctor_booking_invoice_id')             
-        invoice = None
-        if invoice_id:
-            try:
-               invoice = PaymentInvoice.objects.get(id=invoice_id, patient=patient, invoice_type='direct-consultation')
-            except PaymentInvoice.DoesNotExist:
-                messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
-                return redirect('prescription:doctor_bookings_list')
+    symptom_image = None
+    symptom_video = None
+     #=========================================================================================
+    invoice_id = request.session.get('doctor_booking_invoice_id')             
+    invoice = None
+    if invoice_id:
+        try:
+            invoice = PaymentInvoice.objects.get(id=invoice_id, patient=patient, invoice_type='direct-consultation')
+        except PaymentInvoice.DoesNotExist:
+            messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
+            return redirect('prescription:doctor_bookings_list')
     #===============================================================================================
 
-
     if request.method == 'POST':
-        if 'create_patient' in request.POST:
-            patient_form = PatientForm(request.POST)
-            if patient_form.is_valid():
-                patient = patient_form.save(commit=False)
-                patient.user = user
-                patient.save()
-                messages.success(request, "Patient profile created.")
-                return redirect('prescription:book_doctor_direct', pk=pk)
-        else:
-            post_data = request.POST.copy()
-            files_data = request.FILES.copy()
+        form = DirectDoctorBookingForm(request.POST, request.FILES)
+        if form.is_valid(): 
+            duration = form.cleaned_data['duration']
+            symptom_summary = form.cleaned_data['symptoms_summary']
+            vital_signs = form.cleaned_data['vital_signs']
 
-            # Handle captured image (from webcam)
-            captured_data = post_data.get('captured_image')
-            if captured_data:
+            captured_image_data = request.POST.get('captured_image')
+            if captured_image_data:
                 try:
-                    format, imgstr = captured_data.split(';base64,')
+                    format, imgstr = captured_image_data.split(';base64,')
                     ext = format.split('/')[-1]
-                    image_file = ContentFile(base64.b64decode(imgstr), name=f'captured_symptom.{ext}')
-                    files_data['symptom_image'] = image_file
-                except Exception as e:
+                    symptom_image = ContentFile(base64.b64decode(imgstr), name=f"captured_symptom.{ext}")
+                except Exception:
                     messages.error(request, "Failed to process captured image.")
 
-            # Handle recorded video (from webcam)
-            recorded_data = post_data.get('recorded_video')
-            if recorded_data:
+            recorded_video_data = request.POST.get('recorded_video')
+            if recorded_video_data:
                 try:
-                    format, videostr = recorded_data.split(';base64,')
+                    format, videostr = recorded_video_data.split(';base64,')
                     ext = format.split('/')[-1]
-                    video_file = ContentFile(base64.b64decode(videostr), name=f'recorded_symptom.{ext}')
-                    files_data['symptom_video'] = video_file
-                except Exception as e:
+                    symptom_video = ContentFile(base64.b64decode(videostr), name=f"captured_video.{ext}")
+                except Exception:
                     messages.error(request, "Failed to process recorded video.")
-
-            # Create form with POST and files data
-            form = DirectDoctorBookingForm(post_data, files_data)
-
-            if form.is_valid():
-                if not patient:
-                    messages.error(request, "Please create a patient profile first.")
-                else:
-                    doctor_booking = form.save(commit=False)
-                    doctor_booking.user = user
-                    doctor_booking.doctor = doctor
-                    doctor_booking.patient = patient
-                    doctor_booking.preferred_time = timezone.now()
-                    doctor_booking.save()
-
- 		#===================== upload labtest or old prescription ===========
-                lab_files = request.FILES.getlist('lab_files')
-                for file in lab_files:
-                    LabResultFile.objects.create(
-                          main_booking=doctor_booking,
-                          uploaded_by=request.user,
-                          file=file
+      
+            booking = DoctorBooking.objects.create(
+                patient=patient,
+                doctor=doctor,
+                ai_prescription=None,
+                user=request.user,
+                preferred_time=timezone.now(),
+                symptom_image=symptom_image,
+                symptom_video=symptom_video,
+                symptoms_summary=symptom_summary,
+                duration=duration,
+                age=patient.age,
+                medical_history=patient.medical_history,
+                allergies=patient.allergies,
+                current_medications=patient.current_medications,
+                vital_signs=vital_signs,
+                
+            )
+            #===================== upload labtest or old prescription ===========
+            lab_files = request.FILES.getlist('lab_files')
+            for file in lab_files:
+                LabResultFile.objects.create(
+                    main_booking=booking,
+                    uploaded_by=request.user,
+                    file=file
                 )
-
-             #==============================================================
-                    if invoice:
-                        invoice.doctor_booking = doctor_booking
-                        invoice.save()
-                        request.session.pop('doctor_booking_invoice_id', None)
+            #=====================================================================
+            if invoice:
+                    invoice.doctor_booking = booking
+                    invoice.save()
+                    del request.session['doctor_booking_invoice_id']
             #================================================================
 
-                    messages.success(request, "Doctor appointment booked successfully.")
-                    message = f"You have a new consultation booking from {patient.full_name}. Please check your dashboard."
-                    send_sms(tenant=request.tenant, phone_number=doctor.phone, message=message)
-                    create_notification(request.user, notification_type='Doctor booking msg', message=message, patient=patient, doctor=doctor)
-                    return redirect('prescription:doctor_booking_success',doctor.id,doctor_booking.id)
-            else:
-                messages.error(request, "There was an error in the form. Please check your input.")
+            messages.success(request, "Booking confirmed.")
+            message = f"You have a new consultation booking from {patient.full_name}. Please check your dashboard."
+            send_sms(tenant=request.tenant, phone_number=doctor.phone, message=message)
+            create_notification(request.user, notification_type='Doctor booking msg', message=message, patient=patient, doctor=doctor)
+            return redirect('prescription:doctor_bookings_list')  
 
-    return render(request, 'prescription/confirm_booking_direct.html', {
-        'doctor': doctor,
-        'patient': patient,
-        'form': form,
-        'patient_form': patient_form,
-        'patient_missing': patient_missing,
-    })
-
-
+    else:
+        form = DirectDoctorBookingForm()
+    return render(request, 'prescription/confirm_booking_direct.html', {'doctor': doctor, 'form': form})
 
 
 

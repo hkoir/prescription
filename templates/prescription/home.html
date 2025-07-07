@@ -432,17 +432,12 @@ h4 {
                          
                 <div class="container text-center">
                     <h2 class="fw-bold mb-4 text-success">Welcome to the Future of Healthcare</h2>
-                    <p class="lead text-muted">
-                        You are in a platform where <strong>AI-powered prescription services is provided</strong> and also
-                        vetted by <strong>specialized doctors by choice</strong> via <strong>video consultation if you desire so</strong>.
-                        Get expert care from your trusted provider — fast, reliable, and personal.
-                    </p>
                 </div>                               
          
-                <p class="mb-4">
+                <h4 class="mb-4">
                     A powerful combination of AI technology and experienced medical specialists.<br>
                     Bridging the gap between expert doctors and patients in need of quality healthcare.
-                </p>  
+                </h4>  
         </section>   
 
       <div class="container my-5">
@@ -471,7 +466,7 @@ h4 {
                   <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70"
                      class="mb-2 rounded-circle shadow-sm" />
                 </div>
-    		  <h4 class="text-success fw-bold mb-3">👨 Specialized Doctor</h4>
+    		  <h4 class="text-success fw-bold mb-3">Specialized Doctor</h4>
     		  <p class="mb-3 text-primary fw-bold d-none d-md-block">🎙️ Book specialised doctor </p>
     		 <a href="{% url 'prescription:available_doctors' %}" class="stretched-link"></a>
   	        </div>
@@ -484,7 +479,7 @@ h4 {
                   <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70"
                      class="mb-2 rounded-circle shadow-sm" />
                 </div>
-                  <h4 class="text-success fw-bold mb-3">👨 Booking History</h4>
+                  <h4 class="text-success fw-bold mb-3">Doctor Booking History</h4>
                   <p class="mb-3 text-primary fw-bold d-none d-md-block">🎙️ Your Specialized Doctor Booking history </p>
                  <a href="{% url 'prescription:doctor_bookings_list' %}" class="stretched-link"></a>
                 </div>
@@ -498,7 +493,7 @@ h4 {
 		  <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70"
 		     class="mb-2 rounded-circle shadow-sm" />
                 </div>
-                <h4 class="text-success fw-bold mb-3">👨 Your Prescription History</h4>
+                <h4 class="text-success fw-bold mb-3">Doctor Prescription History</h4>
                 <p class="mb-3 text-success fw-bold d-none d-md-block">🎙️ Your Prescriptions</p>
                 <a href="{% url 'prescription:doctor_prescription_list' %}" class="stretched-link"></a>
                </div>
@@ -512,7 +507,7 @@ h4 {
                     class="mb-2 rounded-circle shadow-sm" />
                 </div>
 
-                <h5 class="fw-bold text-primary mb-1">Your Symptom History</h5>  
+                <h4 class="fw-bold text-primary mb-1">Your Symptom History</h4>  
                 <p class="text-muted small d-none d-md-block">🎙️ Track your previous symptom checks</p> 
                 <a href="{% url 'symptom_checker:my_symptom_checks' %}" class="stretched-link"></a>
               </div>
@@ -526,7 +521,7 @@ h4 {
                    <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70" 
 		     class="mb-2 rounded-circle shadow-sm" />
                 </div>
-                  <h4 class="text-primary fw-bold mb-3">👨 Prescription History</h4>
+                  <h4 class="text-primary fw-bold mb-3">Ai Prescription History</h4>
                   <p class="mb-3 d-none d-md-block">🎙️Your Ai Pgenerated prescription hisory </p>
                  <a href="{% url 'prescription:ai_prescription_list' %}" class="stretched-link"></a>
                 </div>
@@ -542,8 +537,8 @@ h4 {
                 </div>
 
                   <p class="text-success fw-bold mb-3 d-none d-md-block">
-                        👨 Nearby Services, Hospital, Ambulance,Nursing, Medicine etc</p>
-                  <h4 class="mb-3 fw-bold">🎙️ Other services</h4>
+                        Nearby Services, Hospital, Ambulance,Nursing, Medicine etc</p>
+                  <h4 class="mb-3 fw-bold">🎙️ Other important services</h4>
                  <a href="{% url 'other_services:service_list' %}" class="stretched-link"></a>
                 </div>
               </div>
@@ -570,7 +565,7 @@ h4 {
                  <img src="{% static 'images/doctor_avatar.jpg' %}" alt="AI Doctor" width="70" height="70" 
 		     class="mb-2 rounded-circle shadow-sm" />
                 </div>
-                  <h4 class="text-primary fw-bold mb-3">👨 Interpret your lab test result with Ai</h4>
+                  <h4 class="text-primary fw-bold mb-3">Interpret your lab test result with Ai</h4>
                   <p class="mb-3 d-none d-md-block text-success fw-bold "> Scan or Upload your lab test result and get Ai generated interpretation </p>
                  <a href="{% url 'prescription:lab_image_interpretation_view' %}" class="stretched-link"></a>
                 </div>
@@ -586,7 +581,7 @@ h4 {
 		    class="mb-2 rounded-circle shadow-sm" />
                 </div>
                   <p class="text-primary fw-bold mb-3 d-none d-md-block "> View your lab test result interpretation history</p>
-                  <h4 class="mb-3 text-primary fw-bold "> 👨 Click to view labtest interpretation history </h4> 
+                  <h4 class="mb-3 text-primary fw-bold "> Click to view labtest interpretation history </h4> 
                   <a href="{% url 'prescription:lab_interpretation_history' %}" class="stretched-link"></a>
                 </div>
               </div>
@@ -599,7 +594,7 @@ h4 {
                   <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor" width="70" height="70" 
 		    class="mb-2 rounded-circle shadow-sm" />
                 </div>
-                  <h4 class="text-success fw-bold mb-3">👨 Book and Visit Doctor Chamber </h4>
+                  <h4 class="text-success fw-bold mb-3"> Book and Visit Doctor Chamber </h4>
                   <p class="mb-3 d-none d-md-block"> You can now book Docctor Time slots and Visit Doctor Chamber as per your Schedule. </p>
                  <a href="{% url 'appointments:available_doctors' %}" class="stretched-link"></a>
                 </div>
@@ -613,7 +608,7 @@ h4 {
 		     class="mb-2 rounded-circle shadow-sm" />
                 </div>
 
-                  <h4 class="text-success fw-bold mb-3">👨 Your Doctor Chamber Visit history </h4>
+                  <h4 class="text-success fw-bold mb-3"> Your Doctor Chamber Visit history </h4>
                   <p class="mb-3 d-none d-md-block"> Click here to view all of your Doctor Chamber visit appointments, prescription, labtest etc. </p>
                  <a href="{% url 'appointments:appointment_list' %}" class="stretched-link"></a>
                 </div>

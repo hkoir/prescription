@@ -1,63 +1,47 @@
+
 {% extends "base.html" %}
 {% block content %}
 <div class="container my-5">
     <div class="row justify-content-center">
-        <div class="col-12 col-md-8 ">
+        <div class="col-12 col-md-8">
             <div class="card shadow-lg rounded-4">
                 <div class="card-body p-4">
                     <h3 class="mb-4 text-center text-primary">Confirm Doctor Booking</h3>
 
                     <div class="mb-3">
                         <p><strong>Patient:</strong> {{ patient }}<br>
-                        <strong>Doctor:</strong> Dr. {{ doctor.full_name }} ({{ doctor.specialization }})
-                    </p>
+                        <strong>Doctor:</strong> Dr. {{ doctor.full_name }} ({{ doctor.specialization }})</p>
                     </div>
 
-                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
-                         (We would use your medical history from your ai-prescription)
 
-                    
-                      
-                    <div class="row my-4" style="border:1px solid blue">
-                       
-                        <div class="col-6">
-                            <label for="symptom_image" class="form-label my-5">
-                                <span class="text-center"> 
-                                Upload Symptom Image (optional)</span>                               
-                            </label>
-                            <input type="file" name="symptom_image" id="symptom_image" class="form-control" accept="image/*">
-                        </div>
+                        <div class="row my-4 border rounded p-3">
+                            <div class="col-md-6">
+                                <label for="symptom_image" class="form-label">Upload Symptom Image (optional)</label>
+                                <input type="file" name="symptom_image" id="symptom_image" class="form-control" accept="image/*">
+                            </div>
 
-                        
-                        <div class="col-6">
-                            <label class="form-label">Or capture image using webcam</label><br>
-                            <div class="text-center">
-                                <video id="cameraPreview" autoplay playsinline muted width="100%" class="border rounded shadow-sm mb-2" style="max-width: 50%; height: auto;"></video>
+                            <div class="col-md-6 text-center">
+                                <label class="form-label">Or Capture Image</label>
+                                <video id="cameraPreview" autoplay playsinline muted width="100%" class="border rounded shadow-sm mb-2" style="max-width: 100%; height: auto;"></video>
                                 <div class="d-flex justify-content-center gap-2">
                                     <button type="button" id="startCameraBtn" class="btn btn-outline-primary btn-sm d-none">Start Camera</button>
                                     <button type="button" onclick="capturePhoto()" class="btn btn-outline-info btn-sm">Capture</button>
                                 </div>
                                 <canvas id="snapshotCanvas" class="d-none mt-3 border rounded" style="width: 100%; max-width: 200px;"></canvas>
+                                <input type="hidden" name="captured_image" id="capturedImageInput">
                             </div>
-                            <input type="hidden" name="captured_image" id="capturedImageInput">
-                        </div>
-                    </div>
-
-
-                    <div class="row" style="border:1px solid green">
-                        <div class="col-6">
-                            <label for="symptom_video" class="form-label my-5">
-                                <span class="text-center">
-                                Upload Symptom video(optional)</span>                               
-                            </label>
-                            <input type="file" name="symptom_video" id="symptom_video" class="form-control" accept="video/*">
-
                         </div>
 
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Or record a short symptom video</label>
-                            <div class="text-center">
+                        <div class="row my-4 border rounded p-3">
+                            <div class="col-md-6">
+                                <label for="symptom_video" class="form-label">Upload Symptom Video (optional)</label>
+                                <input type="file" name="symptom_video" id="symptom_video" class="form-control" accept="video/*">
+                            </div>
+
+                            <div class="col-md-6 text-center">
+                                <label class="form-label">Or Record a Short Video</label>
                                 <video id="recordPreview" autoplay muted playsinline class="border rounded shadow-sm mb-2" style="width: 100%; height: 100px;"></video>
                                 <div class="d-flex justify-content-center gap-2 mb-2">
                                     <button type="button" class="btn btn-outline-success btn-sm" id="startRecording">Start Recording</button>
@@ -67,193 +51,144 @@
                                 <input type="hidden" name="recorded_video" id="recordedVideoInput">
                             </div>
                         </div>
-                    </div>
-		     <div class="mb-3">
-                        <label for="lab_files" class="form-label">Upload Lab Test Result/ old prescription(images or PDFs)</label>
-                        <input type="file" name="lab_files" id="lab_files" multiple accept="image/*,application/pdf" class="form-control">
-                        <small class="text-muted">You can upload multiple files at a time</small>
-                    </div>
 
-
-                    </div>
-
-
+                        <div class="mb-3">
+                            <label for="lab_files" class="form-label">Upload Lab Test Result / Old Prescription</label>
+                            <input type="file" name="lab_files" id="lab_files" multiple accept="image/*,application/pdf" class="form-control">
+                            <small class="text-muted">You can upload up to 5 files</small>
+                        </div>
 
                         <div class="d-grid gap-2 mt-4">
                             <button type="submit" class="btn btn-primary">Confirm Booking</button>
                             <a href="{% url 'finance:patient_dashboard' %}" class="btn btn-outline-secondary">Cancel</a>
                         </div>
                     </form>
-
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-
-
-
-
-
 <script>
+// Limit file uploads to 5
 document.getElementById('lab_files').addEventListener('change', function () {
     if (this.files.length > 5) {
         alert("You can only upload up to 5 files.");
-        this.value = ""; // clear the selection
+        this.value = "";
     }
 });
-</script>
 
+// ================== Webcam Image Capture ===================
+const video = document.getElementById('cameraPreview');
+const canvas = document.getElementById('snapshotCanvas');
+const capturedInput = document.getElementById('capturedImageInput');
+const startBtn = document.getElementById('startCameraBtn');
 
+function isMobile() {
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+}
 
-<script>
-    const video = document.getElementById('cameraPreview');
-    const canvas = document.getElementById('snapshotCanvas');
-    const capturedInput = document.getElementById('capturedImageInput');
-    const startBtn = document.getElementById('startCameraBtn');
-
-    function isMobile() {
-        return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-    }
-
-    async function startCamera() {
-        try {
-            const constraints = { video: { facingMode: "environment" }, audio: false };
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            video.srcObject = stream;
-            video.style.display = 'block';
-            startBtn.style.display = 'none';
-        } catch (err) {
-            alert('Cannot access camera: ' + err.message);
-            console.error(err);
-        }
-    }
-
-    async function capturePhoto() {
+async function startCamera() {
     try {
-        if (!video.srcObject) {
-            await startCamera();
-            if (!video.srcObject) {
-                alert('Camera not started!');
-                return;
-            }
-        }
-
-        const context = canvas.getContext('2d');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const imageData = canvas.toDataURL('image/jpeg');
-        capturedInput.value = imageData;
-        canvas.classList.remove('d-none');
-
-    } catch (error) {
-        console.error('Capture failed:', error);
-        alert('Failed to capture photo. See console for details.');
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        video.srcObject = stream;
+        video.style.display = 'block';
+        startBtn.style.display = 'none';
+    } catch (err) {
+        alert('Cannot access camera: ' + err.message);
     }
 }
 
+async function capturePhoto() {
+    if (!video.srcObject) {
+        await startCamera();
+        if (!video.srcObject) return alert('Camera not started!');
+    }
 
-    // Initialize
-    window.addEventListener('load', () => {
-        if (isMobile()) {
-            // Show start button on mobile
-            startBtn.style.display = 'inline-block';
-            video.style.display = 'none';
-        } else {
-            // Auto-start camera on desktop/laptop
-            startCamera();
-        }
-    });
+    const context = canvas.getContext('2d');
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const imageData = canvas.toDataURL('image/jpeg');
+    capturedInput.value = imageData;
+    canvas.classList.remove('d-none');
+}
 
-    // Start camera on mobile button click
-    startBtn.addEventListener('click', startCamera);
+window.addEventListener('load', () => {
+    if (isMobile()) {
+        startBtn.style.display = 'inline-block';
+        video.style.display = 'none';
+    } else {
+        startCamera();
+    }
+});
 
-    // Make capturePhoto accessible globally (for inline onclick)
-    window.capturePhoto = capturePhoto;
-    window.startCamera = startCamera;
-</script>
+startBtn.addEventListener('click', startCamera);
+window.capturePhoto = capturePhoto;
 
-
-
-
-<script>
+// ================== Video Recording ===================
 let mediaRecorder;
 let recordedChunks = [];
-
 const recordPreview = document.getElementById('recordPreview');
-const startBtn = document.getElementById('startRecording');
+const startRecordBtn = document.getElementById('startRecording');
 const stopBtn = document.getElementById('stopRecording');
 const playback = document.getElementById('playback');
 const recordedInput = document.getElementById('recordedVideoInput');
 
-startBtn.addEventListener('click', async () => {
-    // Start webcam
+startRecordBtn.addEventListener('click', async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
     recordPreview.srcObject = stream;
-    recordPreview.style.display = "block"; // ✅ show live preview
-    playback.classList.add("d-none");      // hide old playback preview
-
     recordedChunks = [];
     let currentSize = 0;
-    const maxSizeBytes = 5 * 1024 * 1024; // 5MB
+    const maxSize = 5 * 1024 * 1024;
 
     mediaRecorder = new MediaRecorder(stream);
 
     mediaRecorder.ondataavailable = e => {
         if (e.data && e.data.size > 0) {
             currentSize += e.data.size;
-
-            if (currentSize > maxSizeBytes) {
-                alert("Recording exceeded 5 MB. Stopping automatically.");
+            if (currentSize > maxSize) {
+                alert("Recording exceeded 5MB. Stopping.");
                 mediaRecorder.stop();
-                startBtn.disabled = false;
+                startRecordBtn.disabled = false;
                 stopBtn.disabled = true;
                 return;
             }
-
             recordedChunks.push(e.data);
         }
     };
 
     mediaRecorder.onstop = () => {
         const blob = new Blob(recordedChunks, { type: 'video/webm' });
-        const videoURL = URL.createObjectURL(blob);
-        playback.src = videoURL;
+        const url = URL.createObjectURL(blob);
+        playback.src = url;
         playback.classList.remove('d-none');
 
-        // Optional: convert to base64 and store in hidden input
         const reader = new FileReader();
         reader.onloadend = () => {
             recordedInput.value = reader.result;
         };
         reader.readAsDataURL(blob);
 
-        // Reset size tracker
-        currentSize = 0;
-
-        // ✅ Stop webcam and hide preview
+        // Stop stream
         if (recordPreview.srcObject) {
             recordPreview.srcObject.getTracks().forEach(track => track.stop());
             recordPreview.srcObject = null;
         }
-        recordPreview.style.display = "none"; // ✅ hide black box
+        recordPreview.style.display = 'none';
     };
 
     mediaRecorder.start();
-    startBtn.disabled = true;
+    startRecordBtn.disabled = true;
     stopBtn.disabled = false;
 });
 
 stopBtn.addEventListener('click', () => {
-    if (mediaRecorder && mediaRecorder.state === "recording") {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
+        startRecordBtn.disabled = false;
+        stopBtn.disabled = true;
     }
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
 });
 </script>
-
-
 {% endblock %}
