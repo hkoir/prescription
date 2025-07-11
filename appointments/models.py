@@ -51,6 +51,9 @@ class Appointment(models.Model):
         choices=[('Unpaid', 'Unpaid'), ('Paid', 'Paid'), ('Partially-Paid', 'Partially Paid')],
         default='Unpaid'
     )
+
+    parent = models.ForeignKey('self', null=True, blank=True, on_delete=models.SET_NULL, related_name='followups')
+    appointment_type = models.CharField(max_length=20, choices=[("initial", "Initial"), ("followup", "Follow-Up")], default="initial")
    
 
     def save(self, *args, **kwargs):
@@ -64,7 +67,7 @@ class Appointment(models.Model):
 
         super().save(*args, **kwargs)
 
-
     def __str__(self):
         return f"Patient:{self.patient} with {self.doctor} on {self.date}-at {self.timeslot}"
+
 

@@ -111,20 +111,19 @@ class Doctor(models.Model):
 
 class Patient(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='patient_profile')
-    full_name = models.CharField(max_length=255) 
+    full_name = models.CharField(max_length=255,null=True,blank=True) 
     phone = models.CharField(max_length=20, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     city =models.CharField(max_length=255,null=True,blank=True)
 
     dob= models.DateField(null=True,blank=True)
     age = models.PositiveIntegerField(null=True,blank=True)
-    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')])
+    gender = models.CharField(max_length=10, choices=[('male', 'Male'), ('female', 'Female'), ('other', 'Other')],null=True,blank=True)
     body_weight = models.DecimalField(max_digits=7,decimal_places=2,null=True, blank=True,help_text="Please enter weight in kg")  
     body_height = models.DecimalField(max_digits=7,decimal_places=2,null=True, blank=True,help_text="Please enter height in cm")    
     medical_history = models.TextField(blank=True, null=True,help_text="Previous conditions (e.g., diabetes, asthma)")
     allergies = models.TextField(blank=True, null=True,help_text="Any known drug or food allergies")
     current_medications = models.TextField(blank=True, null=True, help_text="Current medications with dosage")
-
 
     free_ai_prescriptions_used = models.IntegerField(default=0)   
     last_profile_update = models.DateTimeField(null=True, blank=True) 

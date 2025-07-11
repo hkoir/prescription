@@ -166,7 +166,6 @@
                         {% if ai_prescription %}
                         <a href="{% url 'prescription:confirm_booking' ai_prescription.id doctor.id %}" 
 				class="btn btn-primary btn-sm mt-2">Select & Book</a>
-                        <p><a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}">Book Now</a></p>
 			{% else %}
 			 <p><a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}">Book now</a></p>
                         

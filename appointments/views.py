@@ -21,9 +21,9 @@ from .forms import TimeSlotForm
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from.models import AppointmentSlot
-
-
 from datetime import datetime, timedelta
+
+
 
 def generate_time_slots(doctor, slot_duration, start_date, end_date):
     # Validate dates
@@ -146,7 +146,6 @@ def delete_doctor_timeslots(request, id):
 
 
 from clients.utils import tenant_only_view
-
 @login_required
 def available_doctors(request):
     appointments = Appointment.objects.select_related("patient", "timeslot").all()
@@ -174,7 +173,24 @@ def available_doctors(request):
     })
 
 
-def view_available_slots(request, doctor_id):
+
+
+def doctor_list(request):
+    query = request.GET.get('q', '')
+    doctors = Doctor.objects.all()
+
+    if query:
+        doctors = doctors.filter(
+            Q(name__icontains=query) | 
+            Q(specialization__name__icontains=query)
+        )
+
+    doctors = doctors.order_by('name')
+    return render(request, 'appointments/doctor_list.html', {'doctors': doctors, 'query': query})
+
+
+
+def view_available_slots2(request, doctor_id):
     doctor = get_object_or_404(Doctor, id=doctor_id)
     date = request.GET.get('date')
 
@@ -191,20 +207,24 @@ def view_available_slots(request, doctor_id):
 
 
 
+def view_available_slots(request, doctor_id):
+    doctor = get_object_or_404(Doctor, id=doctor_id)
+    date = request.GET.get('date')
 
+    appointment_type = request.GET.get('type')  # "followup" or None
+    parent_appointment_id = request.GET.get('parent')  # e.g., "42"
 
-def doctor_list(request):
-    query = request.GET.get('q', '')
-    doctors = Doctor.objects.all()
+    slots = []
+    if date:
+        slots = AppointmentSlot.objects.filter(doctor=doctor, date=date)
 
-    if query:
-        doctors = doctors.filter(
-            Q(name__icontains=query) | 
-            Q(specialization__name__icontains=query)
-        )
-
-    doctors = doctors.order_by('name')
-    return render(request, 'appointments/doctor_list.html', {'doctors': doctors, 'query': query})
+    return render(request, 'appointments/available_slots.html', {
+        'doctor': doctor,
+        'slots': slots,
+        'selected_date': date,
+        'appointment_type': appointment_type,
+        'parent_appointment_id': parent_appointment_id,
+    })
 
 
 
@@ -235,13 +255,12 @@ def get_timeslots(request):
 
 @csrf_exempt
 @login_required
-def book_slot(request):
+def book_slot2(request):
     if request.method == "POST":
         with transaction.atomic():
             try:
                 slot_id = request.POST.get("slot_id")
                 doctor_id = request.POST.get("doctor_id")
-
                 name = request.POST.get("name")
                 phone = request.POST.get("phone")
                 dob_str = request.POST.get("date_of_birth")
@@ -300,7 +319,91 @@ def book_slot(request):
 
     return JsonResponse({"success": False, "error": "Invalid request method."})
 
+import traceback
+import logging
+logger = logging.getLogger(__name__) 
 
+
+@csrf_exempt
+@login_required
+def book_slot(request):
+    if request.method == "POST":
+        with transaction.atomic():
+            try:
+                slot_id = request.POST.get("slot_id")
+                doctor_id = request.POST.get("doctor_id")
+                parent_id = request.POST.get("parent_appointment_id")
+
+                # Normalize parent_id to None if empty or 'None' string
+                if parent_id in [None, '', 'None']:
+                    parent_id = None
+
+                name = request.POST.get("name")
+                phone = request.POST.get("phone")
+                dob_str = request.POST.get("date_of_birth")
+                date_of_birth = datetime.strptime(dob_str, "%Y-%m-%d").date() if dob_str else None
+                email = request.POST.get("email")
+                gender = request.POST.get("gender")
+                address = request.POST.get("address")
+                medical_history = request.POST.get("medical_history")
+                photo = request.FILES.get("patient_photo")
+
+                # Get or create patient
+                try:
+                    patient = Patient.objects.get(user=request.user)
+                    message = f"Welcome back, {patient.full_name}! Your profile has been reused."
+                except Patient.DoesNotExist:
+                    patient = Patient.objects.create(
+                        user=request.user,
+                        full_name=name,
+                        phone=phone,
+                        dob=date_of_birth,
+                        email=email,
+                        gender=gender,
+                        address=address,
+                        medical_history=medical_history,
+                        # photo=photo  # add if model has it
+                    )
+                    message = f"Thank you {patient.full_name}, your profile has been created."
+
+                slot = AppointmentSlot.objects.get(id=slot_id, is_booked=False)
+                doctor = Doctor.objects.get(id=doctor_id)
+
+                parent_appointment = None
+                if parent_id is not None:
+                    try:
+                        parent_appointment = Appointment.objects.get(id=int(parent_id))
+                    except (Appointment.DoesNotExist, ValueError) as e:
+                        logger.warning(f"Invalid parent appointment id {parent_id}: {e}")
+                        parent_appointment = None
+
+                appointment = Appointment.objects.create(
+                    timeslot=slot,
+                    patient=patient,
+                    doctor=doctor,
+                    user=request.user,
+                    patient_type="OPD",
+                    parent=parent_appointment,
+                    appointment_type="followup" if parent_appointment else "initial"
+                )
+
+                slot.is_booked = True
+                slot.save()
+
+                return JsonResponse({
+                    "success": True,
+                    "message": f"{message} Appointment with Dr. {doctor.full_name} on {slot.date} from {slot.start_time} to {slot.end_time} has been confirmed."
+                })
+
+            except AppointmentSlot.DoesNotExist:
+                return JsonResponse({"success": False, "error": "Slot does not exist or is already booked."})
+            except Doctor.DoesNotExist:
+                return JsonResponse({"success": False, "error": "Doctor does not exist."})
+            except Exception as e:
+                logger.error("Unexpected error in book_slot: %s", e, exc_info=True)
+                return JsonResponse({"success": False, "error": "An unexpected error occurred."})
+
+    return JsonResponse({"success": False, "error": "Invalid request method."})
 
 
 @login_required
@@ -355,7 +458,7 @@ def general_appointment(request):
 
 
 
-
+# This view is not for this application
 def specialization_detail(request, specialization_id):
     appointments = Appointment.objects.select_related("patient", "timeslot").all()
     specialization = get_object_or_404(Specialization, id=specialization_id)   
@@ -403,31 +506,36 @@ def get_doctors_by_specialization(request):
 
 
 
+from django.db.models import Count, Prefetch
+from django.utils import timezone
 
 def appointment_list(request):
-    appointments = Appointment.objects.none()
-    doctors = Doctor.objects.all()
-    patients = Patient.objects.all()
-    doctor_appointment_counts = []
     today = timezone.now().date()
 
-    # Initial queryset for all users
-    appointments = Appointment.objects.all()
-
-    # Restrict appointments for logged-in doctor
+    # Base queryset depending on role
     if request.user.role == 'doctor':
         doctor_qs = Doctor.objects.filter(user=request.user)
         if doctor_qs.exists():
-            appointments = appointments.filter(doctor__in=doctor_qs)
+            appointments = Appointment.objects.filter(doctor__in=doctor_qs)
         else:
             appointments = Appointment.objects.none()
 
-    # Filtering options
+    elif request.user.role == 'patient':
+        patient_qs = Patient.objects.filter(user=request.user)
+        if patient_qs.exists():
+            appointments = Appointment.objects.filter(patient__in=patient_qs)
+        else:
+            appointments = Appointment.objects.none()
+            
+    else:
+        appointments = Appointment.objects.all()  # staff/admin sees all
+
+    # Apply filters from query parameters
     doctor_filter = request.GET.get("doctor")
     patient_filter = request.GET.get("patient")
     date_filter = request.GET.get("date", "").strip()
-    start_date = request.GET.get('start_date')
-    end_date = request.GET.get('end_date')
+    start_date = request.GET.get("start_date")
+    end_date = request.GET.get("end_date")
 
     if doctor_filter:
         appointments = appointments.filter(doctor__id=doctor_filter)
@@ -441,16 +549,24 @@ def appointment_list(request):
     if start_date and end_date:
         appointments = appointments.filter(date__range=[start_date, end_date])
 
-    # Default filter: show today's appointments if no filters selected
+    # Default to today's appointments only if no filters
     if not (doctor_filter or patient_filter or date_filter or (start_date and end_date)):
         appointments = appointments.filter(date=today)
 
-    # Count total appointments per doctor
+    # For summary or grouping
     doctor_appointment_counts = (
         appointments.values("doctor__id", "doctor__full_name")
         .annotate(total_appointments=Count("id"))
         .order_by("-total_appointments")
     )
+
+    # Initial appointments with related follow-ups (apply same filters)
+    initial_appointments = appointments.filter(appointment_type='initial').prefetch_related(
+        Prefetch('followups', queryset=appointments)
+    ).order_by('-date', 'timeslot__start_time')
+
+    doctors = Doctor.objects.all()
+    patients = Patient.objects.all()
 
     return render(request, "appointments/appointment_list.html", {
         "appointments": appointments,
@@ -458,10 +574,26 @@ def appointment_list(request):
         "today": today,
         "doctors": doctors,
         "patients": patients,
+        "initial_appointments": initial_appointments,
     })
 
 
+@login_required
+def appointment_detail(request, appointment_id):
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+    if request.user.role == 'doctor' and appointment.doctor.user != request.user:
+        return render(request, "403.html")  
+    if appointment.appointment_type == 'followup' and appointment.parent:
+        initial_appointment = appointment.parent
+    else:
+        initial_appointment = appointment   
+    followups = initial_appointment.followups.all().order_by('date', 'timeslot__start_time')
 
+    return render(request, "appointments/appointment_detail.html", {
+        "initial_appointment": initial_appointment,
+        "selected_appointment": appointment,  # The one user clicked on
+        "followups": followups,
+    })
 
 
 @csrf_exempt

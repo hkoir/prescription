@@ -198,7 +198,17 @@ def update_patient_profile(request, patient_id):
         'next': next_url
     })
 
-    
+
+
+@login_required
+def patient_detail(request, patient_id):
+    patient = get_object_or_404(Patient, id=patient_id)    
+    if request.user != patient.user and request.user.role != 'admin' and request.user.role != 'doctor':
+        return render(request, "403.html") 
+
+    return render(request, "patient/patient_detail.html", {
+        'patient': patient
+    })
 
 
 @doctor_required
@@ -262,10 +272,13 @@ from django.core.exceptions import PermissionDenied
 
 @login_required
 def manage_doctor_profile(request, id=None):
+    doctor = Doctor.objects.filter(user=request.user).first()
+    if doctor:
+        messages.warning(request, 'You have already created a doctor profile.')
+        return redirect('finance:doctor_dashboard')
+
     if id:
         instance = get_object_or_404(Doctor, id=id)
-
-        # 👇 Allow staff or superuser to bypass restriction
         if instance.user and instance.user != request.user and not request.user.is_staff and not request.user.is_superuser:
             raise PermissionDenied("You do not have permission to edit this profile.")
         message_text = "Profile updated successfully!"

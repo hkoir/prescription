@@ -37,7 +37,7 @@ class CustomUser(AbstractUser):
     REQUIRED_FIELDS = ['username']  # keep username if still used internally
 
     def __str__(self):
-        return self.phone_number or self.email or self.username or "Unknown User"
+        return f"{self.username}-{self.email}-{self.phone_number}"
 
 
 

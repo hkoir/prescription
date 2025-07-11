@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container my-5">
+  <div class="card shadow-lg rounded-4">
+    <div class="card-header bg-success text-white rounded-top-4">
+      <h4 class="mb-0"><i class="fas fa-user-injured me-2"></i>Patient Profile</h4>
+    </div>
+
+    <div class="card-body">
+      <div class="row gy-4">
+
+        <!-- Profile Info -->
+        <div class="col-md-4 text-center">
+          {% if patient.user.photo_id %}
+            <img src="{{ patient.user.photo_id.url }}" alt="Patient Photo" class="img-thumbnail rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover;">
+         {% elif patient.photo %}
+            <img src="{{ patient.photo.url }}" alt="Patient Photo" class="img-thumbnail rounded-circle shadow" style="width: 150px; height: 150px; object-fit: cover;">
+            {% else %}
+            <div class="bg-secondary rounded-circle d-inline-block" style="width: 150px; height: 150px;"></div>
+          {% endif %}
+          <h5 class="mt-3">{{ patient.full_name }}</h5>
+          <span class="badge bg-info text-dark">{{ patient.gender|title }}</span>
+        </div>
+
+        <!-- Details -->
+        <div class="col-md-8">
+          <div class="row">
+            <div class="col-md-6 mb-2"><strong>Email:</strong> {{ patient.email }}</div>
+            <div class="col-md-6 mb-2"><strong>Phone:</strong> {{ patient.phone }}</div>
+            <div class="col-md-6 mb-2"><strong>City:</strong> {{ patient.city }}</div>
+            <div class="col-md-6 mb-2"><strong>Address:</strong> {{ patient.address }}</div>
+            <div class="col-md-6 mb-2"><strong>Date of Birth:</strong> {{ patient.dob|date:"M d, Y" }}</div>
+            <div class="col-md-6 mb-2"><strong>Age:</strong> {{ patient.age }} years</div>
+            <div class="col-md-6 mb-2"><strong>Weight:</strong> {{ patient.body_weight }} kg</div>
+            <div class="col-md-6 mb-2"><strong>Height:</strong> {{ patient.body_height }} cm</div>
+            <div class="col-md-6 mb-2"><strong>AI Prescriptions Used:</strong> {{ patient.free_ai_prescriptions_used }}</div>
+            <div class="col-md-6 mb-2"><strong>Last Profile Update:</strong> {{ patient.last_profile_update|date:"M d, Y H:i" }}</div>
+          </div>
+        </div>
+      </div>
+
+      <hr class="my-4">
+
+      <!-- Medical Info -->
+      <div class="row">
+        <div class="col-md-4">
+          <h6 class="text-success">Medical History</h6>
+          <p>{{ patient.medical_history|default:"N/A" }}</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="text-success">Allergies</h6>
+          <p>{{ patient.allergies|default:"N/A" }}</p>
+        </div>
+        <div class="col-md-4">
+          <h6 class="text-success">Current Medications</h6>
+          <p>{{ patient.current_medications|default:"N/A" }}</p>
+        </div>
+      </div>
+
+      {% if patient.remarks %}
+        <hr>
+        <h6 class="text-danger">Remarks:</h6>
+        <p>{{ patient.remarks }}</p>
+      {% endif %}
+
+      <div class="text-end mt-4">
+        <a href="{% url 'finance:update_patient_profile' patient.id %}" class="btn btn-outline-primary">
+          <i class="fas fa-edit me-1"></i> Edit Profile
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

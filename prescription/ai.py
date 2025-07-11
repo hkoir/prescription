@@ -82,7 +82,7 @@ List each medicine **in the following exact structure**, one per line:
 
 6. Warning Signs requiring urgent attention:
 - [List any signs the patient must watch for.]
-
+7. Suggested Diet Chart (basic healthy weekly plan)
 ---
 
 If there is no recommendation in any section, write **None**. Always number all sections clearly from 0 to 6. Follow the structure exactly.
@@ -111,7 +111,8 @@ If there is no recommendation in any section, write **None**. Always number all 
     specialty_raw = extract_section(content, r"5\.\s*\**Recommended Specialist\**:?(.*?)(?:6\.|\Z)", "General Physician")
     warning_signs = extract_section(content, r"6\.\s*\**Warning Signs.*?\**:?(.*)", "None specified")
     recommended_specialty = extract_recommended_specialty_from_raw(content)
-
+   # diet_chart =  extract_section(content, r"7\.\s*Suggested Diet Chart\s*:?([\s\S]*)", "None").strip()
+    diet_chart = extract_section(content, r"7\.\s*\**Suggested Diet Chart.*?\**:?(.*)", "None specified")
 
     return {
 	"summary": summary.strip(),
@@ -122,7 +123,9 @@ If there is no recommendation in any section, write **None**. Always number all 
 	#"recommended_specialty": recommended_specialty,
         "recommended_specialty": specialty_raw.strip(),
         "warning_signs": warning_signs.strip(),
-        "raw_content": content
+        "raw_content": content,
+        #'diet_chart':diet_chart,
+        "diet_chart": diet_chart.strip(),
     }
 
 
@@ -247,6 +250,7 @@ def extract_section(text, pattern, fallback=""):
         return match.group(1).strip() if match else fallback
     except Exception:
         return fallback
+
 
 
 

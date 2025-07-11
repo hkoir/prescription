@@ -4,15 +4,89 @@
 
 {% block content %}
 
-<div class="container">
-    <a href="{% url 'prescription:create_ai_prescription' %}"class="text-center btn btn-sm btn-outline-success">See the power of Ai </a>
-    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-primary">Your appointments</a>
-    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
-    <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-sm btn-outline-success">Create Followup Schedule with doctor</a>
-    <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
-      <a href="{% url 'finance:update_patient_profile' patient.id %}" class="btn btn-sm btn-outline-primary">Update your patient profile to get better result</a>
-    
-    <div class="row">       
+<div class="container-fluid"> 
+    <h3 class="text-center mb-4 fw-bold text-primary">👤 Patient Dashboard</h3>
+    <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+        
+        <div class="col">
+        <a href="{% url 'prescription:create_ai_prescription' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-success">🤖 Try AI Prescription now</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">See the power of AI to auto-generate prescriptions.</p>
+            </div>
+        </a>
+        </div>
+
+         <div class="col">
+        <a href="{% url 'symptom_checker:start_symptom_check' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-success">🤖 Talk with Your Ai Doctor</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Talk to your Ai Doctor about your health related issues and get feedback</p>
+            </div>
+        </a>
+        </div>
+
+
+        <div class="col">
+        <a href="{% url 'prescription:available_doctors' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-success">🔍 Search & book Doctor</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Find and book the right doctor easily.</p>
+            </div>
+        </a>
+        </div>
+
+     
+        <div class="col">
+        <a href="{% url 'prescription:doctor_prescription_list' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-primary">📄 Your Prescriptions</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Access all your previous prescriptions here.</p>
+            </div>
+        </a>
+        </div>
+
+        <div class="col">
+        <a href="{% url 'prescription:doctor_bookings_list' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-primary">📚 Your Booking History</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Check your doctor consultation history.</p>
+            </div>
+        </a>
+        </div>
+
+        <div class="col">
+        <a href="{% url 'appointments:available_doctors' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-info">🏥 Book doctor chamber appointment</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Book your desired doctor appointment and visit doctor's chamber.</p>
+            </div>
+        </a>
+        </div>
+
+        <div class="col">
+        <a href="{% url 'appointments:appointment_list' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-info">🏥 Your Chamber appointment</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Review past chamber visits and follow-ups.</p>
+            </div>
+        </a>
+        </div>
+
+        <div class="col mb-3">
+        <a href="{% url 'finance:update_patient_profile' patient.id %}" class="card text-decoration-none shadow-sm border-0 h-100">
+            <div class="card-body text-center">
+            <h6 class="card-title text-warning">📝 Update your Profile</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Improve diagnosis quality by updating your profile.</p>
+            </div>
+        </a>
+        </div>
+
+    </div>
+        
+
+
+    <div class="row my-2">       
        
         <div class="col-12 table-responsive">       
 

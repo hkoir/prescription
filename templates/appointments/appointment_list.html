@@ -39,156 +39,251 @@
 <div class="container-fluid">
     <div class="row">
 
-    {% include 'hero_section.html' %}
-    <div class="col-12"> 
-            <div class="card mb-4 shadow-sm">
-                <div class="card-body">
-                    <form method="GET">
-                        <div class="d-flex flex-wrap align-items-end gap-3">
-                            <!-- Start Date -->
-                            <div class="d-flex align-items-center">
-                                <label class="me-2 mb-0">Start-date</label>
-                                <input type="date" name="start_date" class="form-control form-control-sm w-auto" value="{{ request.GET.start_date }}">
-                            </div>
-            
-                            <!-- End Date -->
-                            <div class="d-flex align-items-center">
-                                <label class="me-2 mb-0">End-date</label>
-                                <input type="date" name="end_date" class="form-control form-control-sm w-auto" value="{{ request.GET.end_date }}">
-                            </div>
-            
-                            <!-- Doctor -->
-                            <div>
-                                <select name="doctor" class="form-select form-select-sm w-auto">
-                                    <option value="">Select a Doctor</option>
-                                    {% for doctor in doctors %}
-                                        <option value="{{ doctor.id }}" {% if doctor.id == request.GET.doctor|default:"" %}selected{% endif %}>
-                                            {{ doctor.full_name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-            
-                            <!-- Patient -->
-                            <div>
-                                <select name="patient" class="form-select form-select-sm w-auto">
-                                    <option value="">Select a Patient</option>
-                                    {% for patient in patients %}
-                                        <option value="{{ patient.id }}" {% if patient.id == request.GET.patient|default:"" %}selected{% endif %}>
-                                            {{ patient.full_name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-            
-                            <!-- Single Date -->
-                            <div class="d-flex align-items-center">
-                                <label class="me-2 mb-0">Date</label>
-                                <input type="date" name="date" class="form-control form-control-sm w-auto" value="{{ request.GET.date }}">
-                            </div>
-            
-                            <!-- Submit Button -->
-                            <div>
-                                <button type="submit" class="btn btn-success btn-sm">
-                                    <i class="bi bi-search me-1"></i> Search
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-                   
-    </div>
-            
- 
-
-    <div class="col-12 table-responsive">
-       <h3>Date: {{ today }}</h3> 
-       {% if request.user.is_staff %}
-        <table class="table">
-            <thead class="table-info">
-                <tr>
-                    <th>Doctor</th>
-                   <th>No of appointments</th>
-                </tr>
-            </thead>
-            {% for data in doctor_appointment_counts %}
-            <tbody>
-                <td>{{ data.doctor__name }}</td>
-                <td>{{ data.total_appointments }}</td>
-            </tbody>
-            {% endfor %}
-        </table>
-        {% endif %}
-    </div>
-
-    <div class="container my-5">
-        <h2 class="text-center mb-4">Doctor Chamber Visit Appointment</h2>
-    
-        <div class="row g-4">
-            {% for appointment in appointments %}
-                <div class="col-12 col-md-3 d-flex">
-                    <div class="card flex-fill h-100">
+            {% include 'hero_section.html' %}
+              <div class="col-12"> 
+                    <div class="card mb-4 shadow-sm">
                         <div class="card-body">
-                            <p>{% if appointment.patient.patient_photo %}
-                                <a href="{{ appointment.patient.patient_photo.url }}" target="_blank" style="text-decoration: none;color:black">
-                                <img src="{{ appointment.patient.patient_photo.url }}" style="width:30px;height:30px; border-radius: 50%;">
-                                </a>
-                                {% endif %}
-                            </p>
-
-                            <h5 class="card-title text-primary">{{ appointment.patient.name }}</h5>
-                            <p class="mb-1">
-                            <strong>Appointment ID:</strong> {{ appointment.appointment_code }}<br>
-                            <strong>Patient Type:</strong> {{ appointment.patient_type }}<br>
-                            <strong>Email:</strong> {{ appointment.patient.email }}<br>
-                            <strong>Phone:</strong> {{ appointment.patient.phone }}<br>
-                            <strong>Date:</strong> {{ appointment.date }}<br>
-                            <strong>Time Slot:</strong> {{ appointment.timeslot.start_time }} - {{ appointment.timeslot.end_time }}<br>
-                            <strong>Doctor:</strong> {{ appointment.doctor }}
-                          </p>    
-                            <p class="mb-1">   
-
-                            {% if appointment.payment_status == 'Paid' %}
-                                    {% if appointment.status == 'Prescription-Given' %}
-                                        <i class="fas fa-check text-success fw-bold">Consultation done, Prescribed</i>
-                                    {% else %}
-
-					    {% if request.user.role == "doctor" %}
-                                             <a href="{% url 'appointments:create_prescription_from_appointment' appointment.id %}"
-                                              class="btn btn-sm w-100 btn-outline-success">Start Consulting</a>
-                                              {% endif %}
-                                    {% endif %}
-
-                            {% elif appointment.status == 'Cancelled' %}
-                                <strong class="text-danger d-block text-center fw-bold mt-2">Cancelled</strong>
-
-                            {% else %}
-                                <div class="d-flex justify-content-between mt-4">
-                                    <a href="{% url 'appointments:booking_confirmation_payment' appointment.id %}" class="btn btn-sm btn-outline-success w-100">Pay now</a>
-                                    <button class="btn btn-sm btn-outline-danger cancel-btn w-100" data-id="{{ appointment.id }}">Cancel</button>
+                            <form method="GET">
+                                <div class="d-flex flex-wrap align-items-end gap-3">
+                                    <!-- Start Date -->
+                                    <div class="d-flex align-items-center">
+                                        <label class="me-2 mb-0">Start-date</label>
+                                        <input type="date" name="start_date" class="form-control form-control-sm w-auto" value="{{ request.GET.start_date }}">
+                                    </div>
+                    
+                                    <!-- End Date -->
+                                    <div class="d-flex align-items-center">
+                                        <label class="me-2 mb-0">End-date</label>
+                                        <input type="date" name="end_date" class="form-control form-control-sm w-auto" value="{{ request.GET.end_date }}">
+                                    </div>
+                    
+                                    <!-- Doctor -->
+                                    <div>
+                                        <select name="doctor" class="form-select form-select-sm w-auto">
+                                            <option value="">Select a Doctor</option>
+                                            {% for doctor in doctors %}
+                                                <option value="{{ doctor.id }}" {% if doctor.id == request.GET.doctor|default:"" %}selected{% endif %}>
+                                                    {{ doctor.full_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                    
+                                    <!-- Patient -->
+                                    <div>
+                                        <select name="patient" class="form-select form-select-sm w-auto">
+                                            <option value="">Select a Patient</option>
+                                            {% for patient in patients %}
+                                                <option value="{{ patient.id }}" {% if patient.id == request.GET.patient|default:"" %}selected{% endif %}>
+                                                    {{ patient.full_name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                    
+                                    <!-- Single Date -->
+                                    <div class="d-flex align-items-center">
+                                        <label class="me-2 mb-0">Date</label>
+                                        <input type="date" name="date" class="form-control form-control-sm w-auto" value="{{ request.GET.date }}">
+                                    </div>
+                    
+                                    <!-- Submit Button -->
+                                    <div>
+                                        <button type="submit" class="btn btn-success btn-sm">
+                                            <i class="bi bi-search me-1"></i> Search
+                                        </button>
+                                    </div>
                                 </div>
-                            {% endif %}
-                        </p>
-                            
-                          
-
-
+                            </form>
                         </div>
-                    </div>
-                </div>
-               
-            {% empty %}
-                <div class="col-12 text-center">
-                    <p class="text-muted">No appointments found.</p>
-                </div>
-            {% endfor %}
-        </div>
-    </div>
-   
+                    </div>                   
+              </div>           
+ 
+            <div class="col-12 table-responsive">
+                <h3>Date: {{ today }}</h3> 
+                {% if request.user.is_staff %}
+                    <table class="table">
+                        <thead class="table-info">
+                            <tr>
+                                <th>Doctor</th>
+                            <th>No of appointments</th>
+                            </tr>
+                        </thead>
+                        {% for data in doctor_appointment_counts %}
+                        <tbody>
+                            <td>{{ data.doctor__name }}</td>
+                            <td>{{ data.total_appointments }}</td>
+                        </tbody>
+                        {% endfor %}
+                    </table>
+                    {% endif %}
+            </div>  
     
     </div>
 </div>
+
+
+
+<div class="container my-5">
+    <h2 class="text-center mb-4">Doctor Chamber Visit Appointment</h2>
+
+    <div class="row g-4">
+        {% for initial in initial_appointments %}
+            <div class="col-12 col-md-4 d-flex">
+                <div class="card shadow rounded-4 mb-4" style="background: linear-gradient(135deg, #E6F4F1, #FFFFFF);">
+                    <div class="card-body text-dark">
+                        <!-- Initial Appointment Header -->
+                        <h5>Initial Appointment #{{ initial.appointment_code }} ({{ initial.date }})</h5>
+                        
+                        <!-- Patient & Doctor Photos and Names -->
+                        <div class="d-flex align-items-center gap-2 mb-2 justify-content-start btn btn-sm btn-outline-success w-100">
+                          <a href="{% url 'finance:patient_detail' initial.patient.id %}" style="text-decoration: none; color:black">
+                            {% if initial.patient.user.photo_id %}                              
+                             <img src="{{ initial.patient.user.photo_id.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                             {% elif initial.patient.photo %}                               
+                              <img src="{{ initial.patient.photo.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                           {% endif %}
+                            <span><strong>Patient Name:</strong> {{ initial.patient.full_name }}</span>
+                            </a>
+                        </div>
+
+                        <div class="mb-2 btn btn-sm btn-outline-success w-100">
+                            <a href="{% url 'finance:doctor_detail' initial.doctor.id %}" style="text-decoration: none; color:black">
+                            {% if initial.doctor.photo %}                               
+                                <img src="{{ initial.doctor.photo.url }}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                <br>
+                            {% endif %}
+                            <span>
+                                <strong>Doctor:</strong> {{ initial.doctor.full_name }}<br>
+                                <strong>Doctor's Specialization:</strong> {{ initial.doctor.specialization }}
+                            </span>
+                            </a>
+                        </div>
+
+                        <!-- Appointment Info -->
+                        <h5>Patient Info:</h5>
+                        <p>
+                            <strong>Appointment ID:</strong> {{ initial.appointment_code }}<br>
+                            <strong>Appointment Type:</strong> Initial<br>
+                            <strong>Patient Type:</strong> {{ initial.patient_type }}<br>
+                            <strong>Email:</strong> {{ initial.patient.email }}<br>
+                            <strong>Phone:</strong> {{ initial.patient.phone }}<br>
+                            <strong>Date:</strong> {{ initial.date }}<br>
+                            <strong>Time Slot:</strong> {{ initial.timeslot.start_time }} - {{ initial.timeslot.end_time }}<br>
+                            <strong>Status:</strong> {{ initial.status }}
+                        </p>
+
+                        <!-- Actions and Status -->
+                      <p class="mb-1">
+                            {% if initial.payment_status == 'Paid' %}
+                                {% with prescription=initial.appointment_prescriptions.first %}
+                                    {% if initial.status == 'Prescription-Given' or prescription %}
+                                        <i class="fas fa-check text-success fw-bold btn btn-sm btn-outline-success w-100">
+                                            Consultation done, Prescribed
+                                        </i><br>
+
+                                        <a href="{% url 'appointments:view_available_slots' initial.doctor.id %}?parent={{ initial.id }}"
+                                        class="btn btn-sm btn-outline-success w-100 mt-2">
+                                            Book Follow-Up
+                                        </a><br>
+
+                                        {% if prescription %}
+                                            <a href="{% url 'prescription:doctor_prescription_detail_single' prescription.id %}"
+                                            class="btn btn-sm btn-outline-success w-100 mt-1">
+                                                View Prescription
+                                            </a>
+                                        {% endif %}
+                                    {% else %}
+                                        {% if request.user.role == "doctor" %}
+                                            <a href="{% url 'appointments:create_prescription_from_appointment' initial.id %}"
+                                            class="btn btn-sm w-100 btn-outline-success mt-2">
+                                                Start Consulting
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                {% endwith %}
+                            {% elif initial.status == 'Cancelled' %}
+                                <strong class="text-danger d-block text-center fw-bold mt-2">Cancelled</strong>
+                            {% else %}
+                                <div class="d-flex justify-content-between mt-4">
+                                    <a href="{% url 'appointments:booking_confirmation_payment' initial.id %}"
+                                    class="btn btn-sm btn-outline-success w-100">Pay now</a>
+                                    <button class="btn btn-sm btn-outline-danger cancel-btn w-100" data-id="{{ initial.id }}">Cancel</button>
+                                </div>
+                            {% endif %}
+                        </p>
+
+
+                        <!-- Follow-Up Appointments -->
+                        {% if initial.followups.all %}
+                            <hr>
+                            <h5>Follow-up Appointments:</h5>
+                            <div class="ms-3">
+                                {% for followup in initial.followups.all %}
+                                    <div class="card mb-2" style="background: #f9f9f9;">
+                                        <div class="card-body">
+                                            <strong>Follow-up #{{ followup.appointment_code }}</strong><br>
+                                            Date: {{ followup.date }}<br>
+                                            Time: {{ followup.timeslot.start_time }} - {{ followup.timeslot.end_time }}<br>
+                                            Doctor: {{ followup.doctor.full_name }}<br>
+                                            Status: {{ followup.status }}<br>
+
+                                            {% if followup.payment_status == 'Paid' %}
+                                                {% if followup.status == 'Prescription-Given' or followup.appointment_prescriptions.first %}
+                                                    <i class="fas fa-check text-success fw-bold btn btn-sm btn-outline-success w-100">
+                                                        Consultation done, Prescribed
+                                                    </i><br>
+
+                                                    {% if followup.appointment_prescriptions.first %}
+                                                        <a href="{% url 'prescription:doctor_prescription_detail_single' followup.appointment_prescriptions.first.id %}"
+                                                        class="btn btn-sm btn-outline-success w-100 mt-1">
+                                                            View Prescription
+                                                        </a>
+                                                    {% endif %}
+
+                                                    <a href="{% url 'appointments:view_available_slots' followup.doctor.id %}?parent={{ followup.id }}"
+                                                    class="btn btn-sm btn-outline-success w-100 mt-1">
+                                                        Book Follow-Up
+                                                    </a>
+                                                {% else %}
+                                                    {% if request.user.role == "doctor" %}
+                                                        <a href="{% url 'appointments:create_prescription_from_appointment' followup.id %}"
+                                                        class="btn btn-sm w-100 btn-outline-success mt-1">
+                                                            Start Consulting
+                                                        </a>
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% elif followup.status == 'Cancelled' %}
+                                                <strong class="text-danger d-block text-center fw-bold mt-2">Cancelled</strong>
+                                            {% else %}
+                                                <div class="d-flex justify-content-between mt-2">
+                                                    <a href="{% url 'appointments:booking_confirmation_payment' followup.id %}"
+                                                    class="btn btn-sm btn-outline-success w-100">Pay now</a>
+                                                    <button class="btn btn-sm btn-outline-danger cancel-btn w-100" data-id="{{ followup.id }}">Cancel</button>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p>No follow-up appointments yet.</p>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">No appointments found.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+
+
+
 
 
 

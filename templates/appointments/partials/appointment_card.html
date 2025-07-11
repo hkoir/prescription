@@ -1,0 +1,31 @@
+<div class="mb-2">
+    <strong>Patient:</strong> {{ appointment.patient.full_name }}<br>
+    <strong>Doctor:</strong> {{ appointment.doctor.full_name }} ({{ appointment.doctor.specialization }})<br>
+    <strong>Date:</strong> {{ appointment.date }}<br>
+    <strong>Time:</strong> {{ appointment.timeslot.start_time }} - {{ appointment.timeslot.end_time }}<br>
+    <strong>Status:</strong> {{ appointment.status }}<br>
+    <strong>Type:</strong> {{ appointment.get_appointment_type_display }}<br>
+    <strong>Payment:</strong> {{ appointment.payment_status }}<br>
+</div>
+
+{% if appointment.appointment_prescriptions.first %}
+    <a href="{% url 'prescription:doctor_prescription_detail_single' appointment.appointment_prescriptions.first.id %}"
+       class="btn btn-sm btn-outline-primary w-100 mb-1">
+        View Prescription
+    </a>
+{% endif %}
+
+{% if request.user.role == "doctor" and appointment.status != "Prescription-Given" %}
+    <a href="{% url 'appointments:create_prescription_from_appointment' appointment.id %}"
+       class="btn btn-sm btn-outline-success w-100 mb-1">
+        Start Consulting
+    </a>
+{% endif %}
+
+{% if appointment.payment_status != 'Paid' and appointment.status != 'Cancelled' %}
+    <div class="d-flex gap-2">
+        <a href="{% url 'appointments:booking_confirmation_payment' appointment.id %}"
+           class="btn btn-sm btn-outline-success w-100">Pay Now</a>
+        <button class="btn btn-sm btn-outline-danger w-100 cancel-btn" data-id="{{ appointment.id }}">Cancel</button>
+    </div>
+{% endif %}

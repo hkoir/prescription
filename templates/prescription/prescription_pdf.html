@@ -71,7 +71,18 @@
      <strong style="color:green; font-size: large;">Recommended Specialized Doctor</strong><br>
     {{ prescription.recommended_specialty|linebreaksbr }}
 </p><br><br><br>
-
+  <p>
+   {% if diet_chart and diet_chart != "None" %}
+    <div class="card mt-3">
+        <div class="card-header bg-light">
+        <strong>🍽️ Suggested Diet Chart</strong>
+        </div>
+        <div class="card-body">
+        <pre>{{ diet_chart }}</pre>
+        </div>
+    </div>
+    {% endif %}
+</p>
 
 
 <p style="font-size:small; text-align: center;">

@@ -211,6 +211,7 @@ def symptom_chat(request, session_id):
     low_confidence = None
     session = get_object_or_404(SymptomCheckSession, id=session_id, user=request.user)
     user = request.user
+    patient =None
 
     try:
         patient = user.patient_profile
@@ -363,8 +364,7 @@ def symptom_chat(request, session_id):
     next_question = get_next_symptom_question(valid_answers)
     translated_question = translate_from_english(next_question)
 
-
-    progress_percent = int((len(valid_answers) / MAX_QA_ROUNDS) * 100)
+    progress_percent = min(int((len(valid_answers) / MAX_QA_ROUNDS) * 100), 100)
     yes_no = is_yes_no_question(next_question)
     progress_width = (len(valid_answers) + 1) * 20
 

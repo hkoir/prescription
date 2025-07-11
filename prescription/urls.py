@@ -71,6 +71,8 @@ urlpatterns = [
     path('initiate_video_call_payment/<int:booking_id>/', views.initiate_video_call_payment, name='initiate_video_call_payment'),
     path('initiate_doctor_followup_booking_payment/<int:doctor_booking_id>/', views.initiate_doctor_followup_booking_payment, name='initiate_doctor_followup_booking_payment'),
     path('initiate_followup_video_consultation_payment/<int:followup_booking_id>/', views.initiate_followup_video_consultation_payment, name='initiate_followup_video_consultation_payment'),
+    
+    # path('translate/', views.translate_text, name='translate_text'),
 
 
 

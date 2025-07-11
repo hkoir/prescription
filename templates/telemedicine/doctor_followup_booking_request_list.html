@@ -39,22 +39,22 @@
                                 {% if booking.status == 'confirmed' %}       
                                 <span class="fas fa-check fw-bold text-success">Followup Scheduled Confirmed</span>   
                                 {% else %}                  
-				    {% if request.user.role == "doctor" %}
-                                	<a href="{% url 'prescription:aprove_doctor_followup_booking' booking.id %}" 
-					class="btn btn-sm btn-outline-success">Doctor approved schedule</a>
-		<a href="{% url 'prescription:create_followup_doctor_prescription' booking.doctor_booking.id booking.id %}" 
-		 class="btn btn-sm btn-outline-primary">Doctor to Prescribe</a>
-					{% endif %}
+				           {% if request.user.role == "doctor" %}
+                            <a href="{% url 'prescription:aprove_doctor_followup_booking' booking.id %}" 
+                                class="btn btn-sm btn-outline-success">Doctor approved schedule</a>
+                                <a href="{% url 'prescription:create_followup_doctor_prescription' booking.doctor_booking.id booking.id %}" 
+                                class="btn btn-sm btn-outline-primary">Doctor to Prescribe</a>
+                                            {% endif %}
                                 {% endif %}
 
                                 {% if booking.zoom_folloup_schedule %}
                                 <span class="fas fa-check fw-bold text-success">Video Consultation Requested</span>
                                 {% else %}
 
-				  {% if request.user.role == "patient" %}
-				<a href="{% url 'prescription:initiate_followup_video_consultation_payment' booking.doctor_booking.id %}" 
-					class="btn btn-sm btn-outline-success">Request Video Consultation</a>
-				   {% endif %}     
+                            {% if request.user.role == "patient" %}
+                            <a href="{% url 'prescription:initiate_followup_video_consultation_payment' booking.doctor_booking.id %}" 
+                                class="btn btn-sm btn-outline-success">Request Video Consultation</a>
+                            {% endif %}     
                                 {% endif %}                         
 
                             </td>

@@ -5,9 +5,12 @@
     <div class="row">
         <h2 class="text-center my-4">Available Slots for {{ doctor.name }}</h2>
 
-        <form method="get" class="mb-4">
+        <form method="get" class="mb-4">           
             <label>Select Date:</label>
             <input type="date" name="date" value="{{ selected_date }}">
+             {% if parent_appointment_id %}
+                <input type="hidden" name="parent" value="{{ parent_appointment_id }}">
+            {% endif %}
             <button class="btn btn-sm btn-success" type="submit">Search</button>
         </form>
 
@@ -21,13 +24,15 @@
                                 {{ slot.start_time }} - {{ slot.end_time }}
                             </button>
                         {% else %}
-                            <button
+                           <button
                                 class="btn w-100 bookable-slot"
                                 data-slot-id="{{ slot.id }}"
                                 data-doctor-id="{{ doctor.id }}"
+                                {% if parent_appointment_id %}data-parent-appointment-id="{{ parent_appointment_id }}"{% endif %}
                                 style="background-color: lightgreen;">
                                 {{ slot.start_time }} - {{ slot.end_time }}
                             </button>
+
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -90,7 +95,8 @@
 
                     <input type="hidden" id="selected-slot-id" name="slot_id">
                     <input type="hidden" id="selected-doctor-id" name="doctor_id">
-
+                    <input type="hidden" id="parent-appointment-id" name="parent_appointment_id" value="{{ parent_appointment_id|default:'' }}">
+                   
                     <button type="submit" class="btn btn-success">Confirm Booking</button>
                 </form>
 
@@ -110,16 +116,27 @@ document.addEventListener("DOMContentLoaded", function () {
     const patientModal = new bootstrap.Modal(document.getElementById("patientModal"));
     const patientForm = document.getElementById("patient-form");
     const messageBox = document.getElementById("patient-message");
-
+    
     buttons.forEach(btn => {
-        btn.addEventListener("click", function (e) {
+       btn.addEventListener("click", function (e) {
             e.preventDefault();
             document.getElementById("patient-form").reset();
+
             document.getElementById("selected-slot-id").value = this.dataset.slotId;
             document.getElementById("selected-doctor-id").value = this.dataset.doctorId;
+
+            const parentInput = document.getElementById("parent-appointment-id");
+            if (parentInput && this.dataset.parentAppointmentId) {
+                parentInput.value = this.dataset.parentAppointmentId;
+            } else if (parentInput) {
+                parentInput.value = ""; // clear it if no parent appointment
+            }
+
             messageBox.innerHTML = "";
             patientModal.show();
         });
+
+
     });
 
     patientForm.addEventListener("submit", function (e) {

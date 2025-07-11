@@ -36,8 +36,6 @@ from payment_gateway.utils import is_payment_enabled_for_tenant
 
 from.models import LabResultFile
 
-
-
 from django.core.mail import send_mail
 from django.conf import settings
 from django.core.files.storage import default_storage
@@ -47,8 +45,8 @@ from.models import AiLabImageInterpretation
 from .ai import get_ai_prescription  
 from prescription.ai import get_ai_prescription_with_image  
 from .ai import interpret_lab_images_only  
-
-
+import re
+import requests
 
 
 def about_us(request):
@@ -155,9 +153,9 @@ from payment_gateway.models import Payment
 from payment_gateway.models import Payment, PaymentInvoice
 from accounts.utils import send_sms
 from messaging.views import create_notification
+import re
 
 
-#========================================================================================
 
 @login_required
 def initiate_ai_prescription_payment(request):
@@ -697,9 +695,50 @@ def lab_interpretation_history(request):
     })
 
 
+#========================================================================================
+def extract_section(text, pattern, fallback=""):
+    try:
+        match = re.search(pattern, text, re.DOTALL | re.IGNORECASE)
+        return match.group(1).strip() if match else fallback
+    except Exception:
+        return fallback
+
+
 
 @login_required
 def ai_prescription_detail(request, pk):
+    prescription = AIPrescription.objects.filter(pk=pk).first()
+    if not prescription:
+        raise Http404("AI Prescription not found.")
+    # Access check
+    if prescription.user == request.user:
+        pass
+    elif prescription.bookings.filter(doctor__user=request.user).exists():
+        pass
+    else:
+        raise PermissionDenied("You do not have permission to view this AI prescription.")
+    # Extract diet_chart if missing
+    diet_chart = prescription.diet_chart
+    if not diet_chart or diet_chart.strip().lower() == "none":
+        pattern = r"7\.\s*\**Suggested Diet Chart.*?\**:?\s*([\s\S]*?)(?=\n\d+\.\s|\Z)"
+        extracted = extract_section(prescription.raw_response or "", pattern, fallback="None")
+        if extracted and extracted.strip().lower() != "none":
+            prescription.diet_chart = extracted
+            prescription.save(update_fields=['diet_chart'])
+            diet_chart = extracted
+    lab_images_with_interpretation = prescription.ai_lab_test.all()
+    return render(request, 'prescription/detail.html', {
+        'prescription': prescription,
+        'normalized_duration': normalize_duration_text(prescription.duration),
+        'lab_images_with_interpretation': lab_images_with_interpretation,
+        'diet_chart': diet_chart,
+    })
+
+
+
+
+@login_required
+def ai_prescription_detail2(request, pk):
     prescription = get_object_or_404(AIPrescription, pk=pk,user=request.user)
     if prescription.user == request.user:
         pass
@@ -740,8 +779,17 @@ def ai_prescription_list(request):
 
 def ai_prescription_pdf(request, pk):
     prescription = AIPrescription.objects.get(pk=pk)
+    diet_chart = prescription.diet_chart
+    if not diet_chart or diet_chart.strip().lower() == "none":
+        pattern = r"7\.\s*\**Suggested Diet Chart.*?\**:?\s*([\s\S]*?)(?=\n\d+\.\s|\Z)"
+        extracted = extract_section(prescription.raw_response or "", pattern, fallback="None")
+        if extracted and extracted.strip().lower() != "none":
+            prescription.diet_chart = extracted
+            prescription.save(update_fields=['diet_chart'])
+            diet_chart = extracted
+
     template = get_template('prescription/prescription_pdf.html')  # Use a dedicated PDF template
-    html = template.render({'prescription': prescription})
+    html = template.render({'prescription': prescription,'diet_chart': diet_chart})
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="Prescription_{prescription.id}.pdf"'
@@ -1098,8 +1146,8 @@ def initiate_video_call_payment(request,booking_id):
     amount = booking.doctor.video_consultation_fees
     patient = booking.patient
     doctor = booking.doctor
-
-    if not is_payment_enabled_for_tenant(request.tenant):
+   
+    if not is_payment_enabled_for_tenant(request.tenant) or amount == 0:
         return redirect('prescription:request_video_call', booking_id)
 
     invoice = create_payment_invoice(
@@ -1135,21 +1183,22 @@ def request_video_call(request, booking_id):
         return redirect('prescription:home')
 
     #=========================================================================
-    invoice_id = request.session.get('doctor_booking_video_call_invoice_id', None)
-    invoice = None
-    if invoice_id:
-        try:
-            invoice = PaymentInvoice.objects.get(id=invoice_id, patient=patient, invoice_type='video-consultation')
-        except PaymentInvoice.DoesNotExist:
+    if is_payment_enabled_for_tenant(request.tenant) and (doctor.video_consultation_fees or 0) > 0:   
+        invoice_id = request.session.get('doctor_booking_video_call_invoice_id', None)
+        invoice = None
+        if invoice_id:
+            try:
+                invoice = PaymentInvoice.objects.get(id=invoice_id, patient=patient, invoice_type='video-consultation')
+            except PaymentInvoice.DoesNotExist:
+                messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
+                return redirect('prescription:doctor_bookings_list')
+        if not invoice:
             messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
             return redirect('prescription:doctor_bookings_list')
-    if not invoice:
-        messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
-        return redirect('prescription:doctor_bookings_list')
 
-    if not invoice.is_paid:
-        messages.warning(request, "Please complete payment before proceeding with video consultation.")
-        return redirect('payment_gateway:review_invoice')
+        if not invoice.is_paid:
+            messages.warning(request, "Please complete payment before proceeding with video consultation.")
+            return redirect('payment_gateway:review_invoice')
 
         #==============================================================================================
 
@@ -1288,14 +1337,18 @@ PrescriptionFormSet = modelformset_factory(
 )
 
 
-
+from appointments.models import Appointment
 @login_required
-def create_doctor_prescription(request, booking_id, followup_id=None):
+def create_doctor_prescription(request, booking_id, followup_id=None,appointment_id=None):
     booking = get_object_or_404(DoctorBooking, pk=booking_id)
     service_fee=None
     patient = booking.patient
     doctor = booking.doctor
     followup_booking = None
+    appointment = None
+
+    if appointment_id:
+        appointment = get_object_or_404(Appointment, pk=appointment_id)
 
     if followup_id:
         followup_booking = get_object_or_404(DoctorFolloupBooking, pk=followup_id, doctor_booking=booking)
@@ -1327,6 +1380,8 @@ def create_doctor_prescription(request, booking_id, followup_id=None):
                
                 if followup_booking:
                     doctor_prescription.booking_folloup_ref = followup_booking
+                elif appointment:
+                    doctor_prescription.appointment_ref = appointment
                 else:
                     doctor_prescription.booking_ref = booking
                 doctor_prescription.save()
@@ -1371,6 +1426,9 @@ def create_doctor_prescription(request, booking_id, followup_id=None):
                 if followup_booking:
                     followup_booking.status = 'completed'
                     followup_booking.save()
+                elif appointment:
+                    appointment.status = 'Completed'
+                    appointment.save()
                 else:
                     booking.status = 'completed'
                     booking.save()
@@ -1594,14 +1652,11 @@ def doctor_followup_prescription_pdf(request, pk):
 
 #================= folloup booking and soom meeting management =======================
 
-
 import uuid
-
 
 @login_required
 def initiate_doctor_followup_booking_payment(request, doctor_booking_id):
     doctor_booking_instance = get_object_or_404(DoctorBooking, id=doctor_booking_id)
-
     if doctor_booking_instance and doctor_booking_instance.is_followup_valid():
         payment_amount = doctor_booking_instance.doctor.folloup_consultation_fees
     else:
@@ -1610,10 +1665,8 @@ def initiate_doctor_followup_booking_payment(request, doctor_booking_id):
     amount = payment_amount
     patient = doctor_booking_instance.patient
     doctor = doctor_booking_instance.doctor
-
     if not is_payment_enabled_for_tenant(request.tenant):
         return redirect('prescription:request_doctor_followup_booking', doctor_booking_id)
-
 
     invoice = create_payment_invoice(
         patient=patient,
@@ -1626,11 +1679,7 @@ def initiate_doctor_followup_booking_payment(request, doctor_booking_id):
         doctor_booking=doctor_booking_instance
     )
     request.session['doctor_followup_booking_invoice_id'] = invoice.id
-
     return redirect(reverse('payment_gateway:review_invoice') + f'?tran_id={invoice.tran_id}')
-
-
-
 
 
 def request_doctor_followup_booking(request, doctor_booking_id):
@@ -1642,7 +1691,6 @@ def request_doctor_followup_booking(request, doctor_booking_id):
     if request.user != doctor_booking_instance.patient.user:
         messages.warning(request, 'Only associated patient can request for followup booking')
         return redirect('prescription:home')
-
     if doctor_booking_instance and doctor_booking_instance.is_followup_valid():
         payment_amount = doctor_booking_instance.doctor.folloup_consultation_fees
     else:
@@ -1664,7 +1712,6 @@ def request_doctor_followup_booking(request, doctor_booking_id):
             return redirect('payment_gateway:review_invoice') 
 #====================================================================================================
 
-
     if request.method == "POST":
         form = DoctorFolloupBookingRequestForm(request.POST, request.FILES)
         if form.is_valid():
@@ -1672,7 +1719,6 @@ def request_doctor_followup_booking(request, doctor_booking_id):
             booking.doctor_booking = doctor_booking_instance
             booking.user = request.user
 
-            # Handle captured image (base64)
             captured_image_data = request.POST.get('captured_image')
             if captured_image_data:
                 format, imgstr = captured_image_data.split(';base64,')  # format ~= data:image/png
@@ -1680,14 +1726,14 @@ def request_doctor_followup_booking(request, doctor_booking_id):
                 img_file = ContentFile(base64.b64decode(imgstr), name=f"{uuid.uuid4()}.{ext}")
                 booking.symptom_image = img_file
 
-            # Handle recorded video (base64)
             recorded_video_data = request.POST.get('recorded_video')
             if recorded_video_data:
                 format, vidstr = recorded_video_data.split(';base64,')
                 ext = format.split('/')[-1]
                 vid_file = ContentFile(base64.b64decode(vidstr), name=f"{uuid.uuid4()}.{ext}")
                 booking.symptom_video = vid_file
-
+            booking.approved_followup_datetime = timezone.now()
+            booking.status = 'confirmed'
             booking.save()
  	   #===================== upload lab test result if any ===============
             lab_files = request.FILES.getlist('lab_files')
@@ -1715,12 +1761,6 @@ def request_doctor_followup_booking(request, doctor_booking_id):
         "form": form,
         "doctor_booking": doctor_booking_instance
     })
-
-
-
-
-
-
 
 
 def followup_up_booking_request_list(request):
@@ -1814,9 +1854,8 @@ def all_follow_up_schedules(request, booking_id):
 
     return render(request, 'telemedicine/all_followup_requestes.html', {'page_obj': page_obj})
 
-
-
 #======================================================================================
+
 @login_required
 def initiate_followup_video_consultation_payment(request, followup_booking_id):   
     followup_booking_instance = get_object_or_404(DoctorFolloupBooking, id=followup_booking_id)
@@ -1825,7 +1864,7 @@ def initiate_followup_video_consultation_payment(request, followup_booking_id):
     patient = followup_booking_instance.doctor_booking.patient
     doctor_booking = followup_booking_instance.doctor_booking
 
-    if not is_payment_enabled_for_tenant(request.tenant):
+    if not is_payment_enabled_for_tenant(request.tenant) or amount == 0:
         return redirect('prescription:request_zoom_meeting',followup_booking_id)
 
     invoice = create_payment_invoice(
@@ -1857,7 +1896,7 @@ def request_zoom_meeting(request, followup_booking_id):
         return redirect('prescription:home')
 
 #========================================================================================================
-    if is_payment_enabled_for_tenant(request.tenant):
+    if is_payment_enabled_for_tenant(request.tenant) and (doctor.video_consultation_fees or 0) > 0:
         invoice_id = request.session['followup-video-consultation_invoice_id']
         invoice = None
         if invoice_id:

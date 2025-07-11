@@ -9,116 +9,133 @@
     <a href="{% url 'prescription:available_doctors' %}" class="btn btn-sm btn-outline-success">Search & Book doctor</a>
     <a href="{% url 'prescription:doctor_prescription_list'%}" class="btn btn-sm btn-outline-primary">Your Prescription</a>
 
+   <div class="row gy-4 mt-3">
+      <h4 class="text-center">Main Booking History</h4>
+      <div class="row g-4">
+        {% for booking in page_obj %}
+          <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 shadow border-0 rounded-4" style="background: linear-gradient(135deg, #e6f4f1, #ffffff);">
+              <div class="card-body d-flex flex-column">
+
+                <h6 class="text-primary mb-3 fw-bold">📝 Doctor Booking #{{ forloop.counter }}</h6>
+                <p class="text-muted small mb-3">🕒 <strong>Date:</strong> {{ booking.created_at|date:"M d, Y H:i" }}</p>
+
+              <!-- Doctor Info -->
+              <div class="d-flex align-items-start mb-3 p-2 doctor-link-card btn btn-sm btn-outline-success w-100">
+                <a href="{% url 'finance:doctor_detail' booking.doctor.id %}" class="d-flex text-decoration-none text-dark w-100">
+                  {% if booking.doctor.photo %}
+                    <img src="{{ booking.doctor.photo.url }}" class="rounded-circle me-3 shadow-sm" style="width: 50px; height: 50px; object-fit: cover;">
+                  {% else %}
+                    <div class="bg-secondary rounded-circle me-3" style="width: 50px; height: 50px;"></div>
+                  {% endif %}
+
+                  <div class="d-flex flex-column justify-content-center">
+                    <h6 class="mb-0 fw-semibold">⚕️ {{ booking.doctor.full_name }}</h6>
+                    <small class="text-muted">{{ booking.doctor.specialization|default:"Specialist" }}</small>
+                  </div>
+                </a>
+              </div>
 
 
+                <!-- Patient Info -->
+                <div class="d-flex align-items-center mb-3 btn btn-sm btn-outline-success w-100">
+                  <a href="{% url 'finance:patient_detail' booking.patient.id %}" class="d-flex align-items-center text-decoration-none text-dark">
+                  {% if booking.patient.photo %}
+                    <img src="{{ booking.patient.photo.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                  {% elif booking.patient.user.photo_id %}
+                    <img src="{{ booking.patient.user.photo_id.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                    {% else %}
+                    <div class="bg-secondary rounded-circle me-2" style="width: 40px; height: 40px;"></div>
+                  {% endif %}
+                  <h6 class="card-title mb-0">👨 Patient: {{ booking.patient.full_name }}</h6>
+                  </a>
+                </div>
 
+                <p class="mb-1"><strong>Booking Code:</strong> {{ booking.booking_code }}</p>
+                <p class="mb-1"><strong>Symptoms:</strong> {{ booking.symptoms_summary }}</p>
+                <p class="mb-3"><strong>Preferred Time:</strong> {{ booking.preferred_time }}</p>
 
-<div class="row gy-4 mt-3">
-<h4 class="text-center"> Main Booking History </h4>
-  {% for booking in page_obj %}
-    <div class="col-12 col-md-6 col-lg-4 col-xl-4">
-      <div class="card h-100 shadow border-0 rounded-4" style="background: linear-gradient(135deg, #e6f4f1, #ffffff)">
-        <div class="card-body d-flex flex-column">
-	 <h6 class="text-primary mb-2 fw-bold">📝 Doctor Booking #{{ forloop.counter }}</h6>
-          <p class="text-muted small mb-0">🕒 <strong>Date:</strong>:{{ booking.created_at|date:"M d, Y H:i" }}</p>
-	   <h6 class="card-title mb-2">⚕️Doctor:{{ booking.doctor.full_name }}</h6>
-          <h6 class="card-title mb-2">👨‍ Patient:{{ booking.patient.full_name }}</h6>
-          <p class="mb-1"><strong>Booking Code:</strong> {{ booking.booking_code }}</p>
-          <p class="mb-1"><strong>Symptoms:</strong> {{ booking.symptoms_summary }}</p>
-          <p class="mb-1"><strong>Preferred Time:</strong> {{ booking.preferred_time }}</p>
+                <a href="{% url 'prescription:doctor_booking_detail' booking.id %}" class="btn btn-sm btn-outline-success mb-2">Booking Details</a>
 
-          <p class="mb-1">
-            <strong>Status:</strong>
-            {% if booking.status == 'completed' %}
-              <span class="badge bg-success">Prescribed</span>
-            {% elif booking.status == 'cancelled' %}
-              <span class="badge bg-danger">Cancelled</span>
-            {% else %}
-              <span class="badge bg-warning text-dark">Pending</span>
-            {% endif %}
-          </p>
+                <p class="mb-2 btn btn-sm btn-outline-success">
+                  <strong>Status:</strong>
+                  {% if booking.status == 'completed' %}
+                    <span class="badge bg-success">Prescribed</span>
+                  {% elif booking.status == 'cancelled' %}
+                    <span class="badge bg-danger">Cancelled</span>
+                  {% else %}
+                    <span class="badge bg-warning text-dark">Pending</span>
+                  {% endif %}
+                </p>
 
-          <p class="mb-2">
-            <div class="mt-auto d-grid">
-            {% if booking.doctor_folloup_bookings.exists %}
-              <a href="{% url 'prescription:all_follow_up_schedules' booking.pk %}" 
-		class="btn btn-sm btn-outline-success">View Follow-up bookings</a>
-            {% else %}
-              <span class="text-muted">No follow-up yet</span>
-            {% endif %}
-          </p>
-	</div>
+                {% if booking.doctor_folloup_bookings.exists %}
+                  <a href="{% url 'prescription:all_follow_up_schedules' booking.pk %}" class="btn btn-sm btn-outline-success mb-2">View Follow-up bookings</a>
+                {% else %}
+                  <span class="text-muted mb-2 btn btn-sm btn-outline-success">No follow-up yet</span>
+                {% endif %}
 
-          <div class="mt-auto d-grid">
-            {% if request.user.role == 'patient' %}
-              <a href="{% url 'prescription:initiate_doctor_followup_booking_payment' booking.pk %}" 
-		   class="btn btn-sm btn-outline-primary">Make Follow-up booking </a>
-            {% endif %}
+                {% if request.user.role == 'patient' %}
+                  <a href="{% url 'prescription:initiate_doctor_followup_booking_payment' booking.pk %}" class="btn btn-sm btn-outline-primary mb-2">
+                    Make Follow-up Booking
+                  </a>
+                {% endif %}
 
-            {% if request.user.role == 'doctor' %}
-              <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" 
-		class="btn btn-sm btn-outline-success">
-                {% if booking.status == "completed" %} View prescription {% else %} View & Prescribe {% endif %}
-              </a>
-            {% endif %}
+                {% if request.user.role == 'doctor' %}
+                  <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" class="btn btn-sm btn-outline-success mb-2">
+                    {% if booking.status == "completed" %}View Prescription{% else %}View & Prescribe{% endif %}
+                  </a>
+                {% endif %}
 
-            {% if booking.video_call_reuest_message %}
-              <span class="text-primary fw-bold">Video Call requested</span>
-            {% elif booking.video_link and booking.status != 'completed' %}
-              <span class="btn btn-sm btn-outline-secondary">Video link exists</span>
-            {% elif request.user.role == 'patient' and booking.status != 'completed' %}
-              <a href="{% url 'prescription:request_video_call' booking.pk %}" 
-		  class="btn btn-sm btn-outline-info">Request Video Call</a>
-              <a href="{% url 'prescription:initiate_video_call_payment' booking.pk %}" 
-		  class="btn btn-sm btn-outline-info">Pay & Request</a>
-            {% endif %}
+                {% if booking.video_call_reuest_message %}
+                  <span class="text-primary fw-bold mb-2 btn btn-sm btn-outline-success">Video Call Requested</span>
+                {% elif booking.video_link and booking.status != 'completed' %}
+                  <span class="btn btn-sm btn-outline-secondary mb-2">Video Link Exists</span>
+                {% elif request.user.role == 'patient' and booking.status != 'completed' %}                 
+                  <a href="{% url 'prescription:initiate_video_call_payment' booking.pk %}" class="btn btn-sm btn-outline-info mb-2">Request Video Call</a>
+                {% endif %}
 
-            {% if booking.status != 'completed' and booking.video_call_reuest_message %}
-              {% if booking.video_call_request_approve == 'rejected' %}
-                <span class="text-danger fw-bold">Declined</span>
-              {% elif booking.video_call_request_approve == 'approved' %}
-                <span class="text-success fw-bold">Approved</span>
-              {% elif request.user.role == 'doctor' %}
-                <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" 
-		class="btn btn-sm btn-outline-secondary">Approve Video Call</a>
-              {% else %}
-                <span class="text-warning">Waiting for approval</span>
-              {% endif %}
-            {% endif %}
+                {% if booking.status != 'completed' and booking.video_call_reuest_message %}
+                  {% if booking.video_call_request_approve == 'rejected' %}
+                    <span class="text-danger fw-bold mb-2 btn btn-sm btn-outline-success">Declined</span>
+                  {% elif booking.video_call_request_approve == 'approved' %}
+                    <span class="text-success fw-bold mb-2 btn btn-sm btn-outline-success">Approved</span>
+                  {% elif request.user.role == 'doctor' %}
+                    <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" class="btn btn-sm btn-outline-secondary mb-2">Approve Video Call</a>
+                  {% else %}
+                    <span class="text-warning mb-2 btn btn-sm btn-outline-success">Waiting for Approval</span>
+                  {% endif %}
+                {% endif %}
 
-            {% if booking.video_link and booking.status != 'completed' %}
-              <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-success" target="_blank">Join Conference</a>
-            {% endif %}
- 	   
-            {% if booking.doctor_booking_refs.exists %}
+                {% if booking.video_link and booking.status != 'completed' %}
+                  <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-success mb-2" target="_blank">Join video call</a>
+                {% endif %}
+
+                {% if booking.doctor_booking_refs.exists %}
                   {% with parent_prescription=booking.doctor_booking_refs.first %}
-                      <a href="{% url 'prescription:doctor_prescription_detail_single' parent_prescription.id %}"
-                        class="btn btn-sm btn-outline-success">
-                        View Main Doctor Prescription
-                      </a>
+                    <a href="{% url 'prescription:doctor_prescription_detail_single' parent_prescription.id %}" class="btn btn-sm btn-outline-success mb-2">
+                      View Main Doctor Prescription
+                    </a>
                   {% endwith %}
-	   {% endif %}
-            
-          {% if booking.ai_prescription %}
-                  <a href="{% url 'prescription:ai_prescription_detail' booking.ai_prescription.id %}"
-                    class="btn btn-sm btn-outline-secondary">
+                {% endif %}
+
+                {% if booking.ai_prescription %}
+                  <a href="{% url 'prescription:ai_prescription_detail' booking.ai_prescription.id %}" class="btn btn-sm btn-outline-secondary">
                     View AI Prescription
-           {% else %}         </a>
-	     <span class="btn btn-sm btn-outline-success"> No Ai Prescription</span>
-           {% endif %}
+                  </a>
+                {% else %}
+                  <span class="btn btn-sm btn-outline-success">No AI Prescription</span>
+                {% endif %}
+
+              </div>
+            </div>
           </div>
-        </div>
+        {% empty %}
+          <div class="col-12">
+            <div class="alert alert-info btn btn-sm btn-outline-success">No bookings found.</div>
+          </div>
+        {% endfor %}
       </div>
     </div>
-  {% empty %}
-    <div class="col-12">
-      <div class="alert alert-info">No appointments found.</div>
-    </div>
-  {% endfor %}
-</div>
-
-
-
 
 
     <div class="row">
@@ -170,12 +187,10 @@
                             <td>
                                  {% if request.user.role == 'patient' %}
                                  <a href="{% url 'prescription:initiate_doctor_followup_booking_payment' booking.pk %}" 
-				  class="btn btn-sm btn-outline-success">Create Followup booking</a>
-                                 
+				                           class="btn btn-sm btn-outline-success">Create Followup booking</a>                                 
                                  {% endif %}
 
-
-				  {% if request.user.role == 'doctor' %}
+				                           {% if request.user.role == 'doctor' %}
                                     {% if booking.status == " completed" %}
                                        <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" 
                                          class="btn btn-sm btn-outline-success">View and Prescribe</a>
@@ -195,9 +210,8 @@
                                     {% endif %}
                                 {% elif request.user.role == 'patient' and booking.status != 'completed'%}
                                  <a href="{% url 'prescription:initiate_video_call_payment' booking.pk %}" 
-					class="btn btn-sm btn-primary">Request Video call</a>
+					                      class="btn btn-sm btn-primary">Request Video call</a>
                                 {% endif %}
-
 
 
                            {% if booking.status != 'completed' and booking.video_call_reuest_message %}
@@ -231,24 +245,24 @@
                     </tbody>
                 </table>
                   <!-- Pagination Controls -->
-        <div class="pagination">
-            <span class="step-links">
-                {% if page_obj.has_previous %}
-                    <a href="?page=1">&laquo; first</a>
-                    <a href="?page={{ page_obj.previous_page_number }}">previous</a>
-                {% endif %}
+                <div class="pagination">
+                    <span class="step-links">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1">&laquo; first</a>
+                            <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+                        {% endif %}
 
-                <span class="current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
+                        <span class="current">
+                            Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                        </span>
 
-                {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}">next</a>
-                    <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
-                {% endif %}
-            </span>
-        </div>
-                  </div>
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}">next</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
+               </div>
             </div>
 
         </div>

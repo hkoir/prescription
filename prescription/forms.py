@@ -165,6 +165,10 @@ class PatientZoomRequestForm(forms.ModelForm):
              "proposed_meeting_datetime": forms.DateTimeInput(attrs={"type": "datetime-local"}),
         }
 
+    def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self.fields['doctor_folloup_booking'].disabled = True
+
        
 
 class DoctorZoomScheduleForm(forms.ModelForm):

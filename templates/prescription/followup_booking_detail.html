@@ -12,8 +12,19 @@
           <div class="row">
             <!-- Patient Information -->
             <div class="col-md-6 mb-3">
-              <h5 class="text-primary">Patient Information</h5>
-              <p class="mb-1"><strong>Name:</strong> {{ booking.doctor_booking.patient.full_name }}</p>
+              <h5 class="text-primary">Patient Information</h5>   
+
+            <a href="{% url 'finance:patient_detail' booking.doctor_booking.patient.id %}" class="d-flex text-decoration-none text-dark w-100">        
+              <p class="mb-1 d-flex align-items-center gap-2">  
+                 <strong class="me-1">Patient Name:</strong> 
+                <span>{{ booking.doctor_booking.patient.full_name }}</span>            
+                {% if booking.doctor_booking.patient.user.photo_id %}
+                  <img src="{{ booking.doctor_booking.patient.user.photo_id.url }}" alt="Patient Photo"
+                      style="width: 40px; height: 40px; object-fit: cover;" class="rounded-circle border" />
+                {% endif %}              
+              </p>
+            </a>
+
               <p class="mb-1"><strong>Age:</strong> {{ booking.doctor_booking.patient.age }} | <strong>Gender:</strong> {{ booking.patient.gender }}</p>
                <p class="mb-1"><strong>Body weight:</strong> {{ booking.doctor_booking.patient.body_weight }}kg |  {{ booking.patient.body_weight_unit }}</p>
               <p class="mb-1"><strong>Body height:</strong> {{ booking.doctor_booking.patient.body_height }}cm |  {{ booking.patient.body_height_unit }}</p>
@@ -22,14 +33,14 @@
               {% if booking.symptom_image %}
                 <p class="mb-1"><strong>Spot Image:</strong><br>
                   <a href="{{ booking.symptom_image.url }}" target="_blank">
-                    <img src="{{ booking.symptom_image.url }}" class="img-thumbnail mt-2" style="width: 30%; height:auto; border-radius: 10%;">
+                    <img src="{{ booking.symptom_image.url }}" class="img-thumbnail mt-2" style="width: 70%; height:auto; border-radius: 10%;">
                   </a>
                 </p>
               {% endif %}
               {% if booking.symptom_video %}
             <p class="mb-1"><strong>Spot Video:</strong><br>
               <a href="{{ booking.symptom_video.url }}" target="_blank">
-                <video class="mt-2" style="width: 30%; height: auto; object-fit: cover;border-radius: 10%" controls muted>
+                <video class="mt-2" style="width: 70%; height: auto; object-fit: cover;border-radius: 10%" controls muted>
                   <source src="{{ booking.symptom_video.url }}" type="video/mp4">
                   Your browser does not support the video tag.
                 </video>
@@ -42,13 +53,26 @@
             <!-- Booking & Medical Info -->
             <div class="col-md-6 mb-3">
               <h5 class="text-primary">Booking & Medical Info</h5>
-              <p class="mb-1"><strong>Preferred Time:</strong> {{ booking.doctor_booking.approved_followup_datetime}}</p>
-              <p class="mb-1"><strong>Doctor:</strong> {{ booking.doctor_booking.doctor }}</p>
+
+               <a href="{% url 'finance:doctor_detail' booking.doctor_booking.doctor.id %}" class="d-flex text-decoration-none text-dark w-100">
+                <p class="mb-1 d-flex align-items-center gap-2">  
+                 <strong class="me-1">Doctor Name:</strong> 
+                <span>{{ booking.doctor_booking.doctor.full_name }}</span>            
+                {% if booking.doctor_booking.doctor.photo %}
+                  <img src="{{ booking.doctor_booking.doctor.photo.url }}" alt="Patient Photo"
+                      style="width: 40px; height: 40px; object-fit: cover;" class="rounded-circle border" />
+                {% endif %}              
+              </p>
+            </a>
+             
+              <p class="mb-1"><strong>Requested Time:</strong> {{ booking.proposed_followup_datetime }}</p>
+              <p class="mb-1"><strong>Doctor Approved:</strong> {{ booking.approved_followup_datetime|default:"—" }}</p>
+
               <p class="mb-1"><strong>Patient Initial Symptom:</strong> {{ booking.doctor_booking.symptoms_summary }}</p>
-	      <p class="mb-1"><strong>Duration:</strong> {{ booking.doctor_booking.duration }}</p>
-	      <p class="mb-1"><strong>Patient current status:</strong> {{ booking.patient_Current_status }}</p>
+	           <p class="mb-1"><strong>Duration:</strong> {{ booking.doctor_booking.duration }}</p>
+	           <p class="mb-1"><strong>Patient current status:</strong> {{ booking.patient_Current_status }}</p>
               <p class="mb-1"><strong>Medical History:</strong> {{ booking.doctor_booking.medical_history }}</p>
-              <p class="mb-1"><strong>Allergies:</strong> {{ booking.allergies }}</p>
+              <p class="mb-1"><strong>Allergies:</strong> {{ booking.doctor_booking.patient.allergies }}</p>
               <p class="mb-1"><strong>Current Medications:</strong> {{ booking.doctor_booking.current_medications }}</p>
               <p class="mb-1"><strong>Vital Signs:</strong> {{ booking.doctor_booking.vital_signs }}</p>
               <p class="mb-1"><strong>Status:</strong> 
@@ -56,14 +80,14 @@
                   {{ booking.status }}
                 </span>
               </p>
- 		{% if booking.followup_lab_files.exists %}
+ 		          {% if booking.followup_lab_files.exists %}
                   <div class="mt-3">
                     <strong>Uploaded Lab Files:</strong>
                     <div class="d-flex flex-wrap gap-3 mt-2">
                       {% for file in booking.followup_lab_files.all %}
                         <div>
                           <a href="{{ file.file.url }}" target="_blank">
-                            <img src="{{ file.file.url }}" class="img-thumbnail" style="width: 100px; border-radius: 10%;">
+                            <img src="{{ file.file.url }}" class="img-thumbnail" style="width: 200px; border-radius: 10%;">
                           </a>
                         </div>
                       {% endfor %}

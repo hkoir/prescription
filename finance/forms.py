@@ -14,6 +14,7 @@ class DoctorForm(forms.ModelForm):
             'hospital_affiliations': forms.Textarea(attrs={'rows': 2}),
             'memberships': forms.Textarea(attrs={'rows': 2}),
             'awards': forms.Textarea(attrs={'rows': 2}),
+            'chamber_location': forms.Textarea(attrs={'rows': 2}),
         }
 
 
@@ -37,6 +38,7 @@ class PatientUpdateForm(forms.ModelForm):
             'address': forms.Textarea(attrs={'rows': 2}),
             'medical_history': forms.Textarea(attrs={'rows': 2}),
             'allergies': forms.Textarea(attrs={'rows': 2}),
+             'current_medications': forms.Textarea(attrs={'rows': 2}),
              'dob': forms.DateInput(attrs={'type': 'date'}),
              'body_weight':forms.NumberInput(attrs={'placeholder':'plese enter your weight in kg'}) ,
              'body_weight':forms.NumberInput(attrs={'placeholder':'plese enter your height in cm'})  

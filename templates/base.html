@@ -461,12 +461,16 @@ li a {
                       
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownDashboard" style="max-height: 400px; overflow-y: auto;">
                          {% if request.user.role == 'doctor' %}                     
-                          <li><a class="dropdown-item" href="{% url 'finance:doctor_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Doctor Dashboard</a></li>  
+                          <li><a class="dropdown-item" href="{% url 'finance:doctor_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Doctor Dashboard</a></li>                                 
+                         {% elif request.user.is_staff %}
                           <li><a class="dropdown-item" href="{% url 'finance:create_doctor_profile' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Create Doctor Profile</a></li>
-                          <li><a class="dropdown-item" href="{% url 'finance:enroll_doctor' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Enroll Doctor</a></li>         
-                         {% else %}
+                          <li><a class="dropdown-item" href="{% url 'finance:enroll_doctor' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Enroll Doctor</a></li>   
+                           <li><a class="dropdown-item" href="{% url 'finance:doctor_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Doctor Dashboard</a></li>   
+                           <li><a class="dropdown-item" href="{% url 'finance:patient_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Patient Dashboard </a></li>                                
+                          {% elif request.user.role == 'patient' %}
                           <li><a class="dropdown-item" href="{% url 'finance:patient_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Patient Dashboard </a></li>  
-                          {% endif %}                         
+                         
+                           {% endif %}                         
                         <li><hr class="dropdown-divider"style="background-color:gray;"></li>                       
                        
                     </ul>                 
