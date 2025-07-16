@@ -33,14 +33,14 @@
               {% if booking.symptom_image %}
                 <p class="mb-1"><strong>Spot Image:</strong><br>
                   <a href="{{ booking.symptom_image.url }}" target="_blank">
-                    <img src="{{ booking.symptom_image.url }}" class="img-thumbnail mt-2" style="width: 70%; height:auto; border-radius: 10%;">
+                    <img src="{{ booking.symptom_image.url }}" class="img-thumbnail mt-2" style="width: 50%; height:auto; border-radius: 10%;">
                   </a>
                 </p>
               {% endif %}
               {% if booking.symptom_video %}
             <p class="mb-1"><strong>Spot Video:</strong><br>
               <a href="{{ booking.symptom_video.url }}" target="_blank">
-                <video class="mt-2" style="width: 70%; height: auto; object-fit: cover;border-radius: 10%" controls muted>
+                <video class="mt-2" style="width: 50%; height: auto; object-fit: cover;border-radius: 10%" controls muted>
                   <source src="{{ booking.symptom_video.url }}" type="video/mp4">
                   Your browser does not support the video tag.
                 </video>
@@ -107,34 +107,29 @@
                 <a href="{% url 'prescription:ai_prescription_detail' booking.doctor_booking.ai_prescription.id %}" 
                 class="btn bn-sm btn-outline-success">Patient AI Prescription</a></span>
                 {% else %}
-                <span class="text-dark btn btn-sm btn-outline-primary">This patient has no Ai Prescription</span>
+                <span class="btn btn-sm btn-outline-success">no Ai Prescription</span>
             {% endif %}
 
-
-
-
-            {% if booking.status == 'completed' %}
-              <span class="text-primary">
-                {% if booking.doctor_booking.doctor_booking_refs %}
-
-	     {% with booking.doctor_booking.doctor_booking_refs.first as prescription %}
-   		   {% if prescription %}
-        	     <a href="{% url 'prescription:doctor_prescription_detail' prescription.id %}">View Prescription</a>
-   		  {% else %}
-        	   <span>No Prescription Found</span>
-    		  {% endif %}
-	      {% endwith %}
 
          
-	       {% elif booking.doctor_bookin.ai_prescription %}
-                 <a href="{% url 'prescription:doctor_prescription_detail' booking.doctor_booking.doctor_prescriptions.first.id %}"
-                 class="btn btn-sm btn-outline-secondary">View doctor prescription</a>
-                {% endif %}
-              </span>
-		{% else %}
-		<a href="{% url 'prescription:create_followup_doctor_prescription' booking.doctor_booking.id booking.id %}"
-		 class="btn btn-sm btn-outline-success">Doctor to Prescribe</a>
-            {% endif %}
+            {% if booking.status == 'completed' %}
+                <span class="text-primary">
+                {% if booking.doctor_booking.doctor_booking_refs %}
+                    {% with booking.doctor_booking.doctor_booking_refs.first as prescription %}
+                          {% if prescription %}
+                           <a href="{% url 'prescription:doctor_prescription_detail' prescription.id %}"
+                           class="btn btn-sm btn-outline-success">
+                              View Prescription</a>
+                          {% else %}
+                            <span>No Prescription Found</span>
+                          {% endif %}
+                       {% endwith %}   
+                {% endif %}   
+	               </span>
+            {% else %}
+            <a href="{% url 'prescription:create_followup_doctor_prescription' booking.doctor_booking.id booking.id %}"
+            class="btn btn-sm btn-outline-success">Doctor to Prescribe</a>
+          {% endif %}
           </div>
         </div>
       </div>

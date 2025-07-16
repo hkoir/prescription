@@ -1,8 +1,8 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container-fluid px-0">  {# removes Bootstrap's default horizontal padding #}
-  <div class="card rounded-0 border-0 shadow" style="min-height: 100vh;">
+<div class="container d-flex justify-content-center">
+ <div class="card rounded-0 border-0 shadow" style="min-height: 80vh; max-width: 960px; width: 100%;">
     <div class="card-body px-4 py-5">
 
       <h3 class="text-success mb-4">
@@ -20,16 +20,18 @@
             {% endif %}
             <span><strong>Patient Name:</strong> {{ booking.patient.full_name }}</span>
           </a>
-          <p><strong>Age:</strong> {{ booking.patient.age }} | <strong>Gender:</strong> {{ booking.patient.gender }}</p>
-          <p><strong>Body Weight:</strong> {{ booking.patient.body_weight }}</p>
-          <p><strong>Body Height:</strong> {{ booking.patient.body_height }}</p>
-          <p><strong>Phone:</strong> {{ booking.patient.phone }}</p>
-          <p><strong>Location:</strong> {{ booking.location }}</p>
+          <p>
+            <strong>Age:</strong> {{ booking.patient.age }} | <strong>Gender:</strong> {{ booking.patient.gender }}<br>
+          <strong>Body Weight:</strong> {{ booking.patient.body_weight }}<br>
+          <strong>Body Height:</strong> {{ booking.patient.body_height }}<br>
+          <strong>Phone:</strong> {{ booking.patient.phone }}<br>
+          <strong>Location:</strong> {{ booking.location }}
+          </p>
 
           {% if booking.symptom_image %}
             <p><strong>Spot Image:</strong><br>
               <a href="{{ booking.symptom_image.url }}" target="_blank">
-                <img src="{{ booking.symptom_image.url }}" class="img-thumbnail mt-2" style="width: 70%; border-radius: 10%;">
+                <img src="{{ booking.symptom_image.url }}" class="img-thumbnail mt-2" style="width: 50%; border-radius: 10%;">
               </a>
             </p>
           {% endif %}
@@ -37,7 +39,7 @@
           {% if booking.symptom_video %}
             <p><strong>Spot Video:</strong><br>
               <a href="{{ booking.symptom_video.url }}" target="_blank">
-                <video class="mt-2 rounded" style="width: 70%;" controls muted>
+                <video class="mt-2 rounded" style="width: 50%;" controls muted>
                   <source src="{{ booking.symptom_video.url }}" type="video/mp4">
                   Your browser does not support the video tag.
                 </video>
@@ -57,14 +59,15 @@
             <span><strong>Doctor:</strong> {{ booking.doctor.full_name }}</span>
           </a>
 
-          <p><strong>Preferred Time:</strong> {{ booking.preferred_time }}</p>
-          <p><strong>Symptoms:</strong> {{ booking.symptoms_summary }}</p>
-          <p><strong>Duration:</strong> {{ booking.duration }}</p>
-          <p><strong>Medical History:</strong> {{ booking.patient.medical_history }}</p>
-          <p><strong>Allergies:</strong> {{ booking.patient.allergies }}</p>
-          <p><strong>Current Medications:</strong> {{ booking.patient.current_medications }}</p>
-          <p><strong>Vital Signs:</strong> {{ booking.vital_signs }}</p>
-          <p><strong>Status:</strong> 
+          <p>
+            <strong>Preferred Time:</strong> {{ booking.preferred_time }}<br>
+          <strong>Symptoms:</strong> {{ booking.symptoms_summary }}<br>
+          <strong>Duration:</strong> {{ booking.duration }}<br>
+          <strong>Medical History:</strong> {{ booking.patient.medical_history }}<br>
+          <strong>Allergies:</strong> {{ booking.patient.allergies }}<br>
+          <strong>Current Medications:</strong> {{ booking.patient.current_medications }}<br>
+          <strong>Vital Signs:</strong> {{ booking.vital_signs }}<br>
+          <strong>Status:</strong> 
             <span class="badge {% if booking.status == 'completed' %}bg-success{% else %}bg-warning text-dark{% endif %}">
               {{ booking.status }}
             </span>
@@ -102,15 +105,17 @@
           <a href="{% url 'prescription:create_doctor_prescription' booking.pk %}" class="btn btn-success btn-sm">
             <i class="bi bi-plus-circle"></i> Create Doctor Prescription
           </a>
+        {% elif booking.status == "completed"%}     
+              {% if booking.doctor_booking_refs %}       
+              <a href="{% url 'prescription:doctor_prescription_detail_single' booking.doctor_booking_refs.first.id %}" class="btn btn-outline-primary btn-sm">
+                View Doctor Prescription
+              </a>
+              {% endif %}
         {% else %}
-          {% if booking.doctor_prescriptions.exists %}
-            <a href="{% url 'prescription:doctor_prescription_detail' booking.doctor_prescriptions.first.id %}" class="btn btn-outline-primary btn-sm">
-              View Doctor Prescription
-            </a>
-          {% else %}
-            <span class="text-muted">No Prescription Available</span>
-          {% endif %}
+          <span class="text-muted">No Prescription Available</span>
         {% endif %}
+
+      
       </div>
     </div>
   </div>

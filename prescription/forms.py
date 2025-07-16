@@ -127,7 +127,7 @@ class ApproveRequestVideoCallForm(forms.ModelForm):
 class DoctorFolloupBookingRequestForm(forms.ModelForm):
     class Meta:
         model = DoctorFolloupBooking
-        fields = ["patient_Current_status", 'symptom_image', 'symptom_video', 'proposed_followup_datetime']
+        fields = ["patient_Current_status", 'symptom_image', 'symptom_video']
         widgets = {
             "patient_Current_status": forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
             "proposed_followup_datetime": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'form-control'}),
@@ -151,7 +151,7 @@ class DoctorFolloupBookingApprovedForm(forms.ModelForm):
 class PatientZoomRequestForm(forms.ModelForm):
     class Meta:
         model = ZoomMeeting
-        fields = ["request_message", "doctor_folloup_booking",'proposed_meeting_datetime']
+        fields = ["request_message", "doctor_folloup_booking"]
         widgets = {
             "request_message": forms.Textarea(attrs={
                 'style': 'height:100px',

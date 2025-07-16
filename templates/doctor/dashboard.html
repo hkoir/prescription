@@ -79,6 +79,22 @@
      
      <div class="row mt-5" style="margin-left:0px;margin-right: 0px;">
           <h2 class="mb-4">My Earnings Dashboard</h2>       
+          <form method="get" class="mb-3">
+              <div class="row">
+                <div class="col-md-4">
+                  <label>Start Date</label>
+                  <input type="date" name="start_date" value="{{ start_date }}" class="form-control">
+                </div>
+                <div class="col-md-4">
+                  <label>End Date</label>
+                  <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                  <button type="submit" class="btn btn-primary w-100">Filter</button>
+                </div>
+              </div>
+            </form>
+
               <div class="col-md-4">
                   <div class="card text-white bg-success mb-3">
                       <div class="card-body">
@@ -103,7 +119,38 @@
                       </div>
                   </div>
               </div>
-          </div>
+
+              <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Chamaber visit revenue</h5>
+                        <p class="card-text fs-4">৳ {{ total_chamber_visit_fees }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Chamaber consultation Count</h5>
+                        <p class="card-text fs-4"> {{ chamber_prescriptions.count }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card text-white bg-info mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Chamaber consultation Pending </h5>
+                        <p class="card-text fs-4"> {{ pending_Chamber_appointments.count }}</p>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+
+
 
         <div class="col-12 table-responsive">          
           <h4>Payment History</h4>
@@ -164,7 +211,7 @@
     <div class="col-md-4">
       <div class="card text-white bg-success mb-3 shadow">
         <div class="card-body">
-          <h5 class="card-title">Prescriptions Given include followup booking</h5>
+          <h5 class="card-title">Prescriptions Given including followup booking</h5>
           <p class="card-text fs-4">{{ prescriptions.count }}</p>
         </div>
       </div>

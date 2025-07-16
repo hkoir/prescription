@@ -1270,17 +1270,14 @@ def doctor_bookings_list(request):
     bookings = DoctorBooking.objects.filter().exclude(status='cancelled').order_by('-created_at')
     patient = None
     doctor = None
-
     try:
         patient = Patient.objects.get(user=request.user)
     except Patient.DoesNotExist:
         pass
-
     try:
         doctor = Doctor.objects.get(user=request.user)
     except Doctor.DoesNotExist:
         pass
-
     if patient:
         bookings = bookings.filter(patient=patient)
     elif doctor:
@@ -1314,20 +1311,6 @@ def doctor_booking_detail(request, pk):
 
 
 
-@login_required
-def doctor_followup_booking_detail(request, pk):
-    booking = get_object_or_404( DoctorFolloupBooking, pk=pk)   
-    is_doctor = booking.doctor_booking.doctor and booking.doctor_booking.doctor.user == request.user
-    is_patient = booking.doctor_booking.patient and booking.doctor_booking.patient.user == request.user
-    if not (is_doctor or is_patient):
-        messages.warning(request,"You do not have permission to view this booking.")
-        return redirect('prescription:doctor_bookings_list')
-    return render(request, 'prescription/followup_booking_detail.html', {'booking': booking})
-
-
-
-
-
 
 PrescriptionFormSet = modelformset_factory(
     SuggestedMedicine,
@@ -1336,8 +1319,8 @@ PrescriptionFormSet = modelformset_factory(
     can_delete=True,
 )
 
-
 from appointments.models import Appointment
+
 @login_required
 def create_doctor_prescription(request, booking_id, followup_id=None,appointment_id=None):
     booking = get_object_or_404(DoctorBooking, pk=booking_id)
@@ -1526,6 +1509,8 @@ def doctor_prescription_list(request):
         'page_obj':page_obj
     })
 
+
+
 from django.db import models
 def doctor_prescription_detail(request, pk):
     prescription = get_object_or_404(DoctorPrescription, pk=pk)
@@ -1591,63 +1576,30 @@ def render_to_pdf(request, obj, template_path, filename_prefix, context):
     return response
 
 
+
+import qrcode
+import base64
+from io import BytesIO
+
 def doctor_prescription_pdf(request, pk):
     prescription = DoctorPrescription.objects.get(pk=pk)
+    qr = qrcode.make(f"https://prescription.aiha.live/prescription/prescription_single/{prescription.id}")
+    buffer = BytesIO()
+    qr.save(buffer, format="PNG")
+    img_str = base64.b64encode(buffer.getvalue()).decode()
+
+
     return render_to_pdf(
         request,
         prescription,
         'prescription/doctor_prescription_pdf.html',
         'doctor_Prescription',
-        {'prescription': prescription}
-    )
-
-
-
-@login_required
-def followup_prescription_detail_single(request, followup_id):
-    followup = get_object_or_404(DoctorFolloupBooking, pk=followup_id)
-    prescription = DoctorPrescription.objects.filter(booking_folloup_ref=followup).first()
-    if not prescription:
-        messages.error(request, "No prescription found for this follow-up booking.")
-        return redirect('prescription:doctor_prescription_list')
-
-    # Fetch medicines and lab tests
-    medicines = SuggestedMedicine.objects.filter(prescription=prescription)
-    lab_tests = SuggestedLabTest.objects.filter(prescription=prescription)
-
-    return render(request, 'prescription/followup_prescription_detail_single.html', {
+        {
         'prescription': prescription,
-        'followup': followup,
-        'medicines': medicines,
-        'lab_tests': lab_tests,
-    })
-
-
-
-
-
-
-def render_to_followup_pdf(request, obj, template_path, filename_prefix, context):
-    template = get_template(template_path)
-    html = template.render(context)
-    response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="{filename_prefix}_{obj.id}.pdf"'
-
-    pisa_status = pisa.CreatePDF(src=html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('We had some errors <pre>' + html + '</pre>')
-    return response
-
-
-def doctor_followup_prescription_pdf(request, pk):
-    prescription = DoctorPrescription.objects.get(pk=pk)
-    return render_to_followup_pdf(
-        request,
-        prescription,
-        'prescription/doctor_followup_prescription_pdf.html',
-        'doctor_Prescription',
-        {'prescription': prescription}
+        'qr_code_base64': img_str,
+    }
     )
+
 
 
 #================= folloup booking and soom meeting management =======================
@@ -1733,6 +1685,7 @@ def request_doctor_followup_booking(request, doctor_booking_id):
                 vid_file = ContentFile(base64.b64decode(vidstr), name=f"{uuid.uuid4()}.{ext}")
                 booking.symptom_video = vid_file
             booking.approved_followup_datetime = timezone.now()
+            booking.proposed_followup_datetime = timezone.now()
             booking.status = 'confirmed'
             booking.save()
  	   #===================== upload lab test result if any ===============
@@ -1823,6 +1776,62 @@ def aprove_doctor_followup_booking(request, followup_booking_id):
     return render(request, "telemedicine/approve_doctor_followup_booking.html", {"form": form, "booking":followup_booking})
 
 
+
+@login_required
+def doctor_followup_booking_detail(request, pk):
+    booking = get_object_or_404( DoctorFolloupBooking, pk=pk)   
+    is_doctor = booking.doctor_booking.doctor and booking.doctor_booking.doctor.user == request.user
+    is_patient = booking.doctor_booking.patient and booking.doctor_booking.patient.user == request.user
+    if not (is_doctor or is_patient):
+        messages.warning(request,"You do not have permission to view this booking.")
+        return redirect('prescription:doctor_bookings_list')
+    return render(request, 'prescription/followup_booking_detail.html', {'booking': booking})
+
+
+
+@login_required
+def followup_prescription_detail_single(request, followup_id):
+    followup = get_object_or_404(DoctorFolloupBooking, pk=followup_id)
+    prescription = DoctorPrescription.objects.filter(booking_folloup_ref=followup).first()
+    if not prescription:
+        messages.error(request, "No prescription found for this follow-up booking.")
+        return redirect('prescription:doctor_prescription_list')
+
+    # Fetch medicines and lab tests
+    medicines = SuggestedMedicine.objects.filter(prescription=prescription)
+    lab_tests = SuggestedLabTest.objects.filter(prescription=prescription)
+
+    return render(request, 'prescription/followup_prescription_detail_single.html', {
+        'prescription': prescription,
+        'followup': followup,
+        'medicines': medicines,
+        'lab_tests': lab_tests,
+    })
+
+
+
+
+def render_to_followup_pdf(request, obj, template_path, filename_prefix, context):
+    template = get_template(template_path)
+    html = template.render(context)
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{filename_prefix}_{obj.id}.pdf"'
+
+    pisa_status = pisa.CreatePDF(src=html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    return response
+
+
+def doctor_followup_prescription_pdf(request, pk):
+    prescription = DoctorPrescription.objects.get(pk=pk)
+    return render_to_followup_pdf(
+        request,
+        prescription,
+        'prescription/doctor_followup_prescription_pdf.html',
+        'doctor_Prescription',
+        {'prescription': prescription}
+    )
 
 
 @login_required
@@ -1918,6 +1927,7 @@ def request_zoom_meeting(request, followup_booking_id):
             zoom_meeting.doctor_booking = followup_booking_instance.doctor_booking
             zoom_meeting.doctor_folloup_booking = followup_booking_instance
             zoom_meeting.user = request.user
+            zoom_meeting.proposed_meeting_datetime = timezone.now()
             zoom_meeting.save()
            #=========================================================
             if invoice:

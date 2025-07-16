@@ -21,7 +21,7 @@
             {% csrf_token %}
 
             <div class="mb-3">
-              <label for="{{ form.patient_Current_status.id_for_label }}" class="form-label">Current Patient Status</label>
+              <label for="{{ form.patient_Current_status.id_for_label }}" class="form-label">Patient Current Status</label>
               {{ form.patient_Current_status }}
               {% if form.patient_Current_status.errors %}
                 <div class="invalid-feedback d-block">{{ form.patient_Current_status.errors|striptags }}</div>
@@ -94,14 +94,6 @@
               </div>
             </div>
 
-            <!-- Follow-up Datetime -->
-            <div class="mb-3">
-              <label for="{{ form.proposed_followup_datetime.id_for_label }}" class="form-label">Proposed Follow-up Datetime</label>
-              {{ form.proposed_followup_datetime }}
-              {% if form.proposed_followup_datetime.errors %}
-                <div class="invalid-feedback d-block">{{ form.proposed_followup_datetime.errors|striptags }}</div>
-              {% endif %}
-            </div>
  		<!-- Lab File Upload -->
               <div class="mb-4 mt-3">
                   <label for="lab_files" class="form-label">Upload Lab Test Result / Old Prescription (images or PDFs)</label>

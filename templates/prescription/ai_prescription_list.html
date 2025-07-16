@@ -27,10 +27,10 @@
                     </div>
 
                     <div class="d-grid gap-2 mt-auto">
-                    <a href="{% url 'prescription:ai_prescription_detail' prescription.id %}" class="btn btn-sm btn-primary rounded-pill fw-semibold">
+                    <a href="{% url 'prescription:ai_prescription_detail' prescription.id %}" class="btn btn-sm btn-primary rounded-pill fw-semibold require-terms">
                         👁️ View Details
                     </a>
-                    <a href="{% url 'prescription:ai_prescription_pdf' prescription.id %}" class="btn btn-sm btn-secondary rounded-pill fw-semibold">
+                    <a href="{% url 'prescription:ai_prescription_pdf' prescription.id %}" class="btn btn-sm btn-secondary rounded-pill fw-semibold require-terms">
                         📄 Download PDF
                     </a>
                     {% if prescription.ai_prescription_invoice %}
@@ -122,4 +122,45 @@
         <div class="alert alert-warning">No AI-generated prescriptions found.</div>
     {% endif %}
 </div>
+
+
+{% include 'agreed_terms.html' %}
+
+
+
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const links = document.querySelectorAll('.require-terms');
+
+  links.forEach(link => {
+    link.addEventListener('click', function (e) {
+      if (!sessionStorage.getItem('agreedToTerms')) {
+        e.preventDefault();
+        const url = this.href;
+        const modal = new bootstrap.Modal(document.getElementById('termsModal'));
+        modal.show();
+
+        const checkbox = document.getElementById('agreeToTermsModal');
+        const acceptBtn = document.getElementById('acceptTermsBtn');
+
+        checkbox.checked = false;
+        acceptBtn.disabled = true;
+
+        checkbox.addEventListener('change', () => {
+          acceptBtn.disabled = !checkbox.checked;
+        });
+
+        acceptBtn.onclick = () => {
+          sessionStorage.setItem('agreedToTerms', 'true');
+          modal.hide();
+          window.location.href = url;
+        };
+      }
+    });
+  });
+});
+</script>
+
 {% endblock %}

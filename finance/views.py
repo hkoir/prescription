@@ -333,41 +333,77 @@ def doctor_detail(request, pk):
     return render(request, 'doctor/doctor_detail.html', {'doctor': doctor})
 
 
+from payment_gateway.models import PaymentInvoice
+from django.db.models import Sum
+
 @doctor_required
 @login_required
-def doctor_dashboard(request):
+def doctor_dashboard(request):  
     doctor = Doctor.objects.filter(user=request.user).first()
     if not doctor:
         messages.warning(request, 'No doctor available')
-        return redirect('prescription:home')
+        return redirect('prescription:home') 
+    start_date_str = request.GET.get('start_date')
+    end_date_str = request.GET.get('end_date')
 
-    doctor = get_object_or_404(Doctor, user=request.user)
-    prescriptions = doctor.doctor_prescriptions.all()  # if related_name is not set
-    appointments = doctor.doctor_bookings.all()
-    pending_appointments = doctor.doctor_bookings.filter(status='pending')
+    today = timezone.localdate()
+    start_date = timezone.datetime.strptime(start_date_str, "%Y-%m-%d").date() if start_date_str else today
+    end_date = timezone.datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else today
 
-    payouts = DoctorPayment.objects.filter(doctor=doctor).order_by('-payment_date')
+    prescriptions = doctor.doctor_prescriptions.filter(
+        appointment_ref__isnull=True,
+        prescribed_at__date__range=(start_date, end_date)
+    )
+    chamber_prescriptions = doctor.doctor_prescriptions.filter(
+        appointment_ref__isnull=False,
+        prescribed_at__date__range=(start_date, end_date)
+    )
+    pending_Chamber_appointments = doctor.doctor_appointments.filter(
+        status='Pending',
+        date__range=(start_date, end_date)
+    )
+
+    appointments = doctor.doctor_bookings.filter(
+        created_at__range=(start_date, end_date)
+    )
+    pending_appointments = doctor.doctor_bookings.filter(
+        status='pending',
+        created_at__range=(start_date, end_date)
+    )
+
+    payouts = DoctorPayment.objects.filter(
+        doctor=doctor,
+        created_at__range=(start_date, end_date)
+    ).order_by('-payment_date')
 
     total_due = payouts.aggregate(total=models.Sum('total_due_amount'))['total'] or 0
     total_paid = payouts.aggregate(total=models.Sum('total_paid_amount'))['total'] or 0
     total_unpaid = total_due - total_paid
 
-    datas = appointments
-    paginator = Paginator(datas, 5)
+    chamber_visit_fees = PaymentInvoice.objects.filter(
+        doctor=doctor,appointment__isnull=False)
+    total_chamber_visit_fees = chamber_visit_fees.aggregate(total=Sum('amount'))['total'] or 0
+
+
+    paginator = Paginator(appointments, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
  
-
     return render(request, 'doctor/dashboard.html', {
         'doctor': doctor,
         'prescriptions': prescriptions,
+        'chamber_prescriptions': chamber_prescriptions,
+        'pending_Chamber_appointments': pending_Chamber_appointments,
+        'total_chamber_visit_fees':total_chamber_visit_fees,
         'appointments': appointments,
-        'pending_appointments':pending_appointments,
+        'pending_appointments': pending_appointments,
         'payouts': payouts,
         'total_due': total_due,
         'total_paid': total_paid,
         'total_unpaid': total_unpaid,
-        'page_obj':page_obj
+        'page_obj': page_obj,
+        'start_date': start_date,
+        'end_date': end_date
     })
 
 

@@ -43,8 +43,9 @@
               <label class="form-check-label small" for="agreeTerms">
                 {% trans "I agree to the" %} 
                 <a href="{% url 'symptom_checker:terms' %}" target="_blank" class="text-decoration-underline">{% trans "Terms of Use" %}</a> 
-                {% trans "and" %} 
-                <a href="{% url 'symptom_checker:privacy' %}" target="_blank" class="text-decoration-underline">{% trans "Privacy Policy" %}</a>.
+                <a href="{% url 'symptom_checker:privacy' %}" target="_blank" class="text-decoration-underline">{% trans "Privacy Policy" %}</a>
+                 {% trans "and" %} 
+                <a href="{% url 'symptom_checker:disclaimer' %}" target="_blank" class="text-decoration-underline">{% trans "Disclaimer" %}</a>.
               </label>
             </div>
 

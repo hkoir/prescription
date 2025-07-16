@@ -484,12 +484,10 @@ def specialization_detail(request, specialization_id):
 
 def get_doctors_by_specialization(request):
     specialization = request.GET.get("specialization", None)
-
     if specialization and specialization != "all":
         doctors = Doctor.objects.filter(specialization=specialization)
     else:
         doctors = Doctor.objects.all()
-
     doctor_data = [
         {
             "id": doctor.id,
@@ -511,7 +509,6 @@ from django.utils import timezone
 
 def appointment_list(request):
     today = timezone.now().date()
-
     # Base queryset depending on role
     if request.user.role == 'doctor':
         doctor_qs = Doctor.objects.filter(user=request.user)
@@ -519,18 +516,14 @@ def appointment_list(request):
             appointments = Appointment.objects.filter(doctor__in=doctor_qs)
         else:
             appointments = Appointment.objects.none()
-
     elif request.user.role == 'patient':
         patient_qs = Patient.objects.filter(user=request.user)
         if patient_qs.exists():
             appointments = Appointment.objects.filter(patient__in=patient_qs)
         else:
-            appointments = Appointment.objects.none()
-            
+            appointments = Appointment.objects.none()         
     else:
-        appointments = Appointment.objects.all()  # staff/admin sees all
-
-    # Apply filters from query parameters
+        appointments = Appointment.objects.all()  # staff/admin sees allA
     doctor_filter = request.GET.get("doctor")
     patient_filter = request.GET.get("patient")
     date_filter = request.GET.get("date", "").strip()
@@ -539,20 +532,15 @@ def appointment_list(request):
 
     if doctor_filter:
         appointments = appointments.filter(doctor__id=doctor_filter)
-
     if patient_filter:
         appointments = appointments.filter(patient__id=patient_filter)
-
     if date_filter:
         appointments = appointments.filter(date=date_filter)
-
     if start_date and end_date:
         appointments = appointments.filter(date__range=[start_date, end_date])
-
     # Default to today's appointments only if no filters
     if not (doctor_filter or patient_filter or date_filter or (start_date and end_date)):
         appointments = appointments.filter(date=today)
-
     # For summary or grouping
     doctor_appointment_counts = (
         appointments.values("doctor__id", "doctor__full_name")
@@ -668,9 +656,7 @@ def booking_confirmation_payment(request, appointment_id):
         )
         appointment.payment_status = 'Paid'
         appointment.save()
-
         return redirect('appointments:invoice_detail', invoice_id=invoice.id)
-
     context = {
         'appointment': appointment,
         'patient': patient,
@@ -746,19 +732,15 @@ def create_prescription_from_appointment(request, appointment_id):
                         prescription=doctor_prescription,
                         custom_lab_test_name=test_name
                     )
-
                 # Mark appointment as completed (optional)
                 appointment.status = 'Prescription-Given'
                 appointment.save()
-
                 messages.success(request, "Prescription created successfully.")
                 return redirect('prescription:doctor_prescription_list')
-
     else:
         medical_form = DoctorPrescriptionForm(instance=existing_prescription)
         prescription_formset = PrescriptionFormSet(queryset=SuggestedMedicine.objects.none())
         lab_test_form = SuggestedLabTestForm()
-
     return render(request, 'prescription/create_doctor_prescription.html', {
         'booking': appointment,  # for template compatibility
         'medical_form': medical_form,

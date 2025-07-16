@@ -82,33 +82,28 @@
 
                 {% if request.user.role == 'doctor' %}
                   <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" class="btn btn-sm btn-outline-success mb-2">
-                    {% if booking.status == "completed" %}View Prescription{% else %}View & Prescribe{% endif %}
+                    {% if booking.status != "completed" %}View & Prescribe{% endif %}
                   </a>
                 {% endif %}
 
-                {% if booking.video_call_reuest_message %}
-                  <span class="text-primary fw-bold mb-2 btn btn-sm btn-outline-success">Video Call Requested</span>
-                {% elif booking.video_link and booking.status != 'completed' %}
-                  <span class="btn btn-sm btn-outline-secondary mb-2">Video Link Exists</span>
-                {% elif request.user.role == 'patient' and booking.status != 'completed' %}                 
-                  <a href="{% url 'prescription:initiate_video_call_payment' booking.pk %}" class="btn btn-sm btn-outline-info mb-2">Request Video Call</a>
-                {% endif %}
 
-                {% if booking.status != 'completed' and booking.video_call_reuest_message %}
-                  {% if booking.video_call_request_approve == 'rejected' %}
-                    <span class="text-danger fw-bold mb-2 btn btn-sm btn-outline-success">Declined</span>
-                  {% elif booking.video_call_request_approve == 'approved' %}
-                    <span class="text-success fw-bold mb-2 btn btn-sm btn-outline-success">Approved</span>
-                  {% elif request.user.role == 'doctor' %}
-                    <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" class="btn btn-sm btn-outline-secondary mb-2">Approve Video Call</a>
-                  {% else %}
-                    <span class="text-warning mb-2 btn btn-sm btn-outline-success">Waiting for Approval</span>
-                  {% endif %}
-                {% endif %}
+          {% if not booking.video_call_request_message and booking.status != 'completed' %}
+              <a href="{% url 'prescription:initiate_video_call_payment' booking.pk %}" class="btn btn-sm btn-outline-info mb-2">Request Video Call</a>
+            {% elif booking.video_call_request_message and not booking.video_call_request_approve %}
+                  {% if request.user.role == 'patient' %}
+                      <span class="text-primary fw-bold mb-2 btn btn-sm btn-outline-success">Waiting for video call approval</span>
+                    {% else %}
+                      <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" class="btn btn-sm btn-outline-secondary mb-2">Approve Video Call</a>
+                      {% endif %}
+            {% elif booking.video_call_request_approve == 'approved' and booking.status != 'completed' %}
+             <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-success mb-2 d-flex align-items-center justify-content-between gap-2" target="_blank">
+                <span>Join video call</span>
+                <small>{{ booking.video_call_time }}</small>
+              </a>
 
-                {% if booking.video_link and booking.status != 'completed' %}
-                  <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-success mb-2" target="_blank">Join video call</a>
-                {% endif %}
+            {% endif %}
+                           
+            
 
                 {% if booking.doctor_booking_refs.exists %}
                   {% with parent_prescription=booking.doctor_booking_refs.first %}

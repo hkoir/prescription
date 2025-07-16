@@ -68,22 +68,19 @@ class PaymentInvoice(models.Model):
         ('followup-video-consultation', 'Follow-up Video Consultation'),  
         ('labtest', 'Lab Test'),
         ('medicine', 'Medicine'),
+        ('appointment', 'Chamber Visit appointment'),
         ('Others', 'Others'),
     ]
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True, blank=True)
     doctor = models.ForeignKey(Doctor, on_delete=models.SET_NULL, null=True, blank=True)  # ✅ Add this
-
     ai_prescription = models.OneToOneField(AIPrescription, on_delete=models.SET_NULL, null=True, blank=True,related_name='ai_prescription_invoice')
     symptom_checker = models.OneToOneField(SymptomCheckSession, on_delete=models.SET_NULL, null=True, blank=True,related_name='symptom_checker_invoice')
-
     doctor_booking = models.ForeignKey(DoctorBooking, on_delete=models.SET_NULL, null=True, blank=True,related_name='doctor_booking_invoice')
     doctor_prescription = models.ForeignKey(DoctorPrescription, on_delete=models.SET_NULL, null=True, blank=True,related_name='doctor_prescription_invoice')
-
     doctor_followup_booking = models.OneToOneField(DoctorFolloupBooking,on_delete=models.SET_NULL, null=True, blank=True,related_name='doctor_followup_invoice')
     zoom_meeting = models.OneToOneField(ZoomMeeting, on_delete=models.SET_NULL, null=True, blank=True,related_name='zoom_meeting_invoice')
     appointment= models.OneToOneField(Appointment, on_delete=models.SET_NULL, null=True, blank=True,related_name='appointment_invoice')
-
     related_object_id = models.PositiveIntegerField(blank=True, null=True)
     invoice_type = models.CharField(max_length=30, choices=INVOICE_TYPES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)

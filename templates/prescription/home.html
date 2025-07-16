@@ -479,9 +479,22 @@ html, body {
 
             <!-- AI Doctor Intro Card -->
         <div class="container-fluid px-0">
-           <div class="row d-flex g-1 justify-content-center">
-             <h2 class="text-center" style="color:white"> Ai Services</h2>
 
+	    <div class="text-center my-4">
+  		<a id="windows-download" href="https://prescription.aiha.live/download/prescriptionInstaller.exe" download
+     		class="btn btn-outline-success btn-sm mx-2">
+    		<i class="bi bi-windows me-1"></i> Download for Windows
+  		</a>
+
+  		<a id="android-download" href="https://play.google.com/store/apps/" target="_blank" 
+     		class="btn btn-outline-primary btn-sm mx-2">
+    		<img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" 
+		   style="height: 20px; vertical-align: middle;"> Download for android
+  		</a>
+	    </div>
+
+           <div class="row d-flex g-1 justify-content-center mt-4">
+             <h2 class="text-center mt-4" style="color:white"> Ai Services</h2>
               <div class="col-6 col-md-4 col-lg-3 mb-2">
                  <div class="card-android text-center position-relative h-100">
                     <div class="mb-2">
@@ -801,7 +814,24 @@ html, body {
 
 
 
+<script>
+  window.onload = function() {
+    const isAndroid = /Android/i.test(navigator.userAgent);
+    const isWindows = /Windows NT/i.test(navigator.userAgent);
 
+    if (isAndroid) {
+      document.getElementById('windows-download').style.display = 'none';
+      document.getElementById('android-download').style.display = 'inline-block';
+    } else if (isWindows) {
+      document.getElementById('windows-download').style.display = 'inline-block';
+      document.getElementById('android-download').style.display = 'none';
+    } else {
+      // Show both or handle other OSes
+      document.getElementById('windows-download').style.display = 'inline-block';
+      document.getElementById('android-download').style.display = 'inline-block';
+    }
+  }
+</script>
 
 
 {% endblock %}
