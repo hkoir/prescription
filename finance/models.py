@@ -40,7 +40,6 @@ class DoctorPayment(models.Model):
     payment_confirmation = models.CharField(max_length=20,choices={('received','Recived'),('declined','Declined')},blank=True, null=True)
     remarks = models.TextField(blank=True, null=True)
     is_paid = models.BooleanField(default=False)
-
     created_at = models.DateTimeField(auto_now_add=True)   
     updated_at = models.DateTimeField(auto_now=True)
 

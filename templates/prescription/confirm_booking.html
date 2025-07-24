@@ -1,5 +1,8 @@
 
 {% extends "base.html" %}
+
+{% load i18n %}
+
 {% block content %}
 
 <div class="container my-5">
@@ -7,12 +10,12 @@
         <div class="col-12 col-md-8">
             <div class="card shadow-lg rounded-4">
                 <div class="card-body p-4">
-                    <h3 class="mb-4 text-center text-primary">Confirm Doctor Booking</h3>
+                    <h3 class="mb-4 text-center text-primary">{% trans "Confirm Doctor Booking" %}</h3>
 
                     <div class="mb-3">
                         <p><strong>Patient:</strong> {{ patient }}<br>
                         <strong>Doctor:</strong> Dr. {{ doctor.full_name }} ({{ doctor.specialization }})</p>
-                        <p>We will use your patient profile data and Ai prescription to analyse and prescribe</p>
+                        <p>{% trans "We will use your patient profile data and Ai prescription to analyse and prescribe" %}</p>
                     </div>
 
                     
@@ -24,15 +27,15 @@
                                     <div class="col-12 my-3 border rounded p-3 border-success">
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <label for="symptom_image" class="form-label">Upload Symptom Image (optional)</label>
+                                                <label for="symptom_image" class="form-label">{% trans "Upload Symptom Image (optional)" %}</label>
                                                 <input type="file" name="symptom_image" id="symptom_image" class="form-control" accept="image/*">
                                             </div>
 
                                             <div class="col-md-6 text-center">
-                                                <label class="form-label">Capture Symptom Image</label><br>
-                                                <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="startCamera()">Use Webcam</button>
+                                                <label class="form-label">{% trans "Capture Symptom Image" %}</label><br>
+                                                <button type="button" class="btn btn-sm btn-secondary mt-2" onclick="startCamera()">{% trans "Use Webcam" %}</button>
                                                 <button type="button" class="btn btn-sm btn-info mt-2" onclick="takePhoto()">Capture</button>
-                                                <button type="button" id="retakeBtn" class="btn btn-sm btn-warning mt-2" onclick="retakePhoto()" style="display:none;">Retake</button>
+                                                <button type="button" id="retakeBtn" class="btn btn-sm btn-warning mt-2" onclick="retakePhoto()" style="display:none;">{% trans "Retake" %}</button>
 
                                                 <video id="video" autoplay class="mt-2 border rounded" style="width: 100%; display:none;"></video>
                                                 <canvas id="canvas" class="mt-2 border rounded" style="display:none; height: 100px;"></canvas>
@@ -48,14 +51,14 @@
                                     <div class="col-12 my-4 border rounded p-3 border-info">
                                         <div class="row">
                                             <div class="col-md-6">
-                                                <label for="symptom_video" class="form-label">Upload Symptom Video (optional)</label>
+                                                <label for="symptom_video" class="form-label">{% trans "Upload Symptom Video (optional)" %}</label>
                                                 <input type="file" name="symptom_video" id="symptom_video" class="form-control" accept="video/*">
                                             </div>
 
                                             <div class="col-md-6 text-center">
-                                                <label class="form-label">Record a Short Symptom Video</label>
+                                                <label class="form-label">{% trans "Record a Short Symptom Video" %}</label>
 
-						 <video id="recordPreview"
+						                    <video id="recordPreview"
                                                     autoplay muted playsinline
                                                     class="border rounded shadow-sm mb-2"
                                                     style="width: 100%; height: 220px; object-fit: cover;">
@@ -77,15 +80,15 @@
 
                         <!-- Lab File Upload -->
                         <div class="mb-4 mt-3">
-                            <label for="lab_files" class="form-label">Upload Lab Test Result / Old Prescription (images or PDFs)</label>
+                            <label for="lab_files" class="form-label">{% trans "Upload Lab Test Result / Old Prescription (images or PDFs)" %}</label>
                             <input type="file" name="lab_files" id="lab_files" multiple accept="image/*,application/pdf" class="form-control">
-                            <small class="text-muted">You can upload multiple files at a time</small>
+                            <small class="text-muted">{% trans "You can upload multiple files at a time" %}</small>
                         </div>
 
                         <!-- Submit & Cancel Buttons -->
                         <div class="d-flex gap-2 mt-4">
-                            <button type="submit" class="btn btn-primary">Confirm Booking</button>
-                            <a href="{% url 'prescription:available_doctors' %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">{% trans "Confirm Booking" %}</button>
+                            <a href="{% url 'prescription:available_doctors' %}" class="btn btn-outline-secondary">{% trans "Cancel" %}</a>
                         </div>
                     </form>
                 </div>

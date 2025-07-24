@@ -5,20 +5,13 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.http import HttpResponse,JsonResponse
 from django.db.models import Q
-
 from .forms import UserRegistrationForm,CustomLoginForm,CustomUserCreationForm
-
-
-
-
 from django.db import connection
 from .forms import TenantUserRegistrationForm
-
 from django.contrib.auth import logout
 from django.contrib.auth.models import User
 from django.db import transaction
 from clients.models import Client,SubscriptionPlan
-
 from .forms import AssignPermissionsForm
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import User, Permission
@@ -28,11 +21,8 @@ from django.contrib.auth.models import User, Group
 from .forms import UserGroupForm
 from .forms import AssignPermissionsToGroupForm
 from django.core.paginator import Paginator
-
 from django.contrib.auth.models import Group
-
 from django_tenants.utils import schema_context
-
 from .tokens import account_activation_token
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, HttpResponseRedirect
@@ -43,11 +33,9 @@ from.models import CustomUser
 from django.core.mail import send_mail
 
 from.forms import PartnerJobSeekerRegistrationForm
-
 from clients.models import Subscription
 from django.utils import timezone
 from django_tenants.utils import get_public_schema_name
-
 from clients.models import Tenant
 from .models import PhoneOTP
 from accounts.utils import send_sms
@@ -83,12 +71,7 @@ def send_tenant_email(email, username, password, subdomain):
 import logging
 from django.core.mail import send_mail
 from django.conf import settings
-
 logger = logging.getLogger(__name__)
-
-
-
-
 from django.core.exceptions import ValidationError
 
 def register_view(request):   
@@ -154,13 +137,13 @@ def register_view(request):
                 messages.error(request, "We could not send activation via email or SMS. Please try again.")
                 user.delete()
                 return render(request, 'accounts/registration/register.html', {'form': registerForm})
-
     else:
         registerForm = TenantUserRegistrationForm(tenant=current_tenant)
-
     return render(request, 'accounts/registration/register.html', {'form': registerForm})
-
 from django.core.exceptions import ValidationError
+
+
+
 
 def register_patient(request):   
     current_tenant = getattr(connection, 'tenant', None)
@@ -200,12 +183,10 @@ def register_patient(request):
                             'token': account_activation_token.make_token(user),
                             'subdomain': subdomain
                         })
-
                         user.email_user(subject=subject, message=message)
                         email_sent = True
                     except Exception as e:
                         messages.warning(request, f"Email sending failed: {e}")
-
                 if user.phone_number:
                     try:
                         return send_otp(request, user.phone_number)  # this returns redirect
@@ -225,10 +206,8 @@ def register_patient(request):
                 messages.error(request, "We could not send activation via email or SMS. Please try again.")
                 user.delete()
                 return render(request, 'accounts/registration/register.html', {'form': registerForm})
-
     else:
         registerForm = TenantUserRegistrationForm(tenant=current_tenant)
-
     return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
 
@@ -278,9 +257,6 @@ def register_public(request):
 
 
 
-
-
-
 def account_activate(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -299,7 +275,7 @@ def account_activate(request, uidb64, token):
             user.is_staff = False
         else:
             user.is_active = True
-            user.is_staff = True
+            user.is_staff = False
 
         user.save()
 
@@ -468,8 +444,6 @@ def logged_out_view(request):
 
 
 
-
-
 def assign_model_permission_to_user(user, model_name, permission_codename): 
     try:
         app_label, model_label = model_name.split('.')
@@ -502,19 +476,15 @@ def assign_permissions(request):
                 selected_permissions = form.cleaned_data['permissions']
                 model_name = form.cleaned_data['model_name']   
                 email = form.cleaned_data['email']  
-                user = CustomUser.objects.get(email=email)
-                     
+                user = CustomUser.objects.get(email=email)                   
 
-                cleaned_model_name = model_name.strip("[]").strip("'\"")
-                
+                cleaned_model_name = model_name.strip("[]").strip("'\"")                
                 user = CustomUser.objects.get(email=email)
                 
                 for permission_codename in selected_permissions:
                     cleaned_codename = permission_codename.strip("[]").strip("'\"")                    
-
                     message = assign_model_permission_to_user(user, cleaned_model_name, cleaned_codename)
-                    messages.success(request, message)
-                
+                    messages.success(request, message)                
                 return redirect('accounts:assign_permissions')
             except Permission.DoesNotExist:
                 messages.error(request, f"Permission '{permission_codename}' does not exist.")

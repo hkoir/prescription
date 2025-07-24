@@ -1,175 +1,916 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
-# 
-#, fuzzy
+# Bangla (bn) translations for myproject.
+# Copyright (C) 2025 Humayun Kobir
+# This file is distributed under the same license as the myproject package.
+# Humayun Kobir <hkobir1973@gmail.com>, 2025.
+#
 msgid ""
 msgstr ""
-"Project-Id-Version: PACKAGE VERSION\n"
+"Project-Id-Version: myproject 1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-06 20:32+0600\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"POT-Creation-Date: 2025-07-20 16:10+0600\n"
+"PO-Revision-Date: 2025-07-19 23:20+0600\n"
+"Last-Translator: Humayun Kobir <your-email@example.com>\n"
+"Language-Team: Bangla <your-email@example.com>\n"
+"Language: bn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: .\symptom_checker\views.py:81
-msgid ""
-"Your free AI prescription limit has been reached. Please make a payment to "
-"continue."
-msgstr "আপনার ফ্রী অফার শেস হয়ে গেছে। আনুগ্রহ করে পে করুন"
+#: prescription/forms.py:49
+msgid "Symptoms"
+msgstr "লক্ষন সমুহ"
 
-#: .\symptom_checker\views.py:144
-msgid "What is your gender? (male / female / other)"
-msgstr "আপনার লিংগ লিখুন"
+#: prescription/forms.py:51
+msgid "List multiple symptoms (e.g., fever, cough)"
+msgstr "লক্ষন গুলো কমা দিয়ে লিখুন"
 
-#: .\symptom_checker\views.py:145
-msgid "What is your date of birth? (YYYY-MM-DD)"
-msgstr "আপনার জন্ম তারিখ লিখুন"
+#: prescription/forms.py:54
+msgid "Duration"
+msgstr "কতদিন ধরে সমস্যা"
 
-#: .\symptom_checker\views.py:146
-msgid "What is your weight in kg?"
-msgstr "আপনার ওজন লিখুন"
+#: prescription/forms.py:55
+msgid "How long has the patient had symptoms?"
+msgstr "কতদিন ধরে এই সমস্যা চলছে "
 
-#: .\symptom_checker\views.py:147
-msgid "What is your height in cm?"
-msgstr "আপনার উচ্চতা লিখুন"
+#: prescription/forms.py:58 templates/symptom_checker/start.html:28
+msgid "Current Medications"
+msgstr "বর্তমানে  কি ঔষধ খাচ্ছেন??"
 
-#: .\symptom_checker\views.py:148
-msgid ""
-"Tell your medical history if any? Previous conditions (e.g., diabetes, "
-"asthma)"
+#: prescription/forms.py:61
+msgid "Current medications with dosage"
+msgstr "বর্তমানে কি কি ঔষধ খাচ্ছেন??"
+
+#: prescription/forms.py:64 templates/symptom_checker/start.html:38
+msgid "Vital Signs"
+msgstr "গুরুতপুরন লক্ষন যদি থাকে লিখুন"
+
+#: prescription/forms.py:66
+msgid "Enter vital signs (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)"
 msgstr ""
-"আপনার কি অন্য কোন রোগ চলমান আছে, যেমন ডায়াবেটিক্স, এজমা ইত্যাদি, থাকলে লিখুন"
+"কোন গুরুত্বপূর্ণ লক্ষন থাকলে লিখুন যেমন আতিরিক্ত শারীরিক তাপমাত্রা, উচ্চ রক্তচাপ ইত্যাদি "
+"(e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)"
 
-#: .\symptom_checker\views.py:149
-msgid "Do you have any known drug or food allergies?"
-msgstr "আপনার কোন কিছুতে কি এলারজি আছে?"
+#: prescription/forms.py:93 prescription/forms.py:168
+msgid "Upload Symptom Image"
+msgstr "আপনি চাইলে আপনার লক্ষন এর ছবি তুলে আপলোড করতে পারেন"
 
-#: .\symptom_checker\views.py:150
-msgid "Are you taking any medicine now? Write down with dosage"
-msgstr "আপনি কোন মেডিচিন খাচ্ছেন?"
+#: prescription/forms.py:94 prescription/forms.py:167
+msgid "Upload Symptom Video"
+msgstr " চাইলে সিমটম ফটো আপলোড করতে পারেন "
 
-#: .\symptom_checker\views.py:151
-msgid ""
-"Please enter vital signs if any (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)"
+#: prescription/forms.py:95
+msgid "Symptoms Summary"
+msgstr "লক্ষন সমুহ"
+
+#: prescription/forms.py:96
+msgid "Duration of Symptoms"
+msgstr "কতদিন ধরে সমস্যা"
+
+#: prescription/forms.py:97
+msgid "Vital Signs (e.g., BP, HR, Temp)"
+msgstr "গুরুত্বপূর্ণ লক্ষন যেমন উচ্চ রক্তচাপ, তাপমাত্রা ইত্যাদি"
+
+#: prescription/forms.py:98
+msgid "Location"
+msgstr "দেশ/শহর এর নাম"
+
+#: prescription/forms.py:101
+msgid "You can upload a symptom-related image."
+msgstr "আপনি সর্বোচ্চ ৫টি ইমেজ/ফাইল আপোলোড করতে পারবেন"
+
+#: prescription/forms.py:102
+msgid "Or record and upload a short symptom video."
+msgstr "অথবা ছোট ভিডিও রেকর্ড করতে পারেন"
+
+#: prescription/forms.py:103
+msgid "Briefly describe your symptoms."
+msgstr "সংক্ষেপে সমস্যাগুলো বলুন"
+
+#: prescription/forms.py:104
+msgid "How long have you had these symptoms?"
+msgstr "কতদিন ধরে এই সমস্যা চলছে "
+
+#: prescription/forms.py:105
+msgid "Enter any available vital signs like BP, HR."
+msgstr "গুরুত্বপূর্ণ লক্ষন থাকলে বলুন যেমন উচ্চ রক্তচাপ "
+
+#: prescription/forms.py:106
+msgid "Specify your current location or area."
+msgstr "আপনি কোন দেশ এবং শহরে আছেন/থাকেন"
+
+#: prescription/forms.py:113 prescription/forms.py:127
+msgid "Write your request message (Optional)"
+msgstr "এখানে আপনি কিছু বলতে চাইলে বলতে পারেন"
+
+#: prescription/forms.py:114
+msgid "Video Call Message"
+msgstr "আপনার কোন কথা থাকলে বলতে পারেন"
+
+#: prescription/forms.py:131
+msgid "Video Call Request Message"
+msgstr "আপনার কোন কথা থাকলে বলতে পারেন"
+
+#: prescription/forms.py:156
+msgid "Describe your current health status"
+msgstr "আপনার বর্তমান শারীরিক অবস্থা সংক্ষেপে বলুন "
+
+#: prescription/forms.py:166
+msgid "Patient's Current Status"
+msgstr "রোগীর বর্তমান অবস্থা কেমন বলুন"
+
+#: prescription/forms.py:171
+msgid "Explain any new symptoms or updates since your last visit."
+msgstr "কোন নতুন লক্ষন বা অন্য কিছু থাকলে বলুন"
+
+#: prescription/forms.py:192
+msgid "Enter your message (optional) for this follow-up booking"
+msgstr "আপনার কিছু বলার থাকলে বলুন"
+
+#: prescription/forms.py:196
+msgid "Please select your desired booking ID"
 msgstr ""
-"কোন গুরুতবপুরন লক্ষন থাকলে লিখুন যেমন আতিরিক্ত শারীরিক তাপমাত্রা, উচ্চ রক্তচাপ ইত্যাদি"
 
-#: .\symptom_checker\views.py:152
-msgid "Where are you located?"
-msgstr " আপনি কোন দেশে কোথায় থাকেন"
+#: prescription/forms.py:203
+msgid "Zoom Meeting Request Message"
+msgstr "আপনার কিছু বলার থাকলে বলুন"
 
-#: .\symptom_checker\views.py:153
-msgid "How long your symptoms are continuing?"
-msgstr "কতদিন ধরে আপনি এই সমস্যায় আছেন?"
+#: prescription/forms.py:204
+msgid "Follow-up Booking ID"
+msgstr ""
 
-#: .\symptom_checker\views.py:166
-msgid "Please select a valid gender: male, female, or other."
-msgstr "আপনার লিংগ লিখুন"
-
-#: .\templates\accounts\password_reset\password_reset_email.html:5
+#: templates/accounts/password_reset/password_reset_email.html:5
 #, python-format
 msgid ""
 "You're receiving this email because you requested a password reset for your "
 "user account at %(site_name)s."
 msgstr ""
+"আপনি এই ইমেইলটি পাচ্ছেন কারণ আপনি %(site_name)s-এ আপনার ব্যবহারকারীর "
+"অ্যাকাউন্টের পাসওয়ার্ড রিসেট করার অনুরোধ করেছেন।"
 
-#: .\templates\accounts\password_reset\password_reset_email.html:7
+#: templates/accounts/password_reset/password_reset_email.html:7
 msgid "Please go to the following page and choose a new password:"
 msgstr ""
 
-#: .\templates\accounts\password_reset\password_reset_email.html:11
+#: templates/accounts/password_reset/password_reset_email.html:11
 msgid "Your username, in case you’ve forgotten:"
 msgstr ""
 
-#: .\templates\accounts\password_reset\password_reset_email.html:13
+#: templates/accounts/password_reset/password_reset_email.html:13
 msgid "Thanks for using our site!"
 msgstr ""
 
-#: .\templates\accounts\password_reset\password_reset_email.html:15
+#: templates/accounts/password_reset/password_reset_email.html:15
 #, python-format
 msgid "The %(site_name)s team"
 msgstr ""
 
-#: .\templates\symptom_checker\question.html:51
+#: templates/appointments/available_doctors.html:98
+#, fuzzy
+#| msgid "Find a Doctor & Book"
+msgid "Find a Doctor & Book a Slot"
+msgstr "ডাক্তার খুজুন এবং বুক করুন"
+
+#: templates/appointments/available_doctors.html:104
+#: templates/prescription/available_doctors.html:119
+msgid "Search by doctor name"
+msgstr "ডাক্তারের নাম দিয়ে খুজুন"
+
+#: templates/appointments/available_doctors.html:121
+msgid "Search"
+msgstr "খুজুন"
+
+#: templates/base.html:368 templates/base.html:602
+msgid "Language"
+msgstr "ভাষা "
+
+#: templates/prescription/available_doctors.html:97
+msgid "Unlock the Power of AI for Your health assistance"
+msgstr "আনলক দি পাওয়ার অফ এ আই"
+
+#: templates/prescription/available_doctors.html:101
+msgid ""
+"Get unbiased, data-driven recommendations instantly with our advanced AI "
+"model"
+msgstr ""
+"আমাদের উন্নত এআই মডেলের মাধ্যমে তাৎক্ষণিকভাবে পক্ষপাতহীন, ডেটা-নির্ভর সুপারিশ পান"
+
+#: templates/prescription/available_doctors.html:104
+
+msgid "Get Prescription now"
+msgstr "প্রিস্ক্রিপশন তৈরী করুন"
+
+#: templates/prescription/available_doctors.html:108
+
+msgid "Chat with Ai as a Doctor"
+msgstr "আপনার ডাক্তারের মতো এআই-এর সাথে চ্যাট করুন"
+
+#: templates/prescription/available_doctors.html:114
+msgid "Find a Doctor & Book"
+msgstr "ডাক্তার খুজুন এবং বুক করুন"
+
+#: templates/prescription/confirm_booking.html:13
+#: templates/prescription/confirm_booking_direct.html:11
+msgid "Confirm Doctor Booking"
+msgstr "বুকিং নিশ্চিত করুন"
+
+#: templates/prescription/confirm_booking.html:18
+msgid ""
+"We will use your patient profile data and Ai prescription to analyse and "
+"prescribe"
+msgstr ""
+"আমরা আপনার রোগীর প্রোফাইল তথ্য এবং এআই প্রিস্ক্রিপশন ব্যবহার করে বিশ্লেষণ করব এবং "
+"প্রেসক্রাইব করব"
+
+#: templates/prescription/confirm_booking.html:30
+#: templates/prescription/confirm_booking_direct.html:32
+#: templates/telemedicine/request_doctor_followup_booking.html:35
+msgid "Upload Symptom Image (optional)"
+msgstr "আপনি চাইলে আপনার লক্ষন এর ছবি তুলে আপলোড করতে পারেন"
+
+#: templates/prescription/confirm_booking.html:35
+#: templates/prescription/confirm_booking_direct.html:39
+#: templates/telemedicine/request_doctor_followup_booking.html:45
+msgid "Capture Symptom Image"
+msgstr "লক্ষন এর ছবি ক্যাপচার করুন"
+
+#: templates/prescription/confirm_booking.html:36
+#: templates/prescription/confirm_booking_direct.html:40
+#: templates/telemedicine/request_doctor_followup_booking.html:48
+msgid "Use Webcam"
+msgstr "ক্যামেরা ব্যবহার করুন"
+
+#: templates/prescription/confirm_booking.html:38
+#: templates/prescription/confirm_booking_direct.html:42
+#: templates/telemedicine/request_doctor_followup_booking.html:50
+msgid "Retake"
+msgstr "পুনরায় তুলুন"
+
+#: templates/prescription/confirm_booking.html:54
+#: templates/telemedicine/request_doctor_followup_booking.html:75
+msgid "Upload Symptom Video (optional)"
+msgstr " চাইলে সিমটম ফটো আপলোড করতে পারেন "
+
+#: templates/prescription/confirm_booking.html:59
+msgid "Record a Short Symptom Video"
+msgstr "ছোট ভিডিও রেকর্ড করতে পারেন"
+
+#: templates/prescription/confirm_booking.html:83
+#: templates/telemedicine/request_doctor_followup_booking.html:99
+msgid "Upload Lab Test Result / Old Prescription (images or PDFs)"
+msgstr "ল্যাবটেষ্ট এর ফটো আপলোড করতে পারেন যদি থাকে"
+
+#: templates/prescription/confirm_booking.html:85
+#: templates/prescription/confirm_booking_direct.html:110
+msgid "You can upload multiple files at a time"
+msgstr "সর্বোচ্চ ৫টি একসাথে আপলোড করতে পারবেন"
+
+#: templates/prescription/confirm_booking.html:90
+#: templates/prescription/confirm_booking_direct.html:114
+#: templates/telemedicine/request_doctor_followup_booking.html:108
+msgid "Confirm Booking"
+msgstr "বুকিং নিশ্চিত করুন"
+
+#: templates/prescription/confirm_booking.html:91
+#: templates/prescription/confirm_booking_direct.html:115
+#: templates/prescription/confirm_booking_direct.html:154
+#: templates/prescription/request_video_call.html:32
+#: templates/telemedicine/request_doctor_followup_booking.html:106
+#: templates/telemedicine/request_doctor_followup_booking.html:148
+#: templates/telemedicine/request_zoom_meeting.html:41
+msgid "Cancel"
+msgstr "বাতিল করুন"
+
+#: templates/prescription/confirm_booking_direct.html:18
+msgid "Please provide the below details to get more accurate prescription"
+msgstr "ভাল ফলাফলের জন্য অনুগ্রহ করে নিচের তথ্যগুলো দিন"
+
+#: templates/prescription/confirm_booking_direct.html:56
+msgid "Upload Symptom video(optional)"
+msgstr "লক্ষনের ভিডিও থাকলে আপলোড করুন"
+
+#: templates/prescription/confirm_booking_direct.html:63
+msgid "Or record a short symptom video"
+msgstr "অথবা ছোট ভিডিও রেকর্ড করতে পারেন"
+
+#: templates/prescription/confirm_booking_direct.html:73
+#: templates/telemedicine/request_doctor_followup_booking.html:87
+msgid "Start Recording"
+msgstr "রেকর্ড শুরু করুন"
+
+#: templates/prescription/confirm_booking_direct.html:74
+#: templates/telemedicine/request_doctor_followup_booking.html:88
+msgid "Stop Recording"
+msgstr " রেকর্ড বন্ধ করুন"
+
+#: templates/prescription/confirm_booking_direct.html:108
+msgid "Upload Lab Test Result/ old prescription(images or PDFs)"
+msgstr " ল্যাবটেষ্ট / পুরান প্রিস্ক্রিপশন থাকলে আপলোড করুন"
+
+#: templates/prescription/confirm_booking_direct.html:134
+#: templates/prescription/create.html:86
+#: templates/telemedicine/request_doctor_followup_booking.html:128
+msgid "Complete Your Patient Profile"
+msgstr "আপনার প্রফাইল তৈরী করুন"
+
+#: templates/prescription/confirm_booking_direct.html:153
+#: templates/telemedicine/request_doctor_followup_booking.html:147
+msgid "Save"
+msgstr "সেভ করুন"
+
+#: templates/prescription/create.html:16
+msgid "AI Prescription Form"
+msgstr "এআই প্রিস্ক্রিপশন ফরম"
+
+#: templates/prescription/create.html:17
+msgid "Describe your symptoms — our AI will generate a prescription instantly."
+msgstr "আপনার সমস্যা বর্ণনা করুন এবং এআই সাজেস্টেড প্রিস্ক্রিপশন দেখুন"
+
+#: templates/prescription/create.html:44
+#: templates/symptom_checker/start.html:50
+msgid "I agree to the"
+msgstr "আমি সম্মত"
+
+#: templates/prescription/create.html:45
+#: templates/symptom_checker/start.html:51
+msgid "Terms of Use"
+msgstr "ব্যবহারের শর্তাবলী"
+
+#: templates/prescription/create.html:46
+#: templates/symptom_checker/start.html:52
+msgid "Privacy Policy"
+msgstr "গোপনীয়তা নীতি"
+
+#: templates/prescription/create.html:47
+#: templates/symptom_checker/start.html:53
+msgid "and"
+msgstr "এবং"
+
+#: templates/prescription/create.html:48
+#: templates/symptom_checker/start.html:54
+msgid "Disclaimer"
+msgstr "দায় স্বীকার ঘোষণা"
+
+#: templates/prescription/create.html:55
+msgid "Loading..."
+msgstr ""
+
+#: templates/prescription/create.html:60
+msgid "Generate Prescription"
+msgstr "প্রিস্ক্রিপশন তৈরী করুন"
+
+#: templates/prescription/detail.html:13
+msgid "Ai Generated Prescription"
+msgstr "এআই সাজেস্টেড প্রিস্ক্রিপশন"
+
+#: templates/prescription/detail.html:19
+msgid "Prescription Code:"
+msgstr "প্রিস্ক্রিপশন কোড:"
+
+#: templates/prescription/detail.html:22
+msgid "Date:"
+msgstr ""
+
+#: templates/prescription/detail.html:25
+msgid "Patient:"
+msgstr "রোগী"
+
+#: templates/prescription/detail.html:26
+msgid "Age:"
+msgstr "বয়স"
+
+#: templates/prescription/detail.html:27
+msgid "Gender:"
+msgstr "লিংগ"
+
+#: templates/prescription/detail.html:30
+msgid "Duration of Symptoms:"
+msgstr "কতদিন ধরে সমস্যা"
+
+#: templates/prescription/detail.html:33
+msgid "Symptoms:"
+msgstr "প্লক্ষন সমুহ"
+
+#: templates/prescription/detail.html:37
+msgid "Summary of Findings:"
+msgstr "ফলাফলের একটি সারাংশ"
+
+#: templates/prescription/home.html:811
+msgid "Welcome to"
+msgstr "স্বাগতম "
+
+#: templates/prescription/home.html:812
+msgid "Care Setu"
+msgstr "কেয়ার সেতু"
+
+#: templates/prescription/home.html:814
+msgid "AI-powered health assistance and Specialized doctor support"
+msgstr "এআই-চালিত স্বাস্থ্য সহায়তা এবং বিশেষায়িত ডাক্তারের সেবা"
+
+#: templates/prescription/home.html:831
+msgid "Ai Services"
+msgstr "এআই সেবাসমুহ"
+
+#: templates/prescription/home.html:842
+msgid "I am your AI"
+msgstr "আমি আপনার AI"
+
+#: templates/prescription/home.html:843
+msgid "How are you feeling today? You can ask me about your health"
+msgstr ""
+"আপনি আজ কেমন অনুভব করছেন? আপনার স্বাস্থ্যের সম্পর্কে আমাকে জিজ্ঞাসা করতে পারেন"
+
+#: templates/prescription/home.html:845
+msgid "Tap to Start"
+msgstr "শুরু করতে ট্যাপ করুন"
+
+#: templates/prescription/home.html:863
+msgid "Your Symptom History"
+msgstr "আপনার সিমটম চেকিং সমুহ এখানে"
+
+#: templates/prescription/home.html:864
+msgid "Track your previous symptom checks"
+msgstr "আপনার সিমটম সমুহ মনিটর এবং ট্র্যাকিং করুন"
+
+#: templates/prescription/home.html:881
+msgid "AI suggested Prescription"
+msgstr "এআই সাজেস্টেড প্রিস্ক্রিপশন"
+
+#: templates/prescription/home.html:882
+msgid "Enter your symptoms and get Instant AI generated prescription"
+msgstr "আপনার সমস্যাগুলো বলুন, এআই আপনার জন্য সম্ভাব্য প্রিস্ক্রিপশন দিবে"
+
+#: templates/prescription/home.html:883
+msgid "Get it now"
+msgstr "এখনি ক্লিক করুন"
+
+#: templates/prescription/home.html:900
+msgid "AI Prescription History"
+msgstr "এআই জেনারেটেড প্রিস্ক্রিপশন"
+
+#: templates/prescription/home.html:901
+msgid "Your AI-generated prescription history"
+msgstr "আপনার সমস্ত এ আই জেনারেটেড প্রিস্ক্রিপশন সমুহ এখানে দেখুন"
+
+#: templates/prescription/home.html:918
+msgid "Interpret Lab Test Result"
+msgstr "ল্যাবটেস্ট এর ব্যাখ্যা"
+
+#: templates/prescription/home.html:919
+msgid "Upload your lab test for AI interpretation"
+msgstr ""
+"আপনার ল্যাবটেষ্ট এর পিকচার আপলোড করুন, এ আই আপনার ল্যাবটেষ্ট এর ফলাফল এর ব্যাখ্যা "
+"করে দিবে"
+
+#: templates/prescription/home.html:936
+msgid "Lab Interpretation History"
+msgstr " সব ল্যাবটেষ্ট এর ব্যাখ্যা সমুহ দেখুন"
+
+#: templates/prescription/home.html:937
+msgid "View all your lab interpretation history"
+msgstr "আপনার সব ল্যাবটেষ্ট এর ফলাফল এখান থেকে দেখুন।"
+
+#: templates/prescription/home.html:948
+msgid "Specialized Doctor Services"
+msgstr "বিশেষায়িত ডাক্তারের সেবা সমুহ"
+
+#: templates/prescription/home.html:960
+msgid "Search your Specialized Doctor"
+msgstr "আপনার পছন্দের বিশেষায়িত ডাক্তার খুজুন"
+
+#: templates/prescription/home.html:961
+msgid "Book Specialised doctor now. Describe your problem as per our template"
+msgstr "বিশেষায়িত ডাক্তার এর প্রিস্ক্রিপশন এর জন্য আপনার সম্যসাগুলো বলুন"
+
+#: templates/prescription/home.html:980
+msgid "Doctor Booking History"
+msgstr "ডাক্তারের বুকিং সমুহ"
+
+#: templates/prescription/home.html:981
+msgid "Your Specialized Doctor Booking history are here"
+msgstr "আপনার বিশেষায়িত ডাক্তারের বুকিং সমুহ এখানে"
+
+#: templates/prescription/home.html:1000
+msgid "Doctor Prescription History"
+msgstr "বিশেষায়িত ডাক্তারের প্রিস্ক্রিপশন সমুহ"
+
+#: templates/prescription/home.html:1001
+msgid "Track all of Your Prescriptions given by specialized Doctors"
+msgstr "আপনার বিশেষায়িত ডাক্তারের প্রিস্ক্রিপশনসমুহ ট্র্যাকিং ও মনিটরিং করুন এখান থেকে"
+
+#: templates/prescription/home.html:1021
+msgid "Book and Visit Doctor Chamber"
+msgstr "বিশেষায়িত ডাক্তারের চ্যাম্বারে যেয়ে ডাক্তার দেখাতে ক্লিক করুন"
+
+#: templates/prescription/home.html:1022
+msgid "You can now book Docctor Time slots and Visit Doctor Chamber"
+msgstr ""
+"এখন থেকে ডাক্তারের চ্যাম্বারে যেয়ে ডাক্তার দেখানোর জন্য আমাদের এখান থেকে ডাক্তার "
+"বুকিং করতে পারবেন"
+
+#: templates/prescription/home.html:1041
+msgid "Doctor Chamber Visit history"
+msgstr "চ্যাম্বার ডাক্তার দেখানো প্রিস্ক্রিপশন সমুহ"
+
+#: templates/prescription/home.html:1042
+msgid "Click here to view all of your Doctor Chamber visit appointments"
+msgstr "চ্যাম্বার ডাক্তার দাখানোর সব বুকিন এবং প্রিস্ক্রিপশন সমুহ এখান থেকে দেখুন"
+
+#: templates/prescription/home.html:1062
+msgid "Other Services"
+msgstr "অন্যন্য সেবাসমুহ"
+
+#: templates/prescription/home.html:1063
+msgid "Nearby Services, Hospital, Ambulance, Nursing, Medicine etc."
+msgstr ""
+"আপনার আশেপাশের হাসপাতাল, এম্বুলেন্স, মেডিসিন, ফিজিওথ্যারাপি, ইত্যাদির তথ্যাদি ও "
+"সেবা জানতে একনে ক্লিক করুন"
+
+#: templates/prescription/home.html:1077
+msgid "I am AI. What can you expect:"
+msgstr "আমি এআই। আপনি কী আশা করতে পারেন"
+
+#: templates/prescription/home.html:1079
+msgid "I will ask you health-related questions and listen to your answers"
+msgstr "আমি আপনার স্বাস্থ্য সম্পর্কিত প্রশ্ন করবো এবং আপনার উত্তর শুনবো"
+
+#: templates/prescription/home.html:1080
+msgid ""
+"I will generate a <strong>summary of findings</strong> from your symptoms"
+msgstr "আমি আপনার উপসর্গ থেকে একটি <strong>সারাংশ</strong> তৈরি করব"
+
+#: templates/prescription/home.html:1081
+msgid "I will suggest <strong>probable disease names</strong>"
+msgstr "আমি সম্ভাব্য <strong>রোগের নাম</strong> প্রস্তাব করব"
+
+#: templates/prescription/home.html:1082
+msgid ""
+"I will give you a <strong>professional-like prescription</strong> including "
+"medicines, lab tests & advice"
+msgstr ""
+"আমি আপনাকে ওষুধ, ল্যাব টেস্ট এবং পরামর্শসহ একটি <strong>পেশাদার ধরণের "
+"প্রেসক্রিপশন</strong> দেব"
+
+#: templates/prescription/home.html:1083
+msgid ""
+"I will recommend the <strong>type of specialized doctor</strong> you need to "
+"consult"
+msgstr ""
+"আমি আপনার জন্য প্রয়োজনীয় <strong>বিশেষায়িত ডাক্তারের ধরণ</strong> সুপারিশ করব"
+
+#: templates/prescription/home.html:1084
+msgid ""
+"You can <strong>book specialized doctors, request video calls</strong>, "
+"upload images or short videos"
+msgstr ""
+"আপনি <strong>বিশেষায়িত ডাক্তার বুক করতে পারবেন, ভিডিও কলের অনুরোধ করতে পারবেন</"
+"strong>, ছবি বা ছোট ভিডিও আপলোড করতে পারবেন"
+
+#: templates/prescription/home.html:1085
+msgid ""
+"Specialized doctors will <strong>analyze your records and give "
+"prescriptions</strong>"
+msgstr ""
+"বিশেষায়িত ডাক্তাররা আপনার রেকর্ড বিশ্লেষণ করে <strong>প্রেসক্রিপশন দেবেন</strong>"
+
+#: templates/prescription/home.html:1086
+msgid ""
+"You can <strong>view & download doctor prescriptions</strong> anytime from "
+"your profile"
+msgstr ""
+"আপনি আপনার প্রোফাইল থেকে <strong>ডাক্তারের প্রেসক্রিপশন দেখতে এবং ডাউনলোড করতে "
+"পারবেন</strong>"
+
+#: templates/prescription/home.html:1087
+msgid ""
+"Enjoy all these healthcare services <strong>from the comfort of your home</"
+"strong>"
+msgstr "নিজের বাড়ির আরাম থেকে এই সমস্ত স্বাস্থ্যসেবা <strong>উপভোগ করুন</strong>"
+
+#: templates/prescription/home.html:1103
+msgid "Why Use AI-Powered Prescriptions?"
+msgstr "কেন এআই-চালিত প্রেসক্রিপশন ব্যবহার করবেন?"
+
+#: templates/prescription/home.html:1105
+msgid ""
+"In today's fast-paced healthcare environment, AI-powered prescriptions serve "
+"as a first-line support system for patients. While specialized doctors "
+"remain essential for thorough diagnosis and treatment, AI helps streamline "
+"the process by collecting and analyzing patient symptoms, history, and "
+"inputs instantly. This allows doctors to focus on validation and refinement "
+"rather than starting from scratch—especially in high-demand scenarios or "
+"remote areas. It also empowers patients to receive quick preliminary "
+"guidance, improves triage efficiency, and reduces waiting times. AI doesn't "
+"replace doctors—it enhances their accuracy, saves time, and ensures no "
+"symptom is overlooked"
+msgstr ""
+"আজকের দ্রুতগামী স্বাস্থ্যসেবা ব্যবস্থায়, এআই-চালিত প্রেসক্রিপশন রোগীদের জন্য একটি "
+"প্রাথমিক সহায়ক ব্যবস্থা হিসেবে কাজ করে। যদিও বিশেষায়িত ডাক্তাররা সম্পূর্ণ রোগ নির্ণয় "
+"এবং চিকিৎসার জন্য অপরিহার্য, এআই রোগীর উপসর্গ, ইতিহাস এবং ইনপুট তৎক্ষণাৎ সংগ্রহ ও "
+"বিশ্লেষণ করে প্রক্রিয়াটি সহজ করে। এর ফলে ডাক্তাররা শুরু থেকে কাজ করার বদলে যাচাই "
+"এবং উন্নতিতে মনোনিবেশ করতে পারেন—বিশেষ করে উচ্চ চাহিদার পরিস্থিতি বা দূরবর্তী "
+"এলাকায়। এটি রোগীদের দ্রুত প্রাথমিক পরামর্শ পেতে সহায়তা করে, ত্রিয়াজ দক্ষতা বাড়ায় "
+"এবং অপেক্ষার সময় কমায়। এআই ডাক্তারদের বিকল্প নয়—এটি তাদের যথার্থতা বাড়ায়, সময় "
+"বাঁচায় এবং কোনো উপসর্গ উপেক্ষিত না হয় তা নিশ্চিত করে।"
+
+#: templates/prescription/home.html:1116
+msgid "Why Join Our AI-Powered Healthcare Platform?"
+msgstr "কেন আমাদের এআই-চালিত স্বাস্থ্যসেবা প্ল্যাটফর্মে যোগ দেবেন?"
+
+#: templates/prescription/home.html:1122
+msgid "For Doctors"
+msgstr "ডাক্তারদের জন্য"
+
+#: templates/prescription/home.html:1124
+msgid "Earn consultation fees from home or on the go"
+msgstr "বাড়ি থেকে বা যেকোনো জায়গা থেকে কনসালটেশনের ফি আয় করুন"
+
+#: templates/prescription/home.html:1125
+msgid "Work flexible hours, even part-time"
+msgstr " কাজের ফাকে, চলার পথে সুবিধামত সময়ে কাজ করার সুযোগ"
+
+#: templates/prescription/home.html:1126
+msgid "Gain exposure to a wide patient base"
+msgstr "বৃহৎ রোগী গোষ্ঠীর সাথে কাজ করার সুযোগ পান"
+
+#: templates/prescription/home.html:1127
+msgid "Vet AI-generated prescriptions efficiently"
+msgstr "এআই-তৈরি প্রেসক্রিপশন কার্যকরভাবে যাচাই করুন"
+
+#: templates/prescription/home.html:1128
+msgid "Conduct video consultations securely"
+msgstr "নিরাপদে ভিডিও কনসালটেশন পরিচালনা করুন"
+
+#: templates/prescription/home.html:1136
+msgid "For Patients"
+msgstr "রোগীদের জন্য"
+
+#: templates/prescription/home.html:1138
+msgid "Get AI-powered suggested prescriptions instantly"
+msgstr "এআই-চালিত প্রস্তাবিত প্রেসক্রিপশন তাৎক্ষণিক পান"
+
+#: templates/prescription/home.html:1139
+msgid "Book expert doctors from home"
+msgstr "বাড়ি থেকে বিশেষজ্ঞ ডাক্তার বুক করুন"
+
+#: templates/prescription/home.html:1140
+msgid "Share symptoms and medical files online"
+msgstr "অনলাইনে উপসর্গ ও চিকিৎসার ফাইল শেয়ার করুন"
+
+#: templates/prescription/home.html:1141
+msgid "Request video consultations as needed"
+msgstr "প্রয়োজনে ভিডিও কনসালটেশনের অনুরোধ করুন"
+
+#: templates/prescription/home.html:1142
+msgid "Access prescriptions from anywhere"
+msgstr "যেকোনো জায়গা থেকে প্রেসক্রিপশন অ্যাক্সেস করুন"
+
+#: templates/prescription/home.html:1156
+msgid "Get Your free AI-Powered Prescription and see the power of Ai!"
+msgstr "আপনার বিনামূল্যের এআই-চালিত প্রেসক্রিপশন পান এবং এআই-এর ক্ষমতা দেখুন!"
+
+#: templates/prescription/home.html:1159
+msgid ""
+"Experience instant, intelligent health advice from our advanced AI model."
+msgstr "আমাদের উন্নত এআই মডেল থেকে তাৎক্ষণিক, বুদ্ধিদীপ্ত স্বাস্থ্য পরামর্শ নিন।"
+
+#: templates/prescription/home.html:1161
+msgid "Try now"
+msgstr "এখনই চেষ্টা করুন"
+
+#: templates/prescription/home.html:1164
+msgid "Chat with Ai as your Doctor"
+msgstr "আপনার ডাক্তারের মতো এআই-এর সাথে চ্যাট করুন"
+
+#: templates/prescription/home.html:1178
+msgid "Thank You for Choosing Our AI-Powered Healthcare Platform!"
+msgstr "আমাদের এআই-চালিত স্বাস্থ্যসেবা প্ল্যাটফর্ম বেছে নেওয়ার জন্য ধন্যবাদ!"
+
+#: templates/prescription/home.html:1181
+msgid ""
+"We’re delighted to have you explore our <strong>AI-Enhanced Prescription and "
+"Real Doctor Consultation Service</strong>. Designed to seamlessly blend the "
+"power of artificial intelligence with the compassion and expertise of real "
+"medical professionals, our platform is built to deliver faster, smarter, and "
+"more accurate healthcare experiences."
+msgstr ""
+"আমরা আনন্দিত যে আপনি আমাদের <strong>এআই-সমৃদ্ধ প্রেসক্রিপশন এবং প্রকৃত ডাক্তার "
+"পরামর্শ সেবা</strong> অন্বেষণ করছেন। কৃত্রিম বুদ্ধিমত্তার ক্ষমতাকে বাস্তব মেডিকেল "
+"পেশাদারদের সহানুভূতি ও দক্ষতার সাথে একত্রিত করার জন্য ডিজাইন করা হয়েছে, আমাদের "
+"প্ল্যাটফর্ম দ্রুততর, আরও বুদ্ধিমান এবং সঠিক স্বাস্থ্যসেবা অভিজ্ঞতা প্রদান করে।"
+
+#: templates/prescription/home.html:1190
+msgid ""
+"Whether you're seeking a quick diagnosis or a specialist consultation, we "
+"aim to make quality healthcare more accessible and efficient. Your trust "
+"drives us to continue innovating and improving every aspect of your health "
+"journey."
+msgstr ""
+"আপনি দ্রুত রোগ নির্ণয় বা বিশেষজ্ঞ পরামর্শ যেটিই খুঁজছেন না কেন, আমরা মানসম্পন্ন "
+"স্বাস্থ্যসেবা আরও সহজলভ্য এবং কার্যকর করতে কাজ করি। আপনার বিশ্বাস আমাদের অনুপ্রাণিত "
+"করে আপনার স্বাস্থ্য যাত্রার প্রতিটি ক্ষেত্রে নতুনত্ব এবং উন্নতি আনতে।"
+
+#: templates/prescription/home.html:1195
+msgid "Be Smart. Be Healthy. We're Always Here for You."
+msgstr "স্মার্ট হোন। সুস্থ থাকুন। আমরা সবসময় আপনার পাশে।"
+
+#: templates/prescription/home.html:1196
+msgid "The mymeplus Healthcare Team"
+msgstr "মাইমেপ্লাস হেলথকেয়ার টিম"
+
+#: templates/prescription/home.html:1202
+msgid "mymeplus Technology"
+msgstr "মাইমেপ্লাস টেকনোলজি"
+
+#: templates/prescription/home.html:1207
+msgid "Development Team"
+msgstr "ডেভেলপমেন্ট টিম"
+
+#: templates/prescription/request_video_call.html:14
+#: templates/telemedicine/request_zoom_meeting.html:14
+#, fuzzy
+#| msgid "Conduct video consultations securely"
+msgid "Video Consultation request for"
+msgstr "নিরাপদে ভিডিও কনসালটেশন পরিচালনা করুন"
+
+#: templates/symptom_checker/question.html:101
+msgid "AI asks:"
+msgstr ""
+
+#: templates/symptom_checker/question.html:106
 msgid "Your answer"
 msgstr "আপনার উত্তর"
 
-#: .\templates\symptom_checker\question.html:57
+#: templates/symptom_checker/question.html:111
 msgid "Yes"
 msgstr "হ্যা"
 
-#: .\templates\symptom_checker\question.html:61
+#: templates/symptom_checker/question.html:115
 msgid "No"
 msgstr "না"
 
-#: .\templates\symptom_checker\start.html:24
-msgid "AI Symptom Checker"
-msgstr "আরটিফিসিয়াল ইন্টিলিজেন্স সিমটম চেকার "
-
-#: .\templates\symptom_checker\start.html:25
-msgid ""
-"This guided screening will ask you a few simple questions to help assess "
-"your condition."
-msgstr "আমাদের সিস্টেম আপনাকে গাইড করবে , আনুগ্রহ করে ফলো করুন"
-
-#: .\templates\symptom_checker\start.html:28
-msgid "Takes less than 2 minutes"
-msgstr "এটা মাত্র কয়েক মিনিট লাগবে"
-
-#: .\templates\symptom_checker\start.html:29
-msgid "Your answers are private and secure"
-msgstr "আপনার সমস্ত তথ্য গোপন থাকবে এবং শুধুমাত্র আপনি নিজেই দেখতে পারবেন"
-
-#: .\templates\symptom_checker\start.html:30
-msgid "This tool provides suggestions — it does not replace medical advice"
-msgstr ""
-"তবে হ্যা, আরটিফিসিচিয়াল ইন্টিলিজেন্স এর দেওয়া প্রিস্ক্রিশন অবশ্য আপনার ডাক্তার দিয়ে "
-"ভেরিফাই করে নিবেন"
-
-#: .\templates\symptom_checker\start.html:39
-#, python-format
-msgid ""
-"\n"
-"        Step %(current_step)s of %(total_steps)s\n"
-"      "
+#: templates/symptom_checker/question.html:119
+msgid "Type your answer here..."
 msgstr ""
 
-#: .\templates\symptom_checker\start.html:63
-msgid "Previous"
-msgstr "পেছনে যান"
+#: templates/symptom_checker/question.html:125
+#, fuzzy
+#| msgid "Answer"
+msgid "Submit Answer"
+msgstr "উত্তর"
 
-#: .\templates\symptom_checker\start.html:70
-msgid "Next"
+#: templates/symptom_checker/start.html:17
+msgid "Let's Prepare Your AI Prescription"
+msgstr "প্রথমে কিছু তথ্য দিন"
+
+#: templates/symptom_checker/start.html:20
+msgid "Tell us about your current medications and any vital signs."
+msgstr ""
+"াপনায় আপনি বরতমানে কোন ওষধ খাইলে এবং কোন গুরুতপুরন কোন লক্ষন থাকলে সেটা বলুন"
+
+#: templates/symptom_checker/start.html:67
+#: templates/symptom_checker/start.html:99
+msgid "Continue to Symptom Analysis"
 msgstr "এগিয়ে যান"
 
-#: .\templates\symptom_checker\symptom_summary.html:18
+#: templates/symptom_checker/symptom_summary.html:18
 msgid "Question"
 msgstr "প্রশ্ন"
 
-#: .\templates\symptom_checker\symptom_summary.html:19
+#: templates/symptom_checker/symptom_summary.html:19
 msgid "Answer"
 msgstr "উত্তর"
 
-#: .\templates\symptom_checker\symptom_summary.html:35
+#: templates/symptom_checker/symptom_summary.html:35
 msgid "Probable Disease"
 msgstr "সম্ভাব্য রোগ"
 
-#: .\templates\symptom_checker\symptom_summary.html:36
+#: templates/symptom_checker/symptom_summary.html:36
 msgid "Key Symptoms"
 msgstr "প্রধান লক্ষন সমুহ"
+
+#: templates/telemedicine/request_doctor_followup_booking.html:15
+msgid "Doctor follow-up booking for"
+msgstr "ডাক্তারের ফলোয়াপ বুকিং ফর "
+
+#: templates/telemedicine/request_doctor_followup_booking.html:49
+msgid "Capture"
+msgstr "ক্যাপচার ফটো"
+
+#: templates/telemedicine/request_doctor_followup_booking.html:83
+msgid "Or Record a Short Symptom Video"
+msgstr "অথবা ছোট ভিডিও রেকর্ড করুন"
+
+#: templates/telemedicine/request_doctor_followup_booking.html:101
+msgid "You can upload max 5 files/images"
+msgstr "আপনি সর্বোচ্চ ৫টি ইমেজ/ফাইল আপোলোড করতে পারবেন"
+
+#: templates/telemedicine/request_zoom_meeting.html:44
+msgid "Confirm"
+msgstr "নিশ্চিত করুন"
+
+#~ msgid "I will generate a"
+#~ msgstr "আমি আপনার উপসর্গ থেকে"
+
+#~ msgid "I will suggest"
+#~ msgstr "আমি পরামরশ দিতে পারি"
+
+#~ msgid "probable disease names"
+#~ msgstr "সম্ভাব্য রোগের নাম"
+
+#~ msgid "I will give you a"
+#~ msgstr "আমি তৈরী করে দিব"
+
+#~ msgid "professional-like prescription"
+#~ msgstr "সম্ভাব্য প্রিস্ক্রিপশন"
+
+#~ msgid "including medicines, lab tests & advice"
+#~ msgstr " যেখানে থাকবে ওষধের নাম, ল্যাবটেষ্ট ইত্যাদি"
+
+#~ msgid "I will recommend the"
+#~ msgstr "আমি পরামরশ দিতে পারি"
+
+#~ msgid "type of specialized doctor"
+#~ msgstr "আপনার কি ধরনের বিশেষায়িত ডাক্তার"
+
+#~ msgid "you need to consult"
+#~ msgstr "দেখানোর দরকার"
+
+#, fuzzy
+#~| msgid "Specialized Doctor Services"
+#~ msgid "Specialized doctors will"
+#~ msgstr "বিশেষায়িত ডাক্তারের সেবা সমুহ"
+
+#, fuzzy
+#~| msgid "your age and gender are taken from your profile"
+#~ msgid "anytime from your profile"
+#~ msgstr "আপনার বয়স এবং লিংগ আপনার প্রফাইল থেকে নেওয়া হবে যদি থাকে"
+
+#~ msgid ""
+#~ "Your free AI prescription limit has been reached. Please make a payment "
+#~ "to continue."
+#~ msgstr "আপনার ফ্রী অফার শেস হয়ে গেছে। আনুগ্রহ করে পে করুন"
+
+#~ msgid "What is your gender? (male / female / other)"
+#~ msgstr "আপনার লিংগ লিখুন"
+
+#~ msgid "What is your date of birth? (YYYY-MM-DD)"
+#~ msgstr "আপনার জন্ম তারিখ লিখুন"
+
+#~ msgid "What is your weight in kg?"
+#~ msgstr "আপনার ওজন লিখুন"
+
+#~ msgid "What is your height in cm?"
+#~ msgstr "আপনার উচ্চতা লিখুন"
+
+#~ msgid ""
+#~ "Tell your medical history if any? Previous conditions (e.g., diabetes, "
+#~ "asthma)"
+#~ msgstr ""
+#~ "আপনার কি অন্য কোন রোগ চলমান আছে, যেমন ডায়াবেটিক্স, এজমা ইত্যাদি, থাকলে লিখুন"
+
+#~ msgid "Do you have any known drug or food allergies?"
+#~ msgstr "আপনার কোন কিছুতে কি এলারজি আছে?"
+
+#~ msgid "Are you taking any medicine now? Write down with dosage"
+#~ msgstr "আপনি কোন মেডিচিন খাচ্ছেন?"
+
+#~ msgid "Where are you located?"
+#~ msgstr " আপনি কোন দেশে কোথায় থাকেন"
+
+#~ msgid "How long your symptoms are continuing?"
+#~ msgstr "কতদিন ধরে আপনি এই সমস্যায় আছেন?"
+
+#~ msgid "Please select a valid gender: male, female, or other."
+#~ msgstr "আপনার লিংগ লিখুন"
+
+#~ msgid "AI Symptom Checker"
+#~ msgstr "আরটিফিসিয়াল ইন্টিলিজেন্স সিমটম চেকার "
+
+#~ msgid ""
+#~ "This guided screening will ask you a few simple questions to help assess "
+#~ "your condition."
+#~ msgstr "আমাদের সিস্টেম আপনাকে গাইড করবে , আনুগ্রহ করে ফলো করুন"
+
+#~ msgid "Takes less than 2 minutes"
+#~ msgstr "এটা মাত্র কয়েক মিনিট লাগবে"
+
+#~ msgid "Your answers are private and secure"
+#~ msgstr "আপনার সমস্ত তথ্য গোপন থাকবে এবং শুধুমাত্র আপনি নিজেই দেখতে পারবেন"
+
+#~ msgid "This tool provides suggestions — it does not replace medical advice"
+#~ msgstr ""
+#~ "তবে হ্যা, আরটিফিসিচিয়াল ইন্টিলিজেন্স এর দেওয়া প্রিস্ক্রিশন অবশ্য আপনার ডাক্তার "
+#~ "দিয়ে ভেরিফাই করে নিবেন"
+
+#~ msgid "Previous"
+#~ msgstr "পেছনে যান"
+
+#~ msgid "Next"
+#~ msgstr "এগিয়ে যান"
 
 #~ msgid "Ready to start your symptom check with Ai?"
 #~ msgstr "আপনি আপনার সিমটম চেক করতে প্রস্তুত তো ?"
 
 #~ msgid "Enter Your Basic Info"
 #~ msgstr "আপনার কিছু তথ্য দিবেন আনুগ্রহ করে"
-
-#~ msgid "your age and gender are taken from your profile"
-#~ msgstr "আপনার বয়স এবং লিংগ আপনার প্রফাইল থেকে নেওয়া হবে যদি থাকে"

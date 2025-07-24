@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
-
+{% load i18n %}
 {% block content %}
 
 
@@ -10,35 +10,35 @@
         <div class="col-md-10 col-lg-8">
             <div class="card shadow-lg rounded-4 border-0">
                 <div class="card-header bg-primary text-white rounded-top-4">
-                    <h3 class="mb-0">Ai Generated Prescription</h3>
+                    <h3 class="mb-0">{% trans "Ai Generated Prescription" %}</h3>
                 </div>
                 <div class="card-body p-4">
                     <ul class="list-group list-group-flush mb-4">
 
                         <li class="list-group-item">
-                            <strong>Prescription Code:</strong> {{ prescription.ai_prescription_code }}
+                            <strong>{% trans "Prescription Code:" %}</strong> {{ prescription.ai_prescription_code }}
                         </li>
                         <li class="list-group-item">
-                            <strong>Date:</strong> {{ prescription.created_at|date:"M d, Y H:i" }}
+                            <strong>{% trans "Date:" %}</strong> {{ prescription.created_at|date:"M d, Y H:i" }}
                         </li>
                         <li class="list-group-item">
-                            <strong>Patient:</strong> {{ prescription.patient }} |
-                            <strong>Age:</strong> {{ prescription.age }} |
-                            <strong>Gender:</strong> {{ prescription.gender|capfirst }}
+                            <strong>{% trans "Patient:" %}</strong> {{ prescription.patient }} |
+                            <strong>{% trans "Age:" %}</strong> {{ prescription.age }} |
+                            <strong>{% trans "Gender:" %}</strong> {{ prescription.gender|capfirst }}
                         </li>
                         <li class="list-group-item">
-                            <strong>Duration of Symptoms:</strong> {{ normalized_duration }}
+                            <strong>{% trans "Duration of Symptoms:" %}</strong> {{ normalized_duration }}
                         </li>
                         <li class="list-group-item">
-                            <strong>Symptoms:</strong><br>
+                            <strong>{% trans "Symptoms:" %}</strong><br>
                             {{ prescription.symptoms|linebreaks }}
                         </li>
                     <li class="list-group-item">
-                        <strong>Summary of Findings:</strong><br>
+                        <strong>{% trans "Summary of Findings:" %}</strong><br>
                         <em>{{ prescription.summary_of_findings|linebreaks }}</em>
                     </li>
                        <li class="list-group-item">
-                            <strong>Medicines:</strong>
+                            <strong>Suggested Medicines:</strong>
                             {% if prescription %}
                             <div class="table-responsive mt-2">
                                 <table class="table table-bordered table-striped align-middle">
@@ -68,7 +68,7 @@
                         </li>
                     
                         <li class="list-group-item">
-                            <strong>Tests:</strong><br>
+                            <strong>Suggested Tests:</strong><br>
                             {{ prescription.tests|linebreaks }}
                         </li>
                         <li class="list-group-item">

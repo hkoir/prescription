@@ -276,6 +276,62 @@ li a {
 }
 
 
+.cs-logo {
+  display: block;       /* Removes inline text baseline space */
+  margin: 0 auto;       /* Centers the SVG */
+}
+
+
+
+
+.navbar-brand svg {
+    width: 280px;    /* A fixed width for large screens */
+    max-width: 100%; /* Will not exceed container width */
+    height: auto;
+}
+
+/* Medium screens */
+@media (max-width: 992px) {
+    .navbar-brand svg {
+        width: 250px; /* Slightly smaller */
+    }
+}
+
+/* Small screens */
+@media (max-width: 576px) {
+    .navbar-brand svg {
+        width: 200px;
+    }
+    .navbar-brand svg .cs-bn-text {
+        fill: #fff !important;
+        font-size: 36px;
+    }
+}
+
+
+
+@media (max-width: 768px) {
+    .navbar-brand svg {
+        max-width: 250px;
+    }
+}
+
+
+.navbar-brand {
+    flex: 1 0 auto;
+    overflow: hidden;
+}
+.navbar-brand {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+}
+
+
+
+.navbar-brand svg .cs-bn-text { 
+    fill: #fff !important;
+}
+
 
 </style>
 
@@ -286,25 +342,31 @@ li a {
 
 
 <body>
-
-<!-- Social Links Navbar -->
 <nav class="navbar navbar-dark social-nav" id="socialNav">
     <div class="container-fluid d-flex justify-content-between align-items-center">
-        <!-- Left Section: Social Links -->
-        <span class="navbar-text">Social Links | Contact Us | Follow Us</span>
+        <!-- Left Section -->
+        <div class="d-flex align-items-center d-none d-md-block">
+            <span class="navbar-text ">
+                Social Links | Contact Us | Follow Us
+            </span>
+        </div>
 
-        <!-- Search Form -->
-        <form class="d-flex w-50" method="GET" action="{% url 'accounts:search_all' %}">
-            <select id="id_search" class="form-control select2 me-2" name="q">
-                <option value="">Search...</option>
-            </select>
-            <button class="btn btn-info" type="submit">Search</button>
-        </form>
+        <!-- Middle Section (Search Form) -->
+        <div class="flex-grow-1 d-none d-md-flex justify-content-center">
+            <form class="d-flex" method="GET" action="{% url 'accounts:search_all' %}">
+                <select id="id_search" class="form-control select2 me-2" name="q">
+                    <option value="">Search...</option>
+                </select>
+                <button class="btn btn-info" type="submit">Search</button>
+            </form>
+        </div>
 
-        <form action="{% url 'symptom_checker:set_language' %}" method="post" class="d-flex gap-2 align-items-center">
+        <!-- Right Section (Language + Icons) -->
+        <div class="d-flex align-items-center">
+             <form action="{% url 'set_language' %}" method="post" id="language-form" class="d-flex align-items-center gap-2">
             {% csrf_token %}
-            
-            <select name="language" class="form-control">
+            <label for="language-select" class="fw-bold ms-3">🌐&nbsp;{% trans "Language" %}</label>
+            <select name="language" class="form-control" style="max-width:150px;" id="language-select">
                 {% get_current_language as LANGUAGE_CODE %}
                 {% get_available_languages as LANGUAGES %}
                 {% for lang in LANGUAGES %}
@@ -313,25 +375,22 @@ li a {
                 </option>
                 {% endfor %}
             </select>
-
-            <button type="submit" class="btn btn-outline-warning">Change</button>
         </form>
 
-
-        <!-- Right Section: Social Icons -->
-        <div class="social-icons d-flex">
-            <a href="https://www.facebook.com" target="_blank" class="text-light me-3">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="https://www.twitter.com" target="_blank" class="text-light me-3">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="https://www.linkedin.com" target="_blank" class="text-light me-3">
-                <i class="fab fa-linkedin-in"></i>
-            </a>
-            <a href="mailto:contact@yourcompany.com" class="text-light ms-3">
-                <i class="fas fa-envelope"></i> Email Us
-            </a>
+            <div class="social-icons d-flex ms-3">
+                <a href="https://www.facebook.com" target="_blank" class="text-light me-2">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a href="https://www.twitter.com" target="_blank" class="text-light me-2">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a href="https://www.linkedin.com" target="_blank" class="text-light me-2">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a href="mailto:contact@yourcompany.com" class="text-light">
+                    <i class="fas fa-envelope"></i> 
+                </a>
+            </div>
         </div>
     </div>
 </nav>
@@ -351,85 +410,81 @@ li a {
             &#9776; <!-- Unicode hamburger icon -->
         </button>
 
-        <a class="navbar-brand" href="{% url 'prescription:home' %}">Prescription</a>
+       <a class="navbar-brand d-flex align-items-center" href="{% url 'prescription:home' %}">
+        {% include "partials/caresetu-logo.svg" %}
+    </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <!-- notification menue -->               
-                  
-                    {% if request.user.is_authenticated %}
+                        
+        {% if request.user.is_authenticated %}
 
+        <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <span class="position-relative d-inline-block">
+            <i class="fas fa-bell {% if unread_notifications|length > 0 %}new-notification{% endif %}"></i>
+            {% if unread_notifications|length > 0 %}
+                <span class="badge bg-danger notification-badge">{{ unread_notifications|length }}</span>
+            {% endif %}
+            </span>
+        </a>
 
-
-
-<li class="nav-item dropdown">
-  <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    <span class="position-relative d-inline-block">
-      <i class="fas fa-bell {% if unread_notifications|length > 0 %}new-notification{% endif %}"></i>
-      {% if unread_notifications|length > 0 %}
-        <span class="badge bg-danger notification-badge">{{ unread_notifications|length }}</span>
-      {% endif %}
-    </span>
-  </a>
-
-  <ul class="dropdown-menu notification-dropdown" aria-labelledby="navbarDropdown">
-    <div class="notification-scroll">
-      {% for notification in unread_notifications %}
-        <li class="notification {% if not notification.is_read %}unread{% endif %}">
-          <a href="#" class="dropdown-item mark-as-read" data-id="{{ notification.id }}">
-            <p>{{ notification.get_notification_type_display }}: {{ notification.message }}</p>
-          </a>
-        </li>
-      {% empty %}
-        <li><a class="dropdown-item" href="#">No new notifications</a></li>
-      {% endfor %}
-    </div>
-  </ul>
-</li>
-
-                                              
-                        {% else %}
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:login' %}">Log in</a>
-                        </li>
-                        {% endif %}
-                      
-                            
-                            
-               
-                <!-- notification end -->
-
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle menu-color" style="color: white;" href="#" id="navbarDropdownNotices" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="fa fa-bullhorn" aria-hidden="true"></i> Notices
-                    </a>
-
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownNotices" style="max-height: 400px; overflow-y: auto;">
-                      
-                        <li><a class="dropdown-item" href="" style="color:red"><i class="fas fa-eye"></i>&nbsp;View Notices</a></li>
-                        <li><a class="dropdown-item" href="" style="color:blue"><i class="fas fa-plus-square"></i>&nbsp;Add notices</a></li>
-                        <li><a class="dropdown-item" href="" style="color:blue"><i class="fas fa-folder-open"></i>&nbsp;Archive old notifications</a></li>
-                    </ul>
+        <ul class="dropdown-menu notification-dropdown" aria-labelledby="navbarDropdown">
+            <div class="notification-scroll">
+            {% for notification in unread_notifications %}
+                <li class="notification {% if not notification.is_read %}unread{% endif %}">
+                <a href="#" class="dropdown-item mark-as-read" data-id="{{ notification.id }}">
+                    <p>{{ notification.get_notification_type_display }}: {{ notification.message }}</p>
+                </a>
                 </li>
-               
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle dropdown_caret_color"href="" id="navbarDropdownZymptom" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class=" fas fa-users text-info"></i><span style="color:gray">Zymptom</span>   
-                           </a>       
-                         <ul class="dropdown-menu" aria-labelledby="navbarDropdownZymptom" style="max-height: 400px; overflow-y: auto;">
-                        <li><a class="dropdown-item" href="{% url 'symptom_checker:my_symptom_checks' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;My Symptom</a></li>          
-                        <li><a class="dropdown-item" href="{% url 'symptom_checker:start_symptom_check' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Check my Symptom </a></li>
-                        <li><a class="dropdown-item" href="{% url 'prescription:create_ai_prescription' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Create Ai Prescription</a></li>          
-                     
-                        <li><hr class="dropdown-divider"style="background-color:gray;"></li>                       
-                       
-                    </ul>                
-                                 
-                                                   
-                                                   
-                </li> 
+            {% empty %}
+                <li><a class="dropdown-item" href="#">No new notifications</a></li>
+            {% endfor %}
+            </div>
+        </ul>
+        </li>
+                                                
+        {% else %}
+        <li class="nav-item">
+            <a class="nav-link" href="{% url 'accounts:login' %}">Log in</a>
+        </li>
+        {% endif %}
+        
+                            
+                            
+        
+        <!-- notification end -->
+
+        <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle menu-color" style="color: white;" href="#" id="navbarDropdownNotices" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa fa-bullhorn" aria-hidden="true"></i> Notices
+            </a>
+
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownNotices" style="max-height: 400px; overflow-y: auto;">
+                
+                <li><a class="dropdown-item" href="" style="color:red"><i class="fas fa-eye"></i>&nbsp;View Notices</a></li>
+                <li><a class="dropdown-item" href="" style="color:blue"><i class="fas fa-plus-square"></i>&nbsp;Add notices</a></li>
+                <li><a class="dropdown-item" href="" style="color:blue"><i class="fas fa-folder-open"></i>&nbsp;Archive old notifications</a></li>
+            </ul>
+        </li>
+            
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle dropdown_caret_color"href="" id="navbarDropdownZymptom" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class=" fas fa-users text-info"></i><span style="color:gray">Zymptom</span>   
+                        </a>       
+                        <ul class="dropdown-menu" aria-labelledby="navbarDropdownZymptom" style="max-height: 400px; overflow-y: auto;">
+                    <li><a class="dropdown-item" href="{% url 'symptom_checker:my_symptom_checks' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;My Symptom</a></li>          
+                    <li><a class="dropdown-item" href="{% url 'symptom_checker:start_symptom_check' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Check my Symptom </a></li>
+                    <li><a class="dropdown-item" href="{% url 'prescription:create_ai_prescription' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Create Ai Prescription</a></li>          
+                    
+                    <li><hr class="dropdown-divider"style="background-color:gray;"></li>                       
+                    
+                </ul>                                       
+                                                
+            </li> 
 
                
                 <li class="nav-item dropdown">
@@ -450,7 +505,6 @@ li a {
                        
                     </ul>                 
                 </li> 
-
 
 
                  <li class="nav-item dropdown">
@@ -531,27 +585,44 @@ li a {
 </nav>
 
 
-
-
-
-
 <!-- Side bar menu -->
 <div class="offcanvas offcanvas-start custom-sidebar" id="offcanvas" tabindex="-1" data-bs-keyboard="true" data-bs-backdrop="true">
-
+ 
+    <div class="text-center mb-3" style="margin-top:20px">
+    {% include "partials/caresetu-logo.svg" %}
+    </div>
         <div class="offcanvas-header">
             <h6 class="offcanvas-title d-none d-sm-block" id="offcanvas">Menu</h6>
             <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
 
         <div class="offcanvas-body px-0">
+         <form action="{% url 'set_language' %}" method="post" id="language-form" class="d-flex align-items-center gap-2">
+            {% csrf_token %}
+            <label for="language-select" class="fw-bold ms-3">🌐&nbsp;{% trans "Language" %}</label>
+            <select name="language" class="form-control" style="max-width:150px;" id="language-select">
+                {% get_current_language as LANGUAGE_CODE %}
+                {% get_available_languages as LANGUAGES %}
+                {% for lang in LANGUAGES %}
+                <option value="{{ lang.0 }}"{% if lang.0 == LANGUAGE_CODE %} selected{% endif %}>
+                    {{ lang.1 }}
+                </option>
+                {% endfor %}
+            </select>
+        </form>
+
             <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-start" id="menu">
-                <li class="nav-item"><a href="{% url 'prescription:home' %}" class="nav-link text-truncate"><i class="fs-5 bi-house"></i><span class="ms-1 text-dark">Home</span></a></li>
+                <li class="nav-item"><a href="{% url 'prescription:home' %}" class="nav-link text-truncate">
+                    <i class="fs-5 bi-house"></i><span class="ms-1 text-dark">Home</span></a></li>
+  
+
+
                 <li><a href="#submenu1" data-bs-toggle="collapse" class="nav-link text-truncate">
-		<i class="fs-5 bi-speedometer2"></i><span class="ms-1 text-dark">Dashboard</span> </a></li>
+		           <i class="fs-5 bi-speedometer2"></i><span class="ms-1 text-dark">Dashboard</span> </a></li>
                 
-		<li class="dropdown"><a href="#" class="nav-link dropdown-toggle  text-truncate" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false"> 
+		      <li class="dropdown"><a href="#" class="nav-link dropdown-toggle  text-truncate" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false"> 
                     <i class="fas fa-pills text-success"></i><i class="fas fa-vial text-danger"></i><span 
-			class="ms-1 text-success">Medicine & Lab test</span> </a>
+			     class="ms-1 text-success">Medicine & Lab test</span> </a>
                     <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdown">
                           {% if request.user.is_staff %}
                          <li><a class="dropdown-item" href="{% url 'prescription:create_medicine' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Add Medicine</a></li>  
@@ -560,7 +631,7 @@ li a {
                     </ul>
                 </li>              
                 
-		<li class="dropdown"><a href="#" class="nav-link dropdown-toggle  text-truncate" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false"> 
+		       <li class="dropdown"><a href="#" class="nav-link dropdown-toggle  text-truncate" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false"> 
                     <i class="fas fa-users text-success"></i><span class="ms-1 text-success">Appointments</span> </a>
                     <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdown">
                           {% if request.user.is_staff %}
@@ -581,7 +652,7 @@ li a {
 
 
 
-    <div class="container-fluid">    
+    <div class="container-fluid">          
         {% block content %}
         {% endblock %}
     </div>
@@ -611,6 +682,14 @@ li a {
         </div>
     </div>
 </div>
+
+
+
+<script>
+  document.getElementById('language-select').addEventListener('change', function() {
+    document.getElementById('language-form').submit();
+  });
+</script>
 
 
 <script>

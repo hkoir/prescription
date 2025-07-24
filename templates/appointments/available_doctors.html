@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 {% block content %}
 
 
@@ -93,20 +94,16 @@
         </div>
     </section>
     
-
-
     
-    <h2 class="text-center ">Find a Doctor & Book a Slot</h2>
-    
-   
+    <h2 class="text-center ">{% trans "Find a Doctor & Book a Slot" %}</h2>      
 
     <form id="search-form" method="GET" class="mb-4">
-        <div class="row">
+        <div class="row g-3">
             <!-- Search by Name -->
             <div class="col-md-4">
-                <input type="text" name="query" class="form-control" placeholder="Search by doctor name" value="{{ query }}">
+                <input type="text" name="query" class="form-control"  placeholder="{% trans 'Search by doctor name' %}"  value="{{ query }}">
             </div>
-    
+
             <!-- Search by Specialization -->
             <div class="col-md-4">
                 <select name="specialization" class="form-control">
@@ -118,43 +115,58 @@
                     {% endfor %}
                 </select>
             </div>
-    
+
             <!-- Submit Button -->
             <div class="col-md-3 d-grid">
-                <button type="submit" class="btn btn-outline-success">Search</button>
+                <button type="submit" class="btn btn-outline-success">{% trans "Search" %}</button>
             </div>
         </div>
     </form>
-    
+
 
     <!-- Doctor List -->
     <div class="row">
         {% for specialization, doctors in categorized_doctors.items %}
-            {% for doctor in doctors %}
-            <div class="col-md-4 doctor-card" data-category="{{ specialization }}">
-                <div class="mb-3">
-                    <div class="text-center p-3">
-                        <img src="{{ doctor.photo.url }}" class="rounded-circle"
-                                style="width:100px; height:100px;" alt="{{ doctor.full_name }}">
-                    </div>
-                    <div class="card-body text-center">
-                        <h5 class="card-title text-primary fw-bold">{{ doctor.full_name }}</h5>
-                        <p class="text-muted fw-bold">{{ doctor.specialization }}</p>
-
-                        <p class="card-text text-secondary" style="font-size: 14px;">
-                            {{ doctor.description|truncatewords:25 }}...
-                     
-                        <button class="btn btn-sm read-more" data-bs-toggle="modal" data-bs-target="#doctorModal{{ doctor.id }}">
-                            Read More
-                        </button>
-                    </p>
-
-                        <a href="{% url 'appointments:view_available_slots' doctor.id %}" class="btn btn-primary">View Available Slots</a>
-
-                    </div>
-                </div>
-            </div>               
+            {% for doctor in doctors %}                   
             
+     <div class="col-md-4 col-lg-4 mb-3 doctor-card" data-category="{{ specialization }}">
+        <div class="card p-3 d-flex flex-row align-items-start shadow-sm border-0" style="border-radius:12px;">
+
+            <!-- Left: Doctor Image -->
+            <div class="me-3">
+                <img src="{{ doctor.photo.url }}" class="rounded-circle"
+                    style="width:90px; height:90px; object-fit:cover; border:3px solid #28a745;" alt="{{ doctor.full_name }}">
+            </div>
+
+            <!-- Right: Doctor Info -->
+            <div class="flex-grow-1">
+                <!-- Name -->
+                <h6 class="fw-bold text-dark mb-1" style="font-size:1rem;">
+                    {{ doctor.full_name }}
+                </h6>
+
+                <!-- Department -->
+                <p class="text-muted mb-1" style="font-size:0.9rem;">
+                    <strong>Department:</strong> {{ doctor.department }}
+                </p>
+
+                <!-- Specialization -->
+                <p class="text-success mb-2 fw-semibold" style="font-size:0.9rem;">
+                    <strong>Specialization:</strong> {{ doctor.specialization }}
+                </p>
+
+                <!-- Description -->
+                <p class="text-muted mb-2" style="font-size:0.85rem; line-height:1.3;">
+                    {{ doctor.description|truncatewords:18 }}...
+                    <button class="btn btn-link btn-sm p-0 text-decoration-none text-primary fw-semibold"
+                            style="font-size:0.8rem;" data-bs-toggle="modal" data-bs-target="#doctorModal{{ doctor.id }}">
+                        Read More
+                    </button>
+                </p>
+               <a href="{% url 'appointments:view_available_slots' doctor.id %}" class="btn btn-primary btn-sm w-100 fw-semibold">View Available Slots</a>
+            </div>
+        </div>
+    </div>
 
     <!-- Doctor Details Modal -->
         <div class="modal fade" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ doctor.id }}" aria-hidden="true">

@@ -6,6 +6,7 @@ from.models import ZoomMeeting,DoctorFolloupBooking
 from .models import Medicine, LabTest
 from .models import Doctor 
 
+from django.utils.translation import gettext_lazy as _
 
 
 class DoctorAdminForm(forms.ModelForm):
@@ -43,24 +44,26 @@ class PatientForm(forms.ModelForm):
 
 
 
-
-
-
 class AIPrescriptionForm(forms.Form):
     symptoms = forms.CharField(
+        label=_("Symptoms"),
         widget=forms.Textarea(attrs={'rows': 3}),
-        help_text="List multiple symptoms (e.g., fever, cough)"
+        help_text=_("List multiple symptoms (e.g., fever, cough)")
     )
-    duration = forms.CharField(help_text="How long has the patient had symptoms?")   
-    
+    duration = forms.CharField(
+        label=_("Duration"),
+        help_text=_("How long has the patient had symptoms?")
+    )
     current_medications = forms.CharField(
+        label=_("Current Medications"),
         required=False,
         widget=forms.Textarea(attrs={'rows': 2}),
-        help_text="Current medications with dosage"
+        help_text=_("Current medications with dosage")
     )
     vital_signs = forms.CharField(
+        label=_("Vital Signs"),
         required=False,
-        help_text="Enter vital signs (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)"
+        help_text=_("Enter vital signs (e.g., Temp: 101°F, BP: 120/80, HR: 90 bpm)")
     )
 
 
@@ -70,32 +73,46 @@ class LabTestInterpretationForm(forms.Form):
 
 
 
-
-
 class DirectDoctorBookingForm(forms.ModelForm):
     class Meta:
         model = DoctorBooking
         fields = [
-             'symptom_image', 'symptom_video','symptoms_summary', 'duration',
+            'symptom_image', 'symptom_video', 'symptoms_summary', 'duration',
             'vital_signs', 'location'
         ]
         widgets = {
             'symptoms_summary': forms.TextInput(attrs={'style': 'height:70px'}),
             'vital_signs': forms.TextInput(attrs={'style': 'height:70px'}),
-             'symptom_image': forms.ClearableFileInput(attrs={
+            'symptom_image': forms.ClearableFileInput(attrs={
                 'accept': 'image/*',
                 'capture': 'environment',  # 'user' for front camera
                 'class': 'form-control'
             }),
-              
         }
-
+        labels = {
+            'symptom_image': _("Upload Symptom Image"),
+            'symptom_video': _("Upload Symptom Video"),
+            'symptoms_summary': _("Symptoms Summary"),
+            'duration': _("Duration of Symptoms"),
+            'vital_signs': _("Vital Signs (e.g., BP, HR, Temp)"),
+            'location': _("Location"),
+        }
+        help_texts = {
+            'symptom_image': _("You can upload a symptom-related image."),
+            'symptom_video': _("Or record and upload a short symptom video."),
+            'symptoms_summary': _("Briefly describe your symptoms."),
+            'duration': _("How long have you had these symptoms?"),
+            'vital_signs': _("Enter any available vital signs like BP, HR."),
+            'location': _("Specify your current location or area."),
+        }
 
 
 class RequestVideoCallForm(forms.Form):
     video_call_message = forms.CharField(
-        widget=forms.Textarea(attrs={'style':'height:100px'}),
-        help_text="Write your request message  (Optional)"
+        widget=forms.Textarea(attrs={'style': 'height:100px'}),
+        help_text=_("Write your request message (Optional)"),
+        label=_("Video Call Message"),
+        required=False
     )
 
 
@@ -105,13 +122,17 @@ class RequestVideoCallForm(forms.ModelForm):
         model = DoctorBooking
         fields = ["video_call_request_message"]
         widgets = {           
-            "video_call_request_message":forms.TextInput(attrs={
-            'style':'height:100px',
-            'placeholder':"Write your request message  (Optional)"
+            "video_call_request_message": forms.TextInput(attrs={
+                'style': 'height:100px',
+                'placeholder': _("Write your request message (Optional)")
             }),
-            
-
         }
+        labels = {
+            'video_call_request_message': _("Video Call Request Message"),
+        }
+
+
+
 class ApproveRequestVideoCallForm(forms.ModelForm):
     class Meta:
         model = DoctorBooking
@@ -127,14 +148,28 @@ class ApproveRequestVideoCallForm(forms.ModelForm):
 class DoctorFolloupBookingRequestForm(forms.ModelForm):
     class Meta:
         model = DoctorFolloupBooking
-        fields = ["patient_Current_status", 'symptom_image', 'symptom_video']
+        fields = ["patient_Current_status", "symptom_image", "symptom_video"]
         widgets = {
-            "patient_Current_status": forms.Textarea(attrs={'rows': 4, 'class': 'form-control'}),
-            "proposed_followup_datetime": forms.DateTimeInput(attrs={"type": "datetime-local", 'class': 'form-control'}),
+            "patient_Current_status": forms.Textarea(attrs={
+                'rows': 4,
+                'class': 'form-control',
+                'placeholder': _("Describe your current health status")
+            }),
+            "proposed_followup_datetime": forms.DateTimeInput(attrs={
+                "type": "datetime-local",
+                'class': 'form-control'
+            }),
             "symptom_video": forms.ClearableFileInput(attrs={'accept': 'video/*'}),
             "symptom_image": forms.ClearableFileInput(attrs={'accept': 'image/*'}),
         }
-
+        labels = {
+            "patient_Current_status": _("Patient's Current Status"),
+            "symptom_video": _("Upload Symptom Video"),
+            "symptom_image": _("Upload Symptom Image"),
+        }
+        help_texts = {
+            "patient_Current_status": _("Explain any new symptoms or updates since your last visit."),
+        }
 
 
 class DoctorFolloupBookingApprovedForm(forms.ModelForm):
@@ -147,7 +182,6 @@ class DoctorFolloupBookingApprovedForm(forms.ModelForm):
 
 
 
-
 class PatientZoomRequestForm(forms.ModelForm):
     class Meta:
         model = ZoomMeeting
@@ -155,19 +189,25 @@ class PatientZoomRequestForm(forms.ModelForm):
         widgets = {
             "request_message": forms.Textarea(attrs={
                 'style': 'height:100px',
-                'placeholder': 'Enter your message (optional) for this follow-up booking'
+                'placeholder': _("Enter your message (optional) for this follow-up booking")
             }),
             "doctor_folloup_booking": forms.Select(attrs={
-                'placeholder': 'Please select your desired booking ID',
-                'class':'form-control'
+                'class': 'form-control',
+                'placeholder': _("Please select your desired booking ID")
             }),
-
-             "proposed_meeting_datetime": forms.DateTimeInput(attrs={"type": "datetime-local"}),
+            "proposed_meeting_datetime": forms.DateTimeInput(attrs={
+                "type": "datetime-local"
+            }),
+        }
+        labels = {
+            "request_message": _("Zoom Meeting Request Message"),
+            "doctor_folloup_booking": _("Follow-up Booking ID"),
         }
 
     def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.fields['doctor_folloup_booking'].disabled = True
+        super().__init__(*args, **kwargs)
+        self.fields['doctor_folloup_booking'].disabled = True
+
 
        
 

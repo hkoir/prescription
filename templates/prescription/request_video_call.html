@@ -1,7 +1,7 @@
 
 {% extends "base.html" %}
 {% load static %}
-
+{% load i18n %}
 {% load custom_filters %}
 
 {% block content %}
@@ -11,7 +11,7 @@
     <div class="col-lg-8 col-md-10">
       <div class="card shadow-lg border-0 rounded-4">
         <div class="card-header bg-primary text-white rounded-top-4 py-3 px-4">
-          <h4 class="mb-0">Video Consultation request for  <strong>{{ booking.patient }}</strong></h4>
+          <h4 class="mb-0">{% trans "Video Consultation request for" %}  <strong>{{ booking.patient }}</strong></h4>
         </div>
         <div class="card-body p-4">
   <form method="post" enctype="multipart/form-data">
@@ -29,10 +29,10 @@
 
     <div class="d-flex justify-content-between mt-4">
       <a href="{% url 'prescription:doctor_bookings_list' %}" class="btn btn-outline-secondary">
-        Cancel
+        {% trans "Cancel" %}
       </a>
       <button type="submit" class="btn btn-success px-4">
-        <i class="bi bi-check-circle me-1"></i> Confirm
+        <i class="bi bi-check-circle me-1"></i> {% "Confirm" %}
       </button>
     </div>
   </form>

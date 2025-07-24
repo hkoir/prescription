@@ -343,8 +343,7 @@ h4 {
 
 
 <div class=" my-5 container-fluid main-content">
-    <div class="row">        
-        
+    <div class="row">                
         
         <section class="hero-section">
             <div class="hero-overlay"></div>
@@ -353,10 +352,10 @@ h4 {
                 <p class="lead">Get personalized, AI-enhanced prescriptions backed by licensed doctors. Empower your wellness journey — anytime, anywhere.</p>
 
                 <a href="{% url 'prescription:create_ai_prescription' %}" class="btn btn-primary btn-lg mt-3">
-                <i class="bi bi-robot"></i> Get your Prescription now
+                <i class="bi bi-robot"></i> Get Ai generated Prescription
                 </a>
                 <a href="{% url 'symptom_checker:start_symptom_check' %}" class="btn btn-primary btn-lg mt-3">
-                    <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
+                    <i class="fas fa-stethoscope"></i>&nbsp;Chat with Ai as your Doctor
                 </a>
             </div>
             <div class="custom-shape-divider-bottom-hero">
@@ -372,12 +371,7 @@ h4 {
             <div class="container text-center">  
                          
                 <div class="container text-center">
-                    <h2 class="fw-bold mb-4 text-success">Welcome to the Future of Healthcare</h2>
-                    <p class="lead text-muted">
-                        You are in a platform where <strong>AI-powered prescription services is provided</strong> and also
-                        vetted by <strong>specialized doctors by choice</strong> via <strong>video consultation if you desire so</strong>.
-                        Get expert care from your trusted provider — fast, reliable, and personal.
-                    </p>
+                    <h2 class="fw-bold mb-4 text-success">Welcome to NextGen Rx</h2>                   
                 </div>                                 
         
                 <p class="mb-4">
@@ -398,27 +392,8 @@ h4 {
             </video>
         </div>
      </div>
-
-	 <div class="container my-5">
-            <div class="row justify-content-between align-items-center">
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="p-4 bg-white border border-success rounded shadow text-center">
-                        <h5 class="text-success mb-3">Are You a Doctor?</h5>
-                        <a href="{% url 'accounts:register' %}" class="btn btn-outline-success w-100">Register as Doctor</a>
-                    </div>
-                </div>
-                <div class="col-12 col-md-4 mb-3">
-                    <div class="p-4 bg-white border border-primary rounded shadow text-center">
-                        <h5 class="text-primary mb-3">Are You a Patient?</h5>
-                        <a href="{% url 'accounts:register_patient' %}" class="btn btn-outline-primary w-100">Register as Patient</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-          
-
+         
        
-
         <h4 class="mt-5 text-start"> 💡 Why Use AI-Powered Prescriptions?</h4>
         <p class="justify-content">   
         In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked.
@@ -468,18 +443,18 @@ h4 {
         <div class="col-md-10">
            <div class="alert alert-success text-center shadow-lg p-4 border border-primary rounded">
                 <h3 class="fw-bold text-primary mb-3">
-                🧠 Get Your AI-Powered Prescription now
+                🧠 Get Your AI-generated Prescription now
                 </h3>
                 <p class="mb-2 text-muted fs-5">
                 Experience instant, intelligent health advice from our advanced AI model.
                 </p>
 
-		<a href="{% url 'prescription:initiate_ai_prescription_payment' %}" class="btn btn-primary btn-lg mt-3">
+		    <a href="{% url 'prescription:initiate_ai_prescription_payment' %}" class="btn btn-primary btn-lg mt-3">
                   <i class="bi bi-robot"></i> Get your Prescription now
                </a>
 
-	    <a href="{% url 'symptom_checker:initiate_symptom_check_payment' %}" class="btn btn-primary btn-lg mt-3">
-                <i class="fas fa-stethoscope"></i>&nbsp;Talk to Ai as your Doctor
+	        <a href="{% url 'symptom_checker:initiate_symptom_check_payment' %}" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-stethoscope"></i>&nbsp;Chat with Ai as your Doctor
             </a>
             
           </div>

@@ -986,7 +986,7 @@ def book_doctor_direct(request, pk):
 
     else:
         form = DirectDoctorBookingForm()
-    return render(request, 'prescription/confirm_booking_direct.html', {'doctor': doctor, 'form': form})
+    return render(request, 'prescription/confirm_booking_direct.html', {'doctor': doctor, 'form': form,'patient':patient})
 
 
 
@@ -1379,6 +1379,16 @@ def create_doctor_prescription(request, booking_id, followup_id=None,appointment
                     if form.cleaned_data and not form.cleaned_data.get('DELETE', False):
                         prescribed_medicine = form.save(commit=False)
                         prescribed_medicine.prescription = doctor_prescription
+                        if not prescribed_medicine.medicine_name and prescribed_medicine.custom_medicine_name:
+                            med_name = prescribed_medicine.custom_medicine_name.strip()
+                            existing_medicine = Medicine.objects.filter(name__iexact=med_name).first()
+                            if not existing_medicine:
+                                new_medicine = Medicine.objects.create(
+                                    name=med_name,
+                                    user=request.user, 
+                                    is_active=True,
+                                )
+                                prescribed_medicine.medicine_name = new_medicine
                         prescribed_medicine.save()
 
                 # Lab Tests
@@ -1399,11 +1409,22 @@ def create_doctor_prescription(request, booking_id, followup_id=None,appointment
                 custom_tests = [test.strip() for test in custom_tests if test.strip()]
 
                 for test_name in custom_tests:
+                    existing_test = LabTest.objects.filter(test_name__iexact=test_name).first()
+                    if not existing_test:
+                        new_test = LabTest.objects.create(
+                            test_name=test_name.title(), 
+                            test_type='Custom',      
+                            price=0                      
+                        )
+                        lab_test_obj = new_test
+                    else:
+                        lab_test_obj = existing_test
+
                     SuggestedLabTest.objects.create(
                         prescription=doctor_prescription,
+                        lab_test_name=lab_test_obj,
                         custom_lab_test_name=test_name
                     )
-
 
 
                 if followup_booking:

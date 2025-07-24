@@ -335,6 +335,8 @@ def doctor_detail(request, pk):
 
 from payment_gateway.models import PaymentInvoice
 from django.db.models import Sum
+from datetime import datetime, time
+from django.db.models.functions import TruncDate
 
 @doctor_required
 @login_required
@@ -350,35 +352,42 @@ def doctor_dashboard(request):
     start_date = timezone.datetime.strptime(start_date_str, "%Y-%m-%d").date() if start_date_str else today
     end_date = timezone.datetime.strptime(end_date_str, "%Y-%m-%d").date() if end_date_str else today
 
+    start_datetime = timezone.make_aware(datetime.combine(start_date, time.min))
+    end_datetime = timezone.make_aware(datetime.combine(end_date, time.max))
+
     prescriptions = doctor.doctor_prescriptions.filter(
         appointment_ref__isnull=True,
-        prescribed_at__date__range=(start_date, end_date)
+        prescribed_at__date__range=(start_datetime, end_datetime )
     )
     chamber_prescriptions = doctor.doctor_prescriptions.filter(
         appointment_ref__isnull=False,
-        prescribed_at__date__range=(start_date, end_date)
+        prescribed_at__date__range=(start_datetime, end_datetime)
     )
     pending_Chamber_appointments = doctor.doctor_appointments.filter(
         status='Pending',
-        date__range=(start_date, end_date)
+        date__range=(start_datetime, end_datetime )
     )
 
     appointments = doctor.doctor_bookings.filter(
-        created_at__range=(start_date, end_date)
+        created_at__range=(start_datetime, end_datetime )
     )
     pending_appointments = doctor.doctor_bookings.filter(
         status='pending',
-        created_at__range=(start_date, end_date)
+        created_at__range=(start_datetime, end_datetime )
     )
+ 
 
-    payouts = DoctorPayment.objects.filter(
+    service_logs = DoctorServiceLog.objects.filter(
         doctor=doctor,
-        created_at__range=(start_date, end_date)
-    ).order_by('-payment_date')
-
-    total_due = payouts.aggregate(total=models.Sum('total_due_amount'))['total'] or 0
-    total_paid = payouts.aggregate(total=models.Sum('total_paid_amount'))['total'] or 0
+        service_date__range=(start_date, end_date)
+    )
+    total_due = service_logs.aggregate(total=Sum('service_fee'))['total'] or 0
+ 
+    payment_obj = DoctorPayment.objects.filter(doctor=doctor).first()
+    total_paid = payment_obj.total_paid_amount if payment_obj else 0
     total_unpaid = total_due - total_paid
+
+    payment = DoctorPayment.objects.filter(doctor=doctor).first()
 
     chamber_visit_fees = PaymentInvoice.objects.filter(
         doctor=doctor,appointment__isnull=False)
@@ -397,7 +406,7 @@ def doctor_dashboard(request):
         'total_chamber_visit_fees':total_chamber_visit_fees,
         'appointments': appointments,
         'pending_appointments': pending_appointments,
-        'payouts': payouts,
+        'payment': payment,
         'total_due': total_due,
         'total_paid': total_paid,
         'total_unpaid': total_unpaid,

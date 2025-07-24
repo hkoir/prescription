@@ -178,8 +178,8 @@ LOCALE_PATHS = [
 ]
 
 
-TIME_ZONE = 'UTC'
-
+# TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Dhaka'
 USE_TZ = True
 
 

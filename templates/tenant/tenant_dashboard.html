@@ -96,15 +96,35 @@
     font-size: 1.1rem;
   }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden; /* Prevents horizontal overflow */
+   
+}
+
+
+.cs-logo {
+  display: block;       /* Removes inline text baseline space */
+  margin: 0 auto;       /* Centers the SVG */
+}
 
 </style>
 
-<div class="container-fluid main-content">
+
+
+
+
+<div class="text-center" style="margin-top:250px">
+  {% include "partials/caresetu-logo.svg" %}
+</div>
+
+<div class="container-fluid">
     <!-- Marquee Section -->
     <div class="row">
 
 	<div class="welcome-banner animate__animated animate__fadeInDown">
-           <h2>👋 Welcome to AI-Powered Prescription Services</h2>
+           <h2>👋 Welcome to Care Setu</h2>
            <p>Your intelligent healthcare assistant is ready to help.</p>
         </div>
 	  <div>
@@ -120,40 +140,45 @@
 	 </div>
 
            
-            <div class="col-12">
-                <div class="container">       
-                    <div class="row">
-                            <!-- Spinning Login Box -->
-                           
-                             <!-- Spinning Login Box -->
-                             <div class="col-12 col-md-6 login-circle-container2">
-                                <a href="{% url 'accounts:login' %}" class="login-circle2">
-                                    <span class="text-center text-primary fw-bold" style="font-size: 14px;">
-                                        <i class="fas fa-user-tie"></i><br>&nbsp;Login<br>
-                                        <span style="font-size: 16px; font-weight: bold; color:darkgreen"><i class="fas fa-sign-in"></i></span></span>
-                                   
-                                </a>
-                            </div>
-
-                             <!-- Spinning Login Box -->
-                             <div class="col-12 col-md-6 login-circle-container2">
-                                <a href="{% url 'accounts:register_patient' %}" class="login-circle2">
-                                    <span class="text-center text-primary fw-bold" style="font-size: 14px;">
-                                       
-                                        <i class="fas fa-user-tie"></i><br>&nbsp; Don't have accunt??<br>Register
-                                        <span style="font-size: 16px; font-weight: bold; color:darkgreen"><i class="fas fa-sign-in"></i></span></span>
-                                   
-                                </a>
-                            </div>
-                           
+    <div class="col-12">
+        <div class="container">       
+            <div class="row">
+                    <!-- Spinning Login Box -->
+                    
+                        <!-- Spinning Login Box -->
+                        <div class="col-12 col-md-6 login-circle-container2">
+                        <a href="{% url 'accounts:login' %}" class="login-circle2">
+                            <span class="text-center text-primary fw-bold" style="font-size: 14px;">
+                                <i class="fas fa-user-tie"></i><br>&nbsp;Login<br>
+                                <span style="font-size: 16px; font-weight: bold; color:darkgreen"><i class="fas fa-sign-in"></i></span></span>
+                            
+                        </a>
                     </div>
-                </div>
-            </div>      
-            
-            
 
-            <div class="col-12 mt-5">
+                        <!-- Spinning Login Box -->
+                        <div class="col-12 col-md-6 login-circle-container2">
+                        <a href="{% url 'accounts:register_patient' %}" class="login-circle2">
+                            <span class="text-center text-primary fw-bold" style="font-size: 14px;">
+                                
+                                <i class="fas fa-user-tie"></i><br>&nbsp; Don't have accunt??<br>Register
+                                <span style="font-size: 16px; font-weight: bold; color:darkgreen"><i class="fas fa-sign-in"></i></span></span>
+                            
+                        </a>
+                    </div>
+                    
+            </div>
+        </div>
+    </div>    
+       
+       
+	{% include 'addition.html' %}
+	{% include 'hero_section.html' %}
+	{% include 'feedback.html' %}  
+    
+    <hr>
+     <div class="col-12 mt-5">
             <!-- Tenant Content -->
+        <h4 class="text-center">Subscription details</h4>
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-12 col-md-2"></div>
@@ -200,9 +225,7 @@
              </div>
             </div>
         </div>
-	{% include 'addition.html' %}
-	{% include 'hero_section.html' %}
-	{% include 'feedback.html' %}            
+    <hr>
 
 	<div class="container my-5">
 	  <div class="p-4 bg-white text-center rounded shadow-sm border-top border-4 border-primary">

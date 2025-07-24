@@ -356,11 +356,18 @@ h4 {
   to { transform: rotate(360deg); }
 }
 
-
+.cs-logo {
+  display: block;       /* Removes inline text baseline space */
+  margin: 0 auto;       /* Centers the SVG */
+}
 </style>
 
 
 
+
+<div class="text-center">
+  {% include "partials/caresetu-logo.svg" %}
+</div>
 
 <div class="container-fluid main-content">
     <div class="row">                 
@@ -371,138 +378,137 @@ h4 {
        <!-- PLATFORM INTRODUCTION -->
             <section class="py-5 bg-light">
                 <div class="container text-center">
-                    <h2 class="fw-bold mb-4 text-success">Welcome to the Future of Healthcare</h2>
+                    <h2 class="fw-bold mb-4">Welcome to <span class="fw-bold,text-success"> Care Setu</span></h2>
                     <p class="lead text-muted">
-                        You are in a platform where <strong>AI-powered prescription services is provided</strong> and also
-                        vetted by <strong>specialized doctors by choice</strong> via <strong>video consultation if you desire so</strong>.
-                        Get expert care from your trusted provider — fast, reliable, and personal.
+                        <strong> Get expert care from your trusted provider — fast, reliable, and personal.</strong>
+                                              
                     </p>
                 </div>
             </section>
 
 
-<!-- SERVICE PROVIDERS LIST -->
-<section class="py-5 bg-light">
-  <div class="container">
-    <h3 class="text-center mb-5 text-primary fw-bold">Choose Your Desired Service Provider</h3>
-
-    <div class="row g-4 justify-content-center">
-      {% for tenant in tenants %}
-        <div class="col-12 col-sm-6 col-md-4 col-lg-3">
-          <div class="card h-100 border-0 shadow-sm transition hover-shadow position-relative">
-            <div class="card-body text-center p-4">
-              <img src="{% static 'images/Logo.png' %}" alt="{{ tenant.name }}"
-                   class="img-fluid mb-3 rounded-circle shadow-sm spin"
-                   style="width: 80px; height: 80px; object-fit: contain; background: #fff; padding: 10px;">
-
-              <h5 class="card-title text-dark mb-1">{{ tenant.name }}</h5>
-	      <p class="text-primary fw-bold"> {{ tenant.register_name }}</p>
-              <p class="card-text text-muted small">Trusted by patients and Doctors across the region.</p>
-              <a href="https://{{ tenant.schema_name }}.aiha.live"target="_blank" class="btn btn-outline-primary btn-sm mt-2">
-                 Visit Provider <i class="fas fa-arrow-right ms-1"></i>
-              </a>
-            </div>
-
-            <!-- Optional badge or ribbon -->
-            <span class="position-absolute top-0 end-0 badge bg-success rounded-pill m-2">
-              Live
-            </span>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-
-
-<section class="py-5 bg-light">
+    <!-- SERVICE PROVIDERS LIST -->
+    <section class="py-5 bg-light">
     <div class="container">
-        <h2 class="text-center mb-5 text-success">How Our AI-Powered Prescription System Works</h2>
+        <h3 class="text-center mb-5 text-primary fw-bold">Choose Your Desired Service Provider</h3>
 
-        <div class="row g-3"> <!-- Bootstrap grid row with gutter -->
+        <div class="row g-4 justify-content-center">
+        {% for tenant in tenants %}
+            <div class="col-12 col-sm-6 col-md-4 col-lg-3">
+            <div class="card h-100 border-0 shadow-sm transition hover-shadow position-relative">
+                <div class="card-body text-center p-4">
+                <img src="{% static 'images/Logo.png' %}" alt="{{ tenant.name }}"
+                    class="img-fluid mb-3 rounded-circle shadow-sm spin"
+                    style="width: 80px; height: 80px; object-fit: contain; background: #fff; padding: 10px;">
 
-            <!-- Step 1 -->
-            <div class="col-6 col-md-3"> <!-- 2 per row on xs, 4 per row on md -->
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="fas fa-user fs-1 text-primary"></i>
-                    <h6 class="mt-2">Step 1</h6>
-                    <p class="small mb-0">Register as a user</p>
+                <!-- <h5 class="card-title text-dark mb-1">{{ tenant.name }}</h5> -->
+            <p class="text-primary fw-bold"> {{ tenant.register_name }}</p>
+                <p class="card-text text-muted small">Trusted by patients and Doctors across the region.</p>
+                <a href="https://{{ tenant.schema_name }}.aiha.live"target="_blank" class="btn btn-outline-primary btn-sm mt-2">
+                    Visit Provider <i class="fas fa-arrow-right ms-1"></i>
+                </a>
                 </div>
-            </div>
 
-            <!-- Step 2 -->
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="fas fa-id-card fs-1 text-primary"></i>
-                    <h6 class="mt-2">Step 2</h6>
-                    <p class="small mb-0">Fill patient profile form</p>
-                </div>
+                <!-- Optional badge or ribbon -->
+                <span class="position-absolute top-0 end-0 badge bg-success rounded-pill m-2">
+                Live
+                </span>
             </div>
-
-            <!-- Step 3 -->
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="fas fa-comments fs-1 text-primary"></i>
-                    <h6 class="mt-2">Step 3</h6>
-                    <p class="small mb-0">Describe symptoms & request AI prescription</p>
-                </div>
             </div>
-
-            <!-- Step 4 -->
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="bi bi-cpu-fill fs-1 text-info"></i>
-                    <h6 class="mt-2">Step 4</h6>
-                    <p class="small mb-0">AI generates preliminary prescription</p>
-                </div>
-            </div>
-
-            <!-- Step 5 -->
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="bi bi-calendar-check-fill fs-1 text-success"></i>
-                    <h6 class="mt-2">Step 5</h6>
-                    <p class="small mb-0">Book doctor for vetting or direct consult</p>
-                </div>
-            </div>
-
-            <!-- Step 6 -->
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="bi bi-journal-text fs-1 text-warning"></i>
-                    <h6 class="mt-2">Step 6</h6>
-                    <p class="small mb-0">Submit symptoms, images & history</p>
-                </div>
-            </div>
-
-            <!-- Step 7 -->
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="bi bi-prescription2 fs-1 text-danger"></i>
-                    <h6 class="mt-2">Step 7</h6>
-                    <p class="small mb-0">Doctor reviews & finalizes prescription</p>
-                </div>
-            </div>
-
-            <!-- Step 8 -->
-            <div class="col-6 col-md-3">
-                <div class="card shadow-sm p-3 text-center h-100">
-                    <i class="bi bi-camera-video-fill fs-1 text-info"></i>
-                    <h6 class="mt-2">Step 8</h6>
-                    <p class="small mb-0">Optional: Request video consultation</p>
-                </div>
-            </div>
-
+        {% endfor %}
         </div>
     </div>
-</section>
+    </section>
+
+
+    <section class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5 text-success">How Our AI-Powered Prescription System Works</h2>
+
+            <div class="row g-3"> <!-- Bootstrap grid row with gutter -->
+
+                <!-- Step 1 -->
+                <div class="col-6 col-md-3"> <!-- 2 per row on xs, 4 per row on md -->
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="fas fa-user fs-1 text-primary"></i>
+                        <h6 class="mt-2">Step 1</h6>
+                        <p class="small mb-0">Register as a user</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="fas fa-id-card fs-1 text-primary"></i>
+                        <h6 class="mt-2">Step 2</h6>
+                        <p class="small mb-0">Fill patient profile form</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="fas fa-comments fs-1 text-primary"></i>
+                        <h6 class="mt-2">Step 3</h6>
+                        <p class="small mb-0">Describe symptoms & request AI prescription</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="bi bi-cpu-fill fs-1 text-info"></i>
+                        <h6 class="mt-2">Step 4</h6>
+                        <p class="small mb-0">AI generates preliminary prescription</p>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="bi bi-calendar-check-fill fs-1 text-success"></i>
+                        <h6 class="mt-2">Step 5</h6>
+                        <p class="small mb-0">Book doctor for vetting or direct consult</p>
+                    </div>
+                </div>
+
+                <!-- Step 6 -->
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="bi bi-journal-text fs-1 text-warning"></i>
+                        <h6 class="mt-2">Step 6</h6>
+                        <p class="small mb-0">Submit symptoms, images & history</p>
+                    </div>
+                </div>
+
+                <!-- Step 7 -->
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="bi bi-prescription2 fs-1 text-danger"></i>
+                        <h6 class="mt-2">Step 7</h6>
+                        <p class="small mb-0">Doctor reviews & finalizes prescription</p>
+                    </div>
+                </div>
+
+                <!-- Step 8 -->
+                <div class="col-6 col-md-3">
+                    <div class="card shadow-sm p-3 text-center h-100">
+                        <i class="bi bi-camera-video-fill fs-1 text-info"></i>
+                        <h6 class="mt-2">Step 8</h6>
+                        <p class="small mb-0">Optional: Request video consultation</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
 
 
 
-<h4> 💡 Why Use AI-Powered Prescriptions?<br></h4>
-<p class="justify-content">   
-In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked.
-</p>
+    <h4> 💡 Why Use AI-Powered Prescriptions?<br></h4>
+    <p class="justify-content">   
+    In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked.
+    </p>
 
 
     <!-- BECOME A PROVIDER -->
@@ -737,9 +743,8 @@ In today's fast-paced healthcare environment, AI-powered prescriptions serve as 
                                     <img src="{% static 'images/my_image2.JPG' %}" 
                                     class="rounded-circle border"                                    
                                     style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #007bff;">
-                                    Engineer Humayun Kobir(Buet-eee,MBA) <br>
-                                    CTO <br>
-                                    <i class="fas fa-envelope"></i> hkobir1973@gmail.com <br>
+                                    Team development   <br>                               
+                                    <i class="fas fa-envelope"></i> mymeplus@aiha.live <br>
                                     <i class="fas fa-phone">+88-01743-800-705</i>
                             </p>
                            

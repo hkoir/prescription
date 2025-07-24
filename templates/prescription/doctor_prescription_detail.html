@@ -66,7 +66,7 @@
 
 
         {% if prescription.lab_tests.all %}
-        <h6 class="mt-3">Lab Tests</h6>
+        <h6 class="mt-3">Suggested Lab Tests</h6>
         <ul>
           {% for test in prescription.lab_tests.all %}
           <li><strong>{{ test.get_display_name }}</strong></li>

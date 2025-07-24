@@ -2,11 +2,49 @@
 import re
 import os
 from openai import OpenAI
+from deep_translator import GoogleTranslator
+
 
 client = OpenAI(
     base_url="https://openrouter.ai/api/v1",
     api_key=os.getenv("OPENROUTER_API_KEY"),
 )
+
+
+BN_RE = re.compile(r'[\u0980-\u09FF]')
+BN_DIGITS = str.maketrans("০১২৩৪৫৬৭৮৯", "0123456789")
+BN_DURATION_MAP = {"দিন": "days", "সপ্তাহ": "weeks", "মাস": "months", "বছর": "years"}
+
+
+def is_bangla(text):
+    return bool(text and BN_RE.search(text))
+
+def translate_to_english(text):
+    if not text:
+        return "", "und"
+    if not is_bangla(text):
+        return text, "en"
+    try:
+        tr = GoogleTranslator(source="auto", target="en").translate(text)
+        return tr, "bn"
+    except Exception:
+        return text, "bn"
+
+def normalize_duration(raw):
+    if not raw:
+        return "Not available"
+    txt = raw.strip().translate(BN_DIGITS)
+    for bn, en in BN_DURATION_MAP.items():
+        txt = txt.replace(bn, f" {en} ")
+    return " ".join(txt.split())
+
+
+
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=os.getenv("OPENROUTER_API_KEY"),
+)
+
 
 def get_ai_prescription(
     symptoms, duration, gender,
@@ -29,23 +67,34 @@ def get_ai_prescription(
     location = location or "Not specified"
 
 
+    symptoms_en, _sym_lang   = translate_to_english(symptoms)
+    medical_history_en, _    = translate_to_english(medical_history)
+    allergies_en, _          = translate_to_english(allergies)
+    current_meds_en, _       = translate_to_english(current_medications)
+    vital_signs_en, _        = translate_to_english(vital_signs)
+    location_en, _           = translate_to_english(location)
+
+    # Duration normalization (handles Bangla numerals/units)
+    duration_norm = normalize_duration(duration)
+
+
     prompt = f"""
-You are an experienced medical doctor.
+You are an experienced medical doctor with expertise in [Country/Region] medications.
 
 Please analyze the following patient data and provide a structured clinical response in the exact format described.
 
 Patient Details:
 - Age: {age}
 - Gender: {gender}
-- Symptoms: {symptoms}
-- Duration of symptoms: {duration} days
-- Medical History: {medical_history}
-- Allergies: {allergies}
-- Current Medications: {current_medications}
-- Vital Signs: {vital_signs}
+- Symptoms: {symptoms_en}
+- Duration of symptoms: {duration_norm}
+- Medical History: {medical_history_en}
+- Allergies: {allergies_en or "None"}
+- Current Medications: {current_meds_en or "None"}
+- Vital Signs: {vital_signs_en or "Not available"}
 - Body Weight: {body_weight} {body_weight_unit}
 - Body Height: {body_height} {body_height_unit}
-- Location: {location}
+- Location: {location_en or "Not specified"}
 
 🧠 Please provide a **structured and clinically accurate response** in **this exact format**:
 
@@ -69,7 +118,11 @@ List each medicine **in the following exact structure**, one per line:
   Frequency: 1-0-0 (once daily before food)  
   Duration: 7 days
 
-⚠️ Do not combine fields in a single line. Use separate fields: `Name`, `Dosage`, `Frequency`, and `Duration`.
+⚠️ **Rules for Medicines:**
+- Only suggest medicines that are commonly available in [Country/Region].
+- Avoid suggesting steroids unless absolutely necessary.
+- Use "as needed" for painkillers, anti-migraine, or rescue medications.
+- Always specify dosage, frequency, and duration clearly.
 
 3. Necessary Lab Tests:
 - [List tests needed for further diagnosis or confirmation.]
@@ -82,12 +135,14 @@ List each medicine **in the following exact structure**, one per line:
 
 6. Warning Signs requiring urgent attention:
 - [List any signs the patient must watch for.]
+
 7. Suggested Diet Chart (basic healthy weekly plan)
+
 ---
 
 If there is no recommendation in any section, write **None**. Always number all sections clearly from 0 to 6. Follow the structure exactly.
-
 """
+
 
     response = client.chat.completions.create(
         model="anthropic/claude-sonnet-4",
@@ -120,7 +175,7 @@ If there is no recommendation in any section, write **None**. Always number all 
         "medicines": parse_medicines(medicines_text),
         "tests": tests.strip(),
         "advice": advice.strip(),
-	#"recommended_specialty": recommended_specialty,
+	    #"recommended_specialty": recommended_specialty,
         "recommended_specialty": specialty_raw.strip(),
         "warning_signs": warning_signs.strip(),
         "raw_content": content,
