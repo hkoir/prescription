@@ -1,3 +1,8 @@
+
+# Secrets
+credentials/serviceAccountKey.json
+chat/firebase-key.json
+*.json
 # Python
 __pycache__/
 *.pyc
