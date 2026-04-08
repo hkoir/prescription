@@ -1,0 +1,668 @@
+{% extends "../base.html" %}
+{% load static %}
+
+{% block stylesheet %}{% static 'store/css/store.css' %}{% endblock %}
+
+{% block title %}
+
+{% if product %}{{ product.title }}{% else %}Product{% endif %}
+{% endblock %}
+
+
+
+
+
+
+{% block content %}
+
+
+
+<style>
+ /* The popup Modal start*/
+ .AvailableModal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+   
+  }
+  
+  /* Modal Content/Box */
+  .AvailableModal-content {
+    background-color: cyan;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 10px;
+    border: 1px solid #2decec;
+    width: 325px; /* Could be more or less, depending on screen size */
+    height:190px;
+   
+  
+  }
+
+
+  /* The popup Modal start*/
+  .notAvailableModal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    z-index: 1; /* Sit on top */
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgb(0, 0, 0); /* Fallback color */
+    background-color: rgba(0,0,0,0.3); /* Black w/ opacity */
+  }
+  
+  /* Modal Content/Box */
+  .notAvailableModal-content {
+    background-color: #FF4500;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 10px;
+    border: 1px solid #2decec;
+    width: 325px; /* Could be more or less, depending on screen size */
+    height:190px;
+    box-shadow:2px 5px 5px 5px rgba(210, 150, 120, 0.5);
+    color:white;
+  }
+  
+  
+  /* The Close Button */
+  .close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+  }
+  
+  .close:hover,
+  .close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  
+
+
+  
+ /* animated text */
+ @keyframes slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+
+.adarea{
+  animation:  pulsate  ease 2s infinite ;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity:0;
+  }
+  100% {
+    opacity:1;
+  }
+}
+
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-30px);
+  }
+  60% {
+    transform: translateY(-15px);
+  }
+}
+
+
+
+@keyframes pulsate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+
+
+
+
+
+
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pulsate {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.adarea {
+  animation: rotate 4s linear infinite, pulsate 2s ease-in-out infinite;
+}
+
+
+.hover-zoom {
+    transition: transform 0.3s ease-in-out;  
+}
+.hover-zoom:hover {
+    transform: scale(1.1);  
+    z-index: 1
+}
+
+
+
+
+
+/* Default styling for larger screens */
+.hover-zoom-feature{
+  /* Your default styles here */
+  width: 300px; /* Adjust the width as needed for larger screens */
+  height: 300px;
+}
+
+/* Media query for smaller screens */
+@media screen and (max-width: 767px) {
+  .hover-zoom-feature{
+    width: 200px; /* Adjust the width as needed for smaller screens */
+    height: 200px
+  }
+}
+
+/* Default styling for larger screens */
+.hover-zoom-small{
+  /* Your default styles here */
+  width:150px; /* Adjust the width as needed for larger screens */
+  height: 150px;
+}
+
+/* Media query for smaller screens */
+@media screen and (max-width: 767px) {
+  .hover-zoom-small{
+    width: 100px; /* Adjust the width as needed for smaller screens */
+    height: 100px
+  }
+}
+
+
+.frame-setting{
+background-color: black;
+margin-left:5px;
+}
+
+
+
+
+.slick-prev,
+.slick-next {
+  border: none;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  cursor: pointer;
+  margin:0;
+  padding:0;
+}
+
+.slick-prev {
+  left: 15px;
+}
+
+.slick-next {
+  right: 35px;
+}
+
+
+
+
+#popup-container1 {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+ 
+  
+}
+
+#popup-box1 {
+  background: #fff;
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative;
+  background-color: cyan;
+  border-radius: 20px;;
+}
+
+#popup-close1 {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+
+
+
+#popup-container2 {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  justify-content: center;
+  align-items: center;
+}
+
+#popup-box2 {
+  background: #fff;
+  padding: 20px;
+  max-width: 400px;
+  margin: 0 auto;
+  position: relative;
+  background-color: #FF4500;
+  border-radius: 20px;
+  color:white;
+}
+
+#popup-close2 {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+
+
+
+.scrolling-control {
+        overflow: scroll; 
+    } 
+.scrolling-control::-webkit-scrollbar {
+    width: 16px; 
+    height:10px;
+    -webkit-appearance: none;
+}
+
+.scrolling-control::-webkit-scrollbar-thumb {
+    background: blue; 
+    border-radius: 8px;
+}    
+
+.scrolling-control::-webkit-scrollbar-thumb:hover {
+    background: red; 
+}
+
+
+.discount-badge {
+    position: absolute;
+    top: 100px;
+    left: 0px;   
+    color:white; /* White text color */
+    background-color: red;
+    padding: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    transform: rotate(-35deg);   
+  
+    
+}
+
+      
+</style>
+
+
+
+
+{% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+
+<div class="container scrolling-control "><!-- master container start -->
+        <!-- {% if messages %}
+        <div class="alert alert-warning" alert-{{ message.tags }}" role="alert">
+        {% for message in messages  %}
+          {{message|safe}} - <a href="{% url "accounts:wishlist" %}" class="alert-link">Your Wishlist</a>.
+        {% endfor %}
+        </div>
+        {% endif %} -->
+
+  <div class="row row-cols-md-2 g-3"><!-- container row start -->
+    <!-- column-1 -->
+    <div class="col-md-6 col order-md-last p-4 order-1">
+      <div class="d-grid gap-2">
+        <div class="d-flex d-flex-inline justify-content-between">
+          <div><span class="h6">BDT{{ product.discount_price }}</span>
+            <p class="text-muted">includes tax</p>
+          </div>
+          <div>
+            <label for="select">Qty</label>
+            <select id="select" class="h6 store-select-dropdown">
+              <option value="1">1</option>
+              <option value="2">2</option>
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="1">5</option>
+              <option value="2">6</option>
+              <option value="3">7</option>
+              <option value="4">8</option>
+              <option value="3">9</option>
+              <option value="4">10</option>
+            </select>
+            
+            <label for="select">Size</label>
+            <select id="select2"class="h6 store-select-dropdown">               
+                  <option value="" selected disabled hidden>{{item.size}}</option>
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+              </select>
+          </div>
+        </div>
+        <hr>
+
+        <button type="button" id="add-button" value="{{ product.id }}" class="btn btn-success fw500"
+        {% if product.qty > 0 %}           
+            onclick="addToBasket('{{ success_audio_url }}', 'openPopup1')"
+        {% else %}
+            onclick="addToBasket('{{ failure_audio_url }}', 'openPopup2')"
+        {% endif %}>       
+        Add to basket
+      </button>
+        <a href="{% url "accounts:user_wishlist" product.id  %}" class="btn btn-success fw500" role="button" aria-disabled="true">
+          Add to Wish List</a> 
+          
+          <a href="{% url "store:store_home" %}" class="btn btn-success fw500" role="button" aria-disabled="true">
+            <h2>Shop More</h2></a>
+            <p style="color:blue;text-align:justify">{{ product.mini_description }}</p>
+        
+    </div>   
+</div>
+
+    
+
+<!-- column-2 -->
+<div class="col-md-6">
+  <div class="card mb-3 border-0">
+      <div class="row g-0">
+          <div class="col-md-12">
+              <div class="card-body p-1">
+                  <h1 class="mb-0 h2 pe-4 pb-4">{{ product.title }}</h1>
+                  <div class="bg-light">
+                      {% for image in product.product_image.all %}
+                          {% if image.is_feature %}
+                              <!-- Feature Image Display -->
+                              <div class="d-flex justify-content-center align-items-center">
+                                <div style="margin-right:5px">
+                                  <img class="img-fluid mx-auto d-block hover-zoom-feature hover-zoom"  alt="Responsive image"
+                                      src="{{ image.image.url }}" alt="{{ image.image.alt_text }}">
+
+                                      {% if product.regular_price > product.discount_price %}                                  
+                                      <span class="discount-badge">{{ product.sale_percentage|floatformat:"2" }}% SALE</span>                                                                        
+                                     {% endif %}
+
+                                  </div>
+                                  {% if product.video %}
+                                  <div style="margin-left:5px;background-color: black;">
+                                      <video class="img-fluid mx-auto d-block hover-zoom-feature" controls>
+                                          <source src="{{ product.video.url }}" type="video/mp4">
+                                          Your browser does not support the video tag.
+                                      </video>
+                                    </div>
+                                  {% endif %}
+                              </div>
+                              <div>
+                                  <a href="{% url 'store:product_reviews' slug=product.slug %}" role="button"
+                                      style="text-decoration: none;">
+                                      {% if product.stars %}
+                                          <p class="my-3" style="font-size: 20px; text-align: center;">Reviews:{{ product.stars }}</p>
+                                      {% endif %}
+                                  </a>
+                              </div>
+                          {% endif %}
+                      {% endfor %}
+
+                      <!-- Slick Carousel for non-feature images -->
+                      <div class="slick-carousel">
+                        {% for image in product.product_image.all %}
+                            {% if image %}
+                                {% if not image.is_feature %}
+                                    <div>
+                                        <img class="img-fluid d-block-inline pt-3 hover-zoom-small hover-zoom" alt="Responsive image" src="{{ image.image.url }}" alt="{{ image.image.alt_text }}">
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        {% endfor %}
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
+</div> <!-- end of colum2-->
+
+</div><!-- end of row-->
+
+
+
+
+<div id="popup-container1">
+  <div id="popup-box1">
+    <span id="popup-close1">&times;</span>
+    <p>Thank you. Your item has been added into your Basket.</p>  
+  </div> 
+</div>
+
+<div id="popup-container2">
+  <div id="popup-box2">
+    <span id="popup-close2">&times;</span>
+    <p>Sorry. Out of stock.You can put it into your wishlist</p>  
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="row">
+    <div class="col" style="text-align:justify ">      
+      <h3>Description</h3> 
+      <p> {{ product.description }}</p>
+      <h3>Specification:</h3>
+      {% for spec in specifications %}
+        <h6>{{ spec.specification.name }}:</h6>{{ spec.value }}
+      {% endfor %}   
+      <br> 
+     
+      <div class="container">
+        <div class="row">  
+          {% for image in product.product_image.all %}           
+            <div class="col-12 col-md-6 text-center">       
+              <img class="img-fluid d-block-inline pt-3 hover-zoom" width="100%" alt="Responsive image"
+                src="{{ image.image.url }}" alt="{{ image.image.alt_text }}" >     
+            </div>                   
+          {% endfor %}   
+        </div>
+      </div>        
+
+    </div> 
+  </div>
+</div>
+
+
+
+</div> <!-- end of master container-->
+
+<script>
+
+
+  
+function addToBasket(audioPath, popupContainerId) {
+  var audio = new Audio(audioPath);
+  audio.play();
+}
+   
+
+
+function openPopup1() {
+  var popupContainer = document.getElementById("popup-container1");
+  popupContainer.style.display = "flex";
+
+  var popupClose = document.getElementById("popup-close1");
+  popupClose.onclick = function () {
+    popupContainer.style.display = "none";
+  };
+  window.onclick = function (event) {
+    if (event.target === popupContainer) {
+      popupContainer.style.display = "none";
+    }
+  };
+  setTimeout(function () {
+    popupContainer.style.display = "none";
+  }, 3000);
+
+}
+
+
+function openPopup2() {
+  var popupContainer = document.getElementById("popup-container2");
+  popupContainer.style.display = "flex"; 
+
+  var popupClose = document.getElementById("popup-close2");
+  popupClose.onclick = function () {
+    popupContainer.style.display = "none";
+  };
+  window.onclick = function (event) {
+    if (event.target === popupContainer) {
+      popupContainer.style.display = "none";
+    }
+  };
+  setTimeout(function () {
+    popupContainer.style.display = "none";
+  }, 3000);
+}
+
+
+
+$(document).on('click', '#add-button', function (e) {
+  e.preventDefault(); 
+  var productQty = parseInt($('#select option:selected').text(), 10);
+  var productSize = $('#select2 option:selected').val();
+  var availableQty = parseInt('{{ product.qty }}', 10); 
+
+  if (availableQty> 0) {  
+    $.ajax({
+      type: 'POST',
+      url: '{% url "basket:basket_add" %}',
+      data: {
+        productid: $('#add-button').val(),
+        productqty: productQty,
+	      productsize: productSize,
+        csrfmiddlewaretoken: "{{csrf_token}}",
+        action: 'post'
+      },
+
+      success: function (json) {
+        const basketContainer = document.getElementById("basket-container");
+        document.getElementById("basket-qty").innerHTML = json.qty;
+        if (productQty > 0) {    
+           basketContainer.style.display = 'block';   
+          openPopup1();
+          sendTwilioSMS('+8801743800705', 'Customer added product into basket');           
+        } else {         
+          openPopup2();      
+        }
+      },
+      error: function (xhr, errmsg, err) {
+        // Handle error if needed
+      }
+    });
+  } else {
+   
+    openPopup2();   
+  }
+});
+
+
+
+function sendTwilioSMS(phoneNumber, message) {
+    $.ajax({
+        type: 'POST',
+        url: '',
+        data: {
+            phone_number: phoneNumber,
+            message: message,
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+        },
+        success: function (response) {
+            console.log(response);            
+        },
+        error: function (error) {
+            console.log(error);
+           
+        }
+    });
+  }
+
+
+    
+    $(document).ready(function(){
+        $('.slick-carousel').slick({
+            slidesToShow: 3, // Adjust the number of visible items
+            slidesToScroll: 1,
+            autoplay: true,
+            pauseOnFocus: false,
+            pauseOnHover: false,
+            autoplaySpeed: 2000, // Adjust the speed of the carousel
+            // prevArrow: '<button type="button" class="slick-prev">Previous</button>',
+            // nextArrow: '<button type="button" class="slick-next">Next</button>',
+        });
+    });
+
+  </script>
+
+  {% endblock %}

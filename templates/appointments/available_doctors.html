@@ -97,31 +97,43 @@
     
     <h2 class="text-center ">{% trans "Find a Doctor & Book a Slot" %}</h2>      
 
-    <form id="search-form" method="GET" class="mb-4">
-        <div class="row g-3">
-            <!-- Search by Name -->
-            <div class="col-md-4">
-                <input type="text" name="query" class="form-control"  placeholder="{% trans 'Search by doctor name' %}"  value="{{ query }}">
-            </div>
+        <form id="search-form" method="GET" class="mb-4">
+            <div class="row g-3 align-items-end">
+                <!-- Search by Name -->
+                <div class="col-md-4">
+                    <label for="query-input" class="form-label visually-hidden">Search by Doctor Name</label>
+                    <input 
+                        type="text" 
+                        name="query" 
+                        id="query-input" 
+                        class="form-control"  
+                        placeholder="{% trans 'Search by doctor name' %}"  
+                        value="{{ query }}">
+                </div>
 
-            <!-- Search by Specialization -->
-            <div class="col-md-4">
-                <select name="specialization" class="form-control">
-                    <option value="">All Specializations</option>
-                    {% for specialization in categorized_doctors.keys %}
-                        <option value="{{ specialization }}" {% if specialization == specialization_filter %}selected{% endif %}>
-                            {{ specialization }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
+                <!-- Search by Specialization -->
+                <div class="col-md-4">
+                    <label for="specialization-select" class="form-label">Choose Specialization</label>
+                    <select name="specialization" id="specialization-select" class="form-select">
+                        <option value="">All Specializations</option>
+                        {% for spec in unique_specializations %}
+                            <option value="{{ spec }}" {% if spec == specialization_filter %}selected{% endif %}>
+                                {{ spec }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            <!-- Submit Button -->
-            <div class="col-md-3 d-grid">
-                <button type="submit" class="btn btn-outline-success">{% trans "Search" %}</button>
+
+                <!-- Submit Button -->
+                <div class="col-md-2 d-grid">
+                    <button type="submit" class="btn btn-success btn-lg">
+                        {% trans "Search" %}
+                    </button>
+                </div>
             </div>
-        </div>
-    </form>
+        </form>
+
 
 
     <!-- Doctor List -->
@@ -134,8 +146,17 @@
 
             <!-- Left: Doctor Image -->
             <div class="me-3">
-                <img src="{{ doctor.photo.url }}" class="rounded-circle"
-                    style="width:90px; height:90px; object-fit:cover; border:3px solid #28a745;" alt="{{ doctor.full_name }}">
+                {% if doctor.photo %}
+                <img src="{{ doctor.photo.url }}" 
+                    class="rounded-circle"
+                    style="width:90px; height:90px; object-fit:cover; border:3px solid #28a745;" 
+                    alt="{{ doctor.full_name }}">
+            {% else %}
+                <img src="{% static 'images/doctor_avatar.jpg' %}" 
+                    class="rounded-circle"
+                    style="width:90px; height:90px; object-fit:cover; border:3px solid #28a745;" 
+                    alt="Default Doctor">
+            {% endif %}
             </div>
 
             <!-- Right: Doctor Info -->
@@ -179,7 +200,17 @@
 
                     <div class="modal-body">
                         <div class="text-center mb-3">
-                            <img src="{{ doctor.photo.url }}" alt="{{ doctor.name }}" class="rounded-circle border shadow" style="width: 120px; height: 120px;">
+                             {% if doctor.photo %}
+                              <img src="{{ doctor.photo.url }}" 
+                                  class="rounded-circle"
+                                  style="width:90px; height:90px; object-fit:cover; border:3px solid #28a745;" 
+                                  alt="{{ doctor.full_name }}">
+                          {% else %}
+                              <img src="{% static 'images/doctor_avatar.jpg' %}" 
+                                  class="rounded-circle"
+                                  style="width:90px; height:90px; object-fit:cover; border:3px solid #28a745;" 
+                                  alt="Default Doctor">
+                          {% endif %}
                         </div>
 
                         <h4 class="text-center text-primary">{{ doctor.specialization }}</h4>
@@ -191,9 +222,32 @@
                             <div class="col-md-6">
                                 <p><strong>Experience:</strong> {{ doctor.experience_years }} years</p>
                                 <p><strong>Education:</strong> {{ doctor.education }}</p>
-                                <p><strong>Consultation Fees:</strong> {{ doctor.consultation_fees }}</p>
-                                <p><strong>Follow-up Fees:</strong> {{ doctor.folloup_consultation_fees }}</p>
-                                <p><strong>Follow-up Validity:</strong> {{ doctor.followup_validity_days }} days</p>
+                                <!-- Fees Section -->
+                                    <div class="mt-3">
+                                        <h6 class="fw-bold">Online Consultation Fees</h6>
+                                        <ul class="list-inline">
+                                        {% if doctor.consultation_fees %}
+                                            <li class="list-inline-item">🏥 Online Consultation fees: {{ doctor.consultation_fees }} Tk</li>
+                                        {% endif %}
+                                        {% if doctor.video_consultation_fees %}
+                                            <li class="list-inline-item">💻 Video: {{ doctor.video_consultation_fees }} Tk</li>
+                                        {% endif %}
+                                        {% if doctor.folloup_consultation_fees %}
+                                            <li class="list-inline-item">🔄 Follow-up: {{ doctor.folloup_consultation_fees }} Tk</li><br>
+                                            <span>Follow-up validity days : {{doctor.followup_validity_days}}</span>
+                                        {% endif %}
+                                        </ul>
+                                        <h6 class="fw-bold">Chamber Consultation Fees</h6>
+                                        <ul class="list-inline">
+                                        {% if doctor.chamber_consultation_fees %}
+                                            <li class="list-inline-item">🏥 In-Chamber fees: {{ doctor.chamber_consultation_fees }} Tk</li>
+                                        {% endif %}                
+                                        {% if doctor.chamber_followup_consultation_fees %}
+                                            <li class="list-inline-item">🔄 Follow-up: {{ doctor.chamber_followup_consultation_fees }} Tk</li>||
+                                            <span>Follow-up validity days : {{doctor.chamber_followup_validity_days}}&nbsp;days</span>
+                                        {% endif %}
+                                        </ul>
+                                    </div>                               
                                 <p><strong>Chamber Location:</strong><br>{{ doctor.chamber_location|default:"N/A" }}</p>
                             </div>
 
@@ -205,6 +259,12 @@
                                 <p><strong>Hospital Affiliations:</strong> {{ doctor.hospital_affiliations }}</p>
                                 <p><strong>Memberships:</strong> {{ doctor.memberships }}</p>
                                 <p><strong>Awards:</strong> {{ doctor.awards }}</p>
+                                 <a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}"
+                                    class="btn btn-sm btn-primary text-center mt-4">Book Online consultation</a>
+
+                                <a href="{% url 'appointments:view_available_slots' doctor.id %}"
+                                    class="btn btn-sm btn-success text-center mt-4">Book Chamber appointment</a>
+
                             </div>
                         </div>
 

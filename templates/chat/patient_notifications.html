@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load custom_filters %}
+{% block content %}
+<style>
+  .chat-thread-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .chat-thread-item {
+    display: flex;
+    align-items: flex-start;
+    background: #f9f9f9;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    transition: background 0.2s ease;
+  }
+  .chat-thread-item.active-thread {
+    background: #fff5f5;
+    border: 1px solid #ffcccc;
+  }
+  .chat-thread-item:hover {
+    background: #f1f1f1;
+  }
+  .patient-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 2px solid #ddd;
+  }
+  .chat-thread-info {
+    flex: 1;
+  }
+  .chat-thread-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .chat-thread-header strong {
+    font-size: 1rem;
+    color: #333;
+  }
+  .badge {
+    font-size: 0.8rem;
+    padding: 3px 8px;
+    border-radius: 12px;
+  }
+  .preview {
+    font-size: 0.85rem;
+    opacity: 0.7;
+  }
+  .chat-thread-actions {
+    margin-top: 6px;
+  }
+  .chat-thread-actions a {
+    margin-right: 5px;
+  }
+</style>
+
+<h2 class="mb-3">💬 Chat Notifications</h2>
+<ul class="chat-thread-list" id="chatNotifList">
+  {% for row in thread_rows %}
+    <li class="chat-thread-item {% if row.unread_count > 0 %}active-thread{% endif %}">
+      <!-- Patient Avatar -->
+      {% if row.doctor_user.photo_id %}
+        <img src="{{ row.doctor_user.photo_id.url|default:'/static/images/default-avatar.png' }}" 
+             alt="Doctor photo" class="doctor-avatar"style="width:30px;height:30px; border-radius: 50%;">
+      {% else %}
+        <img src="/static/images/default-avatar.png" alt="Default avatar" class="doctor-avatar" style="width:30px;height:30px; border-radius: 50%;">
+      {% endif %}
+
+      <div class="chat-thread-info">
+        <div class="chat-thread-header">
+          <strong>
+            <strong>{{ row.doctor_user.get_full_name|default:row.doctor_user.username }}
+            {% if row.doctor_user|online %}
+                <span style="color: green;">● Online</span>
+            {% else %}
+                <span style="color: gray;">● Offline <br>Last seen {{ row.doctor_user.last_seen|timesince }} ago</span>
+            {% endif %}
+          </strong>
+
+          {% if row.unread_count > 0 %}
+            <span class="badge bg-warning text-dark">{{ row.unread_count }} Unread</span>
+          {% else %}
+            <span class="badge bg-secondary">Read</span>
+          {% endif %}
+        </div>
+
+        <div class="chat-thread-actions d-flex justify-content-between align-items-center">
+          <div class="preview">{{ row.last_text|truncatechars:80 }}</div>
+          <div>
+            {% if row.thread_exists %}
+              <a href="{{ row.continue_chat_url }}" class="btn btn-primary btn-sm ms-2">Continue Chat</a>
+            {% else %}
+              <a href="{{ row.new_chat_url }}" class="btn btn-success btn-sm ms-2">Start Chat</a>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </li>
+  {% empty %}
+    <li>No chat threads yet.</li>
+  {% endfor %}
+</ul>
+
+
+{% endblock %}

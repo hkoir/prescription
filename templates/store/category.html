@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="container my-5">
+  <h2 class="mb-4 text-primary">{{ category.name }}</h2>
+  <p>{{ category.description }}</p>  <!-- if any -->
+
+  {% if products %}
+  <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+    {% for product in products %}
+      <div class="col">
+        <div class="card h-100 shadow-sm rounded">
+          <a href="{{ product.get_absolute_url }}">
+           {% for image in product.product_image.all %}
+            {% if image.is_feature %}
+                <img src="{{ image.image.url }}" style="width:50px;height:60px" alt="{{ product.title }}">
+            {% endif %}
+            {% endfor %}
+
+          </a>
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title text-truncate" title="{{ product.title }}">{{ product.title }}</h5>
+            <p class="card-text mt-auto">
+              {% if product.discount_price < product.regular_price %}
+                <span class="text-muted text-decoration-line-through">৳{{ product.regular_price }}</span>
+                <span class="text-danger fw-bold ms-2">৳{{ product.discount_price }}</span>
+              {% else %}
+                <span class="text-success fw-bold">৳{{ product.regular_price }}</span>
+              {% endif %}
+            </p>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+  {% else %}
+    <p>No products found in this category.</p>
+  {% endif %}
+</div>
+
+
+{% endblock %}

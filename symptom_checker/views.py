@@ -46,13 +46,11 @@ class DisclaimerView(TemplateView):
     template_name = 'legal/disclaimer.html'
 
 
-
 def get_current_step(session, steps, total_steps):
     for idx, field in enumerate(steps, start=1):
         if not getattr(session, field):
             return idx
     return total_steps  # fallback
-
 
 
 def calculate_age(dob):
@@ -73,8 +71,17 @@ from payment_gateway.utils import create_payment_invoice
 
 
 @login_required
-def initiate_symptom_check_payment(request):
-    patient = request.user.patient_profile     
+def initiate_symptom_check_payment(request):  
+    
+    patient =None
+    try:
+        patient = request.user.patient_profile
+        if patient and patient.needs_profile_update():
+            return redirect(f"{reverse('finance:update_patient_profile', args=[patient.id])}?next={request.path}")
+    except Patient.DoesNotExist:
+        messages.warning(request, "Only patients can book doctors. Please create a patient profile first.")
+        return redirect(f"{reverse('prescription:create_patient_profile')}?next={request.path}")
+
     free_limit = getattr(patient, 'free_ai_prescription_limit', 5)
 
     existing_payment = AIPrescriptionPayment.objects.filter(
@@ -171,7 +178,6 @@ def start_symptom_check(request):
             return redirect("symptom_checker:symptom_chat", session_id=session.id)
     else:
         form = SymptomCheckForm(instance=session)
-
     return render(request, "symptom_checker/start.html", {"form": form})
 
 

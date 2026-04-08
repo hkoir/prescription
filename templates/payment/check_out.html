@@ -1,0 +1,339 @@
+{% extends "../base.html" %}
+
+{% load static %}
+
+{% block content %}
+
+<style>
+
+.loader-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 40%; /* Adjust as needed */
+  height: 40%; /* Adjust as needed */
+  background-color: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader-container .loader {
+  border: 10px solid darkorange; /* Increased border size */
+  border-top: 10px solid #3498db; /* Increased border size */
+  border-radius: 50%;
+  width: 70px; /* Increased size to 100px */
+  height: 70px; /* Increased size to 100px */
+  animation: spin 1s linear infinite;
+}
+
+.loading-text {
+      margin-top: 10px; /* Adjust as needed */
+      font-size: 20px; /* Adjust as needed */
+      color:blue
+    }
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+</style>
+
+
+
+
+<div class="container">
+    {% if user.is_authenticated %}    
+        <div class="row row-cols-md-2 row-cols-sm-1 g-3">    
+
+            <div class=" col"> 
+            <!-- Display customer's address from the database -->
+                    
+                {% if customer_address %}
+                    {% for customer in customer_address %} 
+                <div class="border p-3 my-3"> 
+                    <h4 class="mb-3">Billing Address</h4>                
+                    <p class="mb-1"><strong>Name:</strong> {{ customer.full_name }}</p>
+                    <p class="mb-1"><strong>Phone:</strong> {{ customer.phone }}</p>
+                    <p class="mb-1"><strong>Email:</strong> {{ request.user.email }}</p>
+                    <p class="mb-1"><strong>Post Code:</strong> {{ customer.post }}</p>
+                    <p class="mb-1"><strong>Address-1:</strong> {{ customer.address_line }}</p>
+                    <p class="mb-1"><strong>Address-2:</strong> {{ customer.address_line2 }}</p>
+                    <p class="mb-1"><strong>Area:</strong> {{ customer.town_city }}</p>
+                    <a href="{% url 'accounts:addresses' %}" class="btn btn-primary">Update Address</a>
+                    
+                </div>
+                {% endfor%} 
+
+                {% else %}
+                <div class="d-flex justify-content-center align-items-center mx-auto shadow" style="padding:20px" >
+                    <p>Notice!! <br>You don't have any address. Please add an address. You can add more than one address.
+                        You can add , edit, delete and make address default. <br>
+                    <a href="{% url 'accounts:addresses' %}" class="btn btn-primary">Add Address</a></p>
+                </div>
+
+            {% endif %}
+
+            </div>  <!-- end of col-->
+        
+        
+       
+        <div class=" col">       
+            <table class="table" style="width:100%">              
+                <thead>
+                    <tr>
+                        <th class="text-center"colspan="3">PID</th>
+                        <th class="text-center"colspan="6">Product Name</th>
+                        <th class="text-center"colspan="6">Price</th>
+                        <th class="text-center"colspan="6">Quantity</th>  
+                        <th class="text-center"colspan="6">Image</th>
+		       <!--	<th class="text-center"colspan="6">Size</th> -->
+                    </tr>
+                </thead>            
+                <tbody>
+                    <h4>Your purchase </h4>
+                    <p class="mb-1"><strong>Order Number</strong> {{ order_key }}</p>
+                    {% for item in basket %}
+                        <tr>
+                            <td class="text-center"colspan="3"> {{ item.product.id}}</td>
+                            <td class="text-center"colspan="6"> {{ item.product.title }}</td>
+                            <td class="text-center"colspan="6">{{ item.price }}</td>
+                            <td class="text-center"colspan="6">{{ item.qty }}</td>   
+                            <td class="text-center"colspan="6"><img src="{{ item.product.product_image.first.image.url }}"  style="width:25px;height:25px;"></td>                      
+                            <!-- Add other columns based on the Product model fields -->
+                        </tr>
+                    {% endfor %}
+                   
+                </tbody>
+            
+            </table>
+            
+            <p class="mb-1"><strong>Total(excluding delivery)= {{ basket.get_total_price }}</p></strong>        
+            <h6>Total in words:{{ basket.get_total_price_in_words }}</h6>
+            <h6> delivery charge=Taka<span id = "deliveryCharge">0.0</span></h6>    
+
+        </div>   <!-- end of col-->
+             
+        
+    <div class="col"> 
+        <h4>Payment option</h4>
+        <form>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="paymentOption" id="paymentOption1" value="poption1" checked>
+                <label class="form-check-label" for="paymentOption1">
+                    <strong>Cash on delivery</strong>
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="paymentOption" id="paymentOption2" value="poption2">
+                <label class="form-check-label" for="paymentOption2">
+                    <strong>Mobile Finance(Not active at this moment)</strong>
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="paymentOption" id="paymentOption3" value="poption3">
+                <label class="form-check-label" for="paymentOption3">
+                    <strong>Online Banking(Not active at this moment)</strong>
+                </label>
+            </div>
+        </form>
+    </div><!-- end of col-->
+    
+    <div class="col">
+        <h4>Delivery option</h4>      
+        <ul>
+           <div>
+                <input class="form-check-input" type="radio" name="deliverytOption" id="deliverytOption1" value="doption1" checked>
+                <label class="form-check-label" for="deliveryOption2">
+                    <strong>Pick from store (free)</strong>
+                </label>
+            </div>
+           
+            <div>
+                <input class="form-check-input" type="radio" name="deliverytOption" id="deliverytOption2" value="doption2">
+                <label class="form-check-label" for="deliveryOption2">
+                    <strong>Within Dhaka city (80/=,1-3 days)</strong>
+                </label>
+            </div>
+
+            <div>
+                <input class="form-check-input" type="radio" name="deliverytOption" id="deliveryOption3" value="doption3">
+                <label class="form-check-label" for="deliveryOption3">
+                    <strong>Outside Dhaka city (180 Taka,3-5 days)</strong>
+                </label>
+            </div>
+
+            <div>
+                <input class="form-check-input" type="radio" name="deliverytOption" id="deliveryOption4" value="doption4">
+                <label class="form-check-label" for="deliveryOption4">
+                    <strong>Express(Only Dhaka city,200/=,24 hours)</strong>
+                </label>
+            </div>
+        </ul>
+  
+    </div> <!-- end of col-->
+    
+   
+    <div> 
+
+
+    <!-- <a href="{% url 'orders:add' %}" class="btn btn-primary">process order</a> -->
+     <button class="btn btn-primary w-100" onclick="proceed()">Process order</button> 
+    </div>
+    
+     
+    </div> <!-- end of row -->
+</div>   <!-- end of master container -->
+       
+    
+    {% else %}
+        <div class="'container d-flex justify-content-between align-items-center">
+            <div class="row">
+                <div class="col-4"></div>
+                <div class="col-4 d-flex justify-content-between align-items-center border border-primary" style=" height:150px;border-radius: 10px; box-shadow:5px 10px 10px 20px rgba(210, 150, 120, 0.5);">          
+                    <p><Strong>Please <a href="{% url 'accounts:login' %}?next={{ request.path }}">login</a> to process your order.</Strong></p>                     
+                </div>           
+                <div class="col-4"></div>        
+             </div> 
+         </div>          
+    
+    {% endif %}
+
+
+
+
+<script>
+    // Global delivery charge variable
+    let globalDeliveryCharge = 0;
+
+    // Listen for delivery option changes and update charge
+    document.querySelectorAll('input[type=radio][name=deliverytOption]').forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            const selectedDeliveryOption = event.target.value;
+            if (selectedDeliveryOption === 'doption1') globalDeliveryCharge = 0.00;
+            else if (selectedDeliveryOption === 'doption2') globalDeliveryCharge = 80.00;
+            else if (selectedDeliveryOption === 'doption3') globalDeliveryCharge = 180.00;
+            else if (selectedDeliveryOption === 'doption4') globalDeliveryCharge = 200.00;
+
+            document.getElementById('deliveryCharge').innerText = globalDeliveryCharge.toFixed(2);
+        });
+    });
+
+    // Show loader
+    function showLoadingMessage() {
+        if (document.querySelector(".loader-container")) return; // Prevent duplicates
+        const loaderContainer = document.createElement("div");
+        loaderContainer.className = "loader-container";      
+        const loader = document.createElement("div");
+        loader.className = "loader";     
+        loaderContainer.appendChild(loader);      
+        const textElement = document.createElement("div");
+        textElement.className = "loading-text";
+        textElement.textContent = "Please wait a moment....";      
+        loaderContainer.appendChild(textElement);       
+        document.body.appendChild(loaderContainer);
+    }
+
+    // Hide loader
+    function hideLoadingMessage() {
+        const loaderContainer = document.querySelector(".loader-container");
+        if (loaderContainer) document.body.removeChild(loaderContainer);
+    }
+
+    // Main function to proceed with checkout
+    function proceed() {
+        const hasAddress = '{{ customer_address|yesno:"true,false" }}' === 'true';
+        if (!hasAddress) {
+            alert("Please add an address before proceeding with the order.");
+            return;
+        }
+
+        showLoadingMessage();
+
+        // Step 1: Generate Invoice and Order
+        $.ajax({
+            type: 'POST',
+            url: '{% url "payment:generate_invoice" %}', 
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            data: { deliveryCharge: globalDeliveryCharge },
+            success: function(response) {
+                console.log("Invoice generated:", response);
+                if (!response.order_id) {
+                    alert("Order ID missing in response. Please try again.");
+                    hideLoadingMessage();
+                    return;
+                }
+                
+                const paymentOption = $("input[name='paymentOption']:checked").val();
+
+                if (paymentOption === "poption2" || paymentOption === "poption3") {
+                    // Step 2: Initiate Online Payment
+                      window.location.href = `/payment/initiate_ecommerce_payment/${response.order_id}/`;
+                } else {
+                    // Step 2: Place Order for COD
+                    placeOrder();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error generating invoice:", error);
+                alert("Failed to generate order. Please try again.");
+                hideLoadingMessage();
+            }
+        });
+    }
+
+    // Initiate payment for mobile finance or online banking
+    function initiatePayment(orderId, paymentOption) {
+        $.ajax({
+            type: 'POST',
+            url: `/payment/initiate_ecommerce_payment/${orderId}/`,
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            data: {
+                payment_method: paymentOption
+            },
+            success: function(response) {
+                if (response.redirect_url) {
+                    window.location.href = response.redirect_url; // Redirect to payment gateway
+                } else {
+                    alert("Payment initiation failed. Please try again.");
+                    hideLoadingMessage();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Error initiating payment:", error);
+                alert("Failed to initiate payment. Please try again.");
+                hideLoadingMessage();
+            }
+        });
+    }
+
+    // Place order for Cash on Delivery option
+    function placeOrder() {
+        $.ajax({
+            type: 'POST',
+            url: '{% url "payment:order_placed" %}',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            data: { deliveryCharge: globalDeliveryCharge },
+            success: function(response) {
+                hideLoadingMessage();
+                // Redirect to order success page or order summary
+                window.location.href = response.redirect_url || '{% url "payment:order_placed" %}';
+            },
+            error: function(xhr, status, error) {
+                console.error("Error placing order:", error);
+                alert("Failed to place order. Please try again.");
+                hideLoadingMessage();
+            }
+        });
+    }
+</script>
+
+
+
+
+
+{% endblock %}
+

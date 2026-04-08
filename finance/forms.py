@@ -4,7 +4,7 @@ from prescription.models import Doctor
 class DoctorForm(forms.ModelForm):
     class Meta:
         model = Doctor
-        exclude = ['user','start_time','end_time']
+        exclude = ['user','start_time','end_time','is_online','last_seen','policy_accepted','policy_accepted_at']
         widgets = {
             'start_time': forms.TimeInput(attrs={'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'type': 'time'}),        

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+<div id="chat-box">
+  <div id="messages"></div>
+  <input type="text" id="chat-input" placeholder="Type a message…">
+  <button id="send-btn">Send</button>
+</div>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const threadId = "{{ thread.id }}";
+  const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+  const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/chat/${threadId}/`);
+
+  const messages = document.getElementById("messages");
+  const input = document.getElementById("chat-input");
+  const sendBtn = document.getElementById("send-btn");
+
+  socket.onmessage = function(e) {
+    const data = JSON.parse(e.data);
+    if (data.type === "chat_message") {
+      const div = document.createElement("div");
+      div.textContent = data.sender_name + ": " + data.message;
+      messages.appendChild(div);
+      messages.scrollTop = messages.scrollHeight;
+    }
+  };
+
+  sendBtn.onclick = sendMessage;
+  input.addEventListener("keypress", e => {
+    if (e.key === "Enter") sendMessage();
+  });
+
+  function sendMessage() {
+    const msg = input.value.trim();
+    if (!msg) return;
+    socket.send(JSON.stringify({message: msg}));
+    input.value = "";
+  }
+});
+</script>
+{% endblock %}

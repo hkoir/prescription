@@ -24,8 +24,25 @@ CORS_ALLOW_HEADERS = [
     "accept-encoding",
 ]
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://prescription.aiha.live",
+     "https://*.aiha.live",
+
+]
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+
+
+
 SHARED_APPS = [ 
-    'django_tenants',    
+    'channels',
+    'daphne', 
+    'django_tenants', 
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',   
     'corsheaders',
     'django.contrib.contenttypes',  
     'django.contrib.sessions',     
@@ -51,7 +68,13 @@ TENANT_APPS = [
    'payment_gateway',
    'symptom_checker',
    'other_services',
-   'appointments'
+   'appointments',
+   'chat',
+   'store',
+   'payment',
+   'basket',
+   'orders',
+    'mptt',
     
 ]
 
@@ -75,6 +98,14 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 
+REST_FRAMEWORK = {
+       'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
@@ -88,10 +119,23 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-
-    'clients.middleware.CustomGeneralPurposeMiddleWare',
+     'clients.middleware.CustomGeneralPurposeMiddleWare',
+    # 'clients.middleware.TrackUserActivityMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
+
+
+
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
 
 
 
@@ -110,6 +154,9 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'accounts.context_processors.user_info',
                 'accounts.context_processors.unread_notifications',
+                'accounts.context_processors.tenant_context',
+                "store.context_processors.categories",
+                "basket.context_processors.basket",
                
             ],
         },
@@ -117,6 +164,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'myproject.wsgi.application'
+ASGI_APPLICATION = 'myproject.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],  # Your Redis host & port
+        },
+    },
+}
+
 
 
 
@@ -158,8 +216,19 @@ DATABASES = {
 # ]
 
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+from datetime import timedelta
 
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+}
+
+
+
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+BASKET_SESSION_ID = "basket"
 
 LANGUAGE_CODE = 'en'
 LANGUAGES = [
@@ -224,12 +293,12 @@ SSLZCOMMERZ_STORE_ID = "mymep684ff9c9b6d95"
 SSLZCOMMERZ_STORE_PASS = "mymep684ff9c9b6d95@ssl"
 SSLZCOMMERZ_IS_SANDBOX = True  # Set to False in production
 
-
 import os
+from logging.handlers import RotatingFileHandler
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-
     'formatters': {
         'verbose': {
             'format': '{levelname} {asctime} {name} {message}',
@@ -244,8 +313,10 @@ LOGGING = {
     'handlers': {
         'file': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',  # ✅ Correct
             'filename': os.path.join(BASE_DIR, 'error.log'),
+            'maxBytes': 1024 * 1024 * 1,  # 1 MB
+            'backupCount': 3,  # Keep last 3 files: error.log.1, error.log.2, etc.
             'formatter': 'verbose',
         },
         'console': {
@@ -257,7 +328,7 @@ LOGGING = {
 
     'root': {
         'handlers': ['file', 'console'],
-        'level': 'INFO',  # ✅ Must be INFO or DEBUG
+        'level': 'INFO',
     },
 
     'loggers': {

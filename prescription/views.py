@@ -1,60 +1,73 @@
-from django.db.models import Q
-from django.utils import timezone
-from django.contrib import messages
 import json
-from django.http import HttpResponse
-from django.template.loader import get_template
-from xhtml2pdf import pisa
+import re
+import base64
+import logging
+import requests
 from io import BytesIO
-from django.core.files.base import ContentFile
-from django.db import transaction
+from tempfile import NamedTemporaryFile
+from uuid import uuid4
+
+import qrcode
+from xhtml2pdf import pisa
+
+from django.db import models, transaction
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404, redirect
+from django.http import HttpResponse, JsonResponse, HttpResponseBadRequest
+from django.urls import reverse
+from django.utils import timezone
+from django.utils.translation import get_language
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.forms import modelformset_factory
-import base64
 from django.core.files.base import ContentFile
-from django.core.exceptions import PermissionDenied
-from django.urls import reverse
-import re
-from django.utils.translation import get_language
-from django.core.paginator import Paginator
-
-from .models import DoctorBooking, DoctorPrescription, SuggestedMedicine, SuggestedLabTest,LabTest
-from .models import AIPrescription,Patient,DoctorBooking,Doctor
-from .forms import DoctorPrescriptionForm, SuggestedMedicineForm, SuggestedLabTestForm,AIPrescriptionForm,PatientForm,DirectDoctorBookingForm
-from finance.models import DoctorPayment,DoctorServiceLog,PaymentProfile,AIPrescriptionPayment
-from finance.utils import update_doctor_payment
-from .forms import MedicineForm, LabTestForm
-from.models import Medicine,LabTest
-from.forms import RequestVideoCallForm,ApproveRequestVideoCallForm
-from.forms import PatientZoomRequestForm,DoctorZoomScheduleForm
-from.models import ZoomMeeting
-from.forms import DoctorFolloupBookingApprovedForm,DoctorFolloupBookingRequestForm
-from.models import DoctorFolloupBooking
-from prescription.utils.zoom import create_zoom_meeting
-from payment_gateway.utils import is_payment_enabled_for_tenant
-
-from.models import LabResultFile
-
-from django.core.mail import send_mail
-from django.conf import settings
 from django.core.files.storage import default_storage
-from tempfile import NamedTemporaryFile
-import mimetypes
-from.models import AiLabImageInterpretation
-from .ai import get_ai_prescription  
-from prescription.ai import get_ai_prescription_with_image  
-from .ai import interpret_lab_images_only  
-import re
-import requests
+from django.core.exceptions import PermissionDenied
+from django.core.mail import send_mail
+from django.core.paginator import Paginator
+from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
+from chat.utils import send_push_notification
+import chat.utils
+
+from .models import (
+    DoctorBooking, DoctorPrescription, SuggestedMedicine, SuggestedLabTest, LabTest,
+    AIPrescription, Patient, Doctor, Medicine, ZoomMeeting, DoctorFolloupBooking,
+    LabResultFile, AiLabImageInterpretation
+)
+from .forms import (
+    DoctorPrescriptionForm, SuggestedMedicineForm, SuggestedLabTestForm, AIPrescriptionForm,
+    PatientForm, DirectDoctorBookingForm, MedicineForm, LabTestForm,
+    RequestVideoCallForm, ApproveRequestVideoCallForm,
+    PatientZoomRequestForm, DoctorZoomScheduleForm,
+    DoctorFolloupBookingApprovedForm, DoctorFolloupBookingRequestForm
+)
+
+from finance.models import DoctorPayment, DoctorServiceLog, PaymentProfile, AIPrescriptionPayment
+from finance.utils import update_doctor_payment
+
+from prescription.utils.zoom import create_zoom_meeting
+from prescription.ai import get_ai_prescription_with_image
+from .ai import get_ai_prescription, interpret_lab_images_only
+from payment_gateway.utils import is_payment_enabled_for_tenant
+from appointments.models import Appointment
+from chat.models import ChatThread
+
+from django.http import FileResponse, Http404
+import os
+from django.utils import timezone
+from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
 
 
 def about_us(request):
     return render(request, 'prescription/about_us.html')
 
-
-from django.core.mail import send_mail
-from django.conf import settings
 
 def contact_us(request):
     if request.method == 'POST':
@@ -80,8 +93,192 @@ def contact_us(request):
 
 
 
+def download_file(request, filename):
+    file_path = os.path.join(settings.MEDIA_ROOT, 'downloads', filename)
+    if os.path.exists(file_path):
+        return FileResponse(open(file_path, 'rb'), as_attachment=True)
+    raise Http404
+
+
+
+def get_doctor(user):
+    """Get Doctor object for the logged-in user"""
+    return Doctor.objects.filter(user=user).first()
+
+class DoctorGuidelinesView(LoginRequiredMixin, TemplateView):
+    template_name = "doctor/guidelines.html"
+
+    def dispatch(self, request, *args, **kwargs):
+        doctor = get_doctor(request.user)
+        if not doctor:
+            messages.error(request, "Access restricted to verified doctors only.")
+            return redirect("prescription:home")
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        doctor = get_doctor(self.request.user)
+        ctx.update({
+            "doctor": doctor,
+            "payout_options": ["Daily", "Weekly", "Monthly"],
+            "notification_channels": ["Firebase Push", "Web Notification", "SMS"],
+            "policy_last_updated": "August 2025",
+        })
+        return ctx
+
+
+
+@login_required
+def accept_doctor_policy(request):
+    doctor = get_doctor(request.user)
+    if not doctor:
+        messages.error(request, "Doctor profile not found.")
+        return redirect("dashboard:home")
+
+    if request.method == "POST":
+        doctor.accept_policy()
+        messages.success(request, "Policy accepted. You can now continue providing consultations.")
+    return redirect("prescription:guidelines")
+
+
+
+
 def home(request):
-    return render(request,'prescription/home.html')
+    featured_doctors = Doctor.objects.filter(is_feature_doctor = True)[:5] 
+    return render(request,'prescription/home.html',{'featured_doctors':featured_doctors})
+
+
+
+
+def get_or_create_thread(user1, user2, tenant_schema):
+    if user1.role == 'doctor':
+        doctor_user = user1
+        patient_user = user2
+    elif user2.role == 'doctor':
+        doctor_user = user2
+        patient_user = user1
+    else:
+        # Fallback: assign arbitrarily
+        doctor_user = user1
+        patient_user = user2
+
+    thread, created = ChatThread.objects.get_or_create(
+        tenant_schema=tenant_schema,
+        doctor_user=doctor_user,
+        patient_user=patient_user,
+        defaults={
+            'created_at': timezone.now(),
+            'last_message_at': timezone.now(),
+        }
+    )
+    return thread
+
+
+
+@login_required
+def request_test_video_call(request, doctor_id):
+    if request.method != "POST":
+        return HttpResponseBadRequest("Invalid request method.")
+
+    doctor = get_object_or_404(Doctor, pk=doctor_id)
+    if not doctor.user:
+        return JsonResponse({"success": False, "error": "Doctor has no associated user."})
+
+    # zoom_meeting = create_zoom_meeting(topic="Consultation Call", duration=30)
+    # join_url = zoom_meeting.get("join_url")
+    # start_url = zoom_meeting.get("start_url")
+     
+
+    tenant_schema = getattr(request.tenant, "schema_name", "public")
+    thread = get_or_create_thread(request.user, doctor.user, tenant_schema)
+    thread_id = thread.id
+
+    join_url = f"/chat/doctor/thread/{thread_id}/"
+    start_url = f"/chat/doctor/thread/{thread_id}/"
+
+    user = request.user
+    patient_name = getattr(getattr(user, "patient_profile", None), "full_name", None) \
+        or user.get_full_name() or user.username
+  
+    from_user_name = (
+        getattr(getattr(user, "patient_profile", None), "full_name", None)
+        or user.get_full_name()
+        or user.username
+    )
+
+    tenant_prefix = getattr(getattr(request, "tenant", None), "schema_name", "public")
+    group_name = f"{tenant_prefix}_user_{doctor.user.id}"
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+        "type": "incoming_call",
+        "from_user_id":user.id,
+        "caller_name": from_user_name, # unified field
+        "zoom_start_url": start_url,
+        "zoom_join_url": join_url,
+        }
+    )
+    doctor_user = doctor.user
+    fcm_token = getattr(doctor_user, 'fcm_token', None) if doctor_user else None
+    if fcm_token:
+        send_push_notification(
+            token=fcm_token,
+            title="Patient video call request",
+            body= f"Your patient {request.user.username} is calling you to join in message box.",
+            path=f"/chat/doctor_notifications_view/",
+            schema=request.tenant.schema_name
+        )
+    else:
+        print("⚠️ Doctor user or FCM token not found.")
+    print(f"[VIEW] Sent incoming_call to {group_name}")
+    return JsonResponse({"success": True, "join_url": join_url})
+
+
+
+@login_required
+def doctor_initiate_video_call(request, patient_id):
+    if request.method != "POST":
+        return HttpResponseBadRequest("Invalid request method.")
+    patient = get_object_or_404(Patient, pk=patient_id)
+    if not patient.user:
+        return JsonResponse({"success": False, "error": "Patient has no associated user."})
+
+    # zoom_meeting = create_zoom_meeting(topic="Consultation Call", duration=30)
+    # join_url = zoom_meeting.get("join_url")
+    # start_url = zoom_meeting.get("start_url")
+
+    tenant_schema = getattr(request.tenant, "schema_name", "public")
+    thread = get_or_create_thread(request.user, patient.user, tenant_schema)
+    thread_id = thread.id
+
+    join_url = f"/chat/patient/thread/{thread_id}/"
+    start_url = f"/chat/patient/thread/{thread_id}/"
+
+    user = request.user
+    doctor_name = getattr(getattr(user, "doctor_profile", None), "full_name", None) \
+        or user.get_full_name() or user.username
+    from_user_name = user.get_full_name() or user.username
+
+    tenant_prefix = getattr(getattr(request, "tenant", None), "schema_name", "public")
+    group_name = f"{tenant_prefix}_user_{patient.user.id}"
+
+    channel_layer = get_channel_layer()
+    async_to_sync(channel_layer.group_send)(
+        group_name,
+        {
+        "type": "incoming_call",
+        "caller_name": from_user_name, # unified field
+        "zoom_start_url": start_url,
+        "from_user_id":user.id,
+        "zoom_join_url": join_url,
+        }
+    )
+
+    print(f"[VIEW] Sent incoming_call to {group_name}")
+    return JsonResponse({"success": True, "join_url": join_url})
+
 
 
 
@@ -90,7 +287,6 @@ def home(request):
 def available_doctors(request):
     prescription_id = request.GET.get("prescription_id")
     ai_prescription = get_object_or_404( AIPrescription, id=prescription_id) if prescription_id else None
-
     
     query = request.GET.get("query", "").strip()
     specialization_filter = request.GET.get("specialization", "").strip()
@@ -101,18 +297,41 @@ def available_doctors(request):
     if specialization_filter:
         doctors = doctors.filter( specialization__icontains=specialization_filter)  # ✅ Correct
 
-
     categorized_doctors = {}
     for doctor in doctors:
         if doctor.specialization not in categorized_doctors:
             categorized_doctors[doctor.specialization] = []
         categorized_doctors[doctor.specialization].append(doctor)
 
+    patinet = None
+    try:
+        patient = Patient.objects.get(user=request.user)
+    except Patient.DoesNotExist:
+        patient = None
+
+    booked_doctor_ids = []
+    if patient:
+        booked_doctor_ids = DoctorBooking.objects.filter(
+            patient=patient,            
+            status__in=['confirmed', 'pending']  # Ensure 'pending' is here
+        ).values_list('doctor_id', flat=True)
+    
+    all_specs = Doctor.objects.values_list('specialization', flat=True).distinct()
+    spec_set = set()
+    for spec_str in all_specs:
+        if spec_str:
+            specs = [s.strip() for s in spec_str.split(",") if s.strip()]
+            spec_set.update(specs)
+    unique_specializations = sorted(spec_set)
+
     return render(request, "prescription/available_doctors.html", {
         "categorized_doctors": categorized_doctors,
         "query": query,
         "specialization_filter": specialization_filter,
-        'ai_prescription': ai_prescription
+        "unique_specializations": unique_specializations,
+        'ai_prescription': ai_prescription,
+        'booked_doctor_ids': set(booked_doctor_ids),
+        'now': timezone.now(),
        
     })
 
@@ -154,6 +373,7 @@ from payment_gateway.models import Payment, PaymentInvoice
 from accounts.utils import send_sms
 from messaging.views import create_notification
 import re
+
 
 
 
@@ -861,8 +1081,6 @@ def create_patient_profile(request):
 
 #========================== Speciliazed doctor consultation/booking/appointment =============
 
-
-from uuid import uuid4
 @login_required
 def initiate_book_doctor_direct_payment(request, doctor_id):
     doctor = get_object_or_404(Doctor, id=doctor_id)
@@ -894,40 +1112,47 @@ def initiate_book_doctor_direct_payment(request, doctor_id):
 #===========================================================================================
 
 
-
 @login_required
 def book_doctor_direct(request, pk):
     doctor = get_object_or_404(Doctor, pk=pk)
+    doctor_user = doctor.user
+    fcm_token = getattr(doctor_user, 'fcm_token', None) if doctor_user else None
+
     user = request.user
     patient = None
-    invoice=None
-    form = DirectDoctorBookingForm()
 
+    # Get patient profile
     try:
         patient = user.patient_profile
-    except Patient.DoesNotExist:
+    except AttributeError:
         return redirect(f"{reverse('prescription:create_patient_profile')}?next={request.path}")
 
-    symptom_image = None
-    symptom_video = None
-     #=========================================================================================
-    invoice_id = request.session.get('doctor_booking_invoice_id')             
     invoice = None
-    if invoice_id:
-        try:
-            invoice = PaymentInvoice.objects.get(id=invoice_id, patient=patient, invoice_type='direct-consultation')
-        except PaymentInvoice.DoesNotExist:
-            messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
-            return redirect('prescription:doctor_bookings_list')
-    #===============================================================================================
+    # ================== Invoice handling if payment enabled ==================
+    if is_payment_enabled_for_tenant(request.tenant):
+        invoice_id = request.session.get('doctor_booking_invoice_id')
+        if invoice_id:
+            try:
+                invoice = PaymentInvoice.objects.get(
+                    id=invoice_id,
+                    patient=patient,
+                    invoice_type='direct-consultation'
+                )
+            except PaymentInvoice.DoesNotExist:
+                messages.warning(request, "Invoice not found or expired. Please initiate payment again.")
+                return redirect('prescription:doctor_bookings_list')
+    # =======================================================================
 
     if request.method == 'POST':
         form = DirectDoctorBookingForm(request.POST, request.FILES)
-        if form.is_valid(): 
+        if form.is_valid():
+            # Extract form data
             duration = form.cleaned_data['duration']
             symptom_summary = form.cleaned_data['symptoms_summary']
             vital_signs = form.cleaned_data['vital_signs']
 
+            # Handle base64 captured image
+            symptom_image = None
             captured_image_data = request.POST.get('captured_image')
             if captured_image_data:
                 try:
@@ -937,6 +1162,8 @@ def book_doctor_direct(request, pk):
                 except Exception:
                     messages.error(request, "Failed to process captured image.")
 
+            # Handle base64 recorded video
+            symptom_video = None
             recorded_video_data = request.POST.get('recorded_video')
             if recorded_video_data:
                 try:
@@ -945,7 +1172,8 @@ def book_doctor_direct(request, pk):
                     symptom_video = ContentFile(base64.b64decode(videostr), name=f"captured_video.{ext}")
                 except Exception:
                     messages.error(request, "Failed to process recorded video.")
-      
+
+            # Create doctor booking
             booking = DoctorBooking.objects.create(
                 patient=patient,
                 doctor=doctor,
@@ -961,9 +1189,9 @@ def book_doctor_direct(request, pk):
                 allergies=patient.allergies,
                 current_medications=patient.current_medications,
                 vital_signs=vital_signs,
-                
             )
-            #===================== upload labtest or old prescription ===========
+
+            # Upload lab files
             lab_files = request.FILES.getlist('lab_files')
             for file in lab_files:
                 LabResultFile.objects.create(
@@ -971,25 +1199,40 @@ def book_doctor_direct(request, pk):
                     uploaded_by=request.user,
                     file=file
                 )
-            #=====================================================================
+
+            # Link invoice to booking if exists
             if invoice:
-                    invoice.doctor_booking = booking
-                    invoice.save()
-                    del request.session['doctor_booking_invoice_id']
-            #================================================================
+                invoice.doctor_booking = booking
+                invoice.save()
+                del request.session['doctor_booking_invoice_id']
+
+            # Notify doctor
+            message = f"You have a new consultation booking from {patient.full_name}. Please check your dashboard."
+            if doctor.phone:
+                send_sms(tenant=request.tenant, phone_number=doctor.phone, message=message)
+            create_notification(request.user, notification_type='Doctor booking msg', message=message, patient=patient, doctor=doctor)
+            if fcm_token:
+                send_push_notification(
+                    token=fcm_token,
+                    title="New Appointment",
+                    body="You have a new appointment request.",
+                    path="/finance/doctor/dashboard/",
+                    schema=request.tenant.schema_name
+                )
+            else:
+                print("⚠️ Doctor user or FCM token not found.")
 
             messages.success(request, "Booking confirmed.")
-            message = f"You have a new consultation booking from {patient.full_name}. Please check your dashboard."
-            send_sms(tenant=request.tenant, phone_number=doctor.phone, message=message)
-            create_notification(request.user, notification_type='Doctor booking msg', message=message, patient=patient, doctor=doctor)
-            return redirect('prescription:doctor_bookings_list')  
-
+            return redirect('prescription:doctor_bookings_list')
     else:
         form = DirectDoctorBookingForm()
-    return render(request, 'prescription/confirm_booking_direct.html', {'doctor': doctor, 'form': form,'patient':patient})
 
-
-
+    return render(request, 'prescription/confirm_booking_direct.html', {
+        'doctor': doctor,
+        'form': form,
+        'patient': patient,
+        'invoice': invoice
+    })
 
 
 #=====================================================================================
@@ -1032,6 +1275,9 @@ def initiate_confirm_booking_payment(request, prescription_id, doctor_id):
 def confirm_booking(request, prescription_id, doctor_id):
     prescription = get_object_or_404(AIPrescription, pk=prescription_id, user=request.user)
     doctor = get_object_or_404(Doctor, pk=doctor_id)
+    doctor_user = doctor.user
+    fcm_token = getattr(doctor_user, 'fcm_token', None) if doctor_user else None
+
     patient = prescription.patient
     invoice =None
     payment_amount = doctor.consultation_fees
@@ -1096,7 +1342,8 @@ def confirm_booking(request, prescription_id, doctor_id):
             allergies=prescription.allergies,
             current_medications=prescription.current_medications,
             vital_signs=prescription.vital_signs,
-            location=prescription.location
+            location=prescription.location,
+            webrtc_room=str(uuid.uuid4())   
         )
     #======================= lab test or old prescription uploading ====================
         lab_files = request.FILES.getlist('lab_files')
@@ -1118,6 +1365,16 @@ def confirm_booking(request, prescription_id, doctor_id):
         message = f"You have a new consultation booking from {patient.full_name}. Please check your dashboard."
         send_sms(tenant=request.tenant, phone_number=doctor.phone, message=message)
         create_notification(request.user, notification_type='Doctor booking msg', message=message, patient=patient, doctor=doctor)
+        if fcm_token:
+            send_push_notification(
+                    token=fcm_token,
+                    title="New Appointment",
+                    body="You have a new appointment request.",
+                    path="/finance/doctor/dashboard/",
+                    schema=request.tenant.schema_name
+                )     
+        else:
+            print("⚠️ Doctor user or FCM token not found.")
         return redirect('prescription:doctor_booking_success',doctor.id,booking.id)
 
     return render(request, 'prescription/confirm_booking.html', {
@@ -1205,8 +1462,8 @@ def request_video_call(request, booking_id):
     if request.method == 'POST':
         form = RequestVideoCallForm(request.POST, instance=booking)
         if form.is_valid():
-            form_instance = form.save(commit=False)
-            form_instance.video_call_requested = True  # if you have a field to track this
+            form_instance = form.save(commit=False)           
+            form_instance.webrtc_room = str(uuid.uuid4())     
             form_instance.save()
             if invoice:
                 invoice.doctor_booking = booking
@@ -1278,10 +1535,11 @@ def doctor_bookings_list(request):
         doctor = Doctor.objects.get(user=request.user)
     except Doctor.DoesNotExist:
         pass
-    if patient:
-        bookings = bookings.filter(patient=patient)
-    elif doctor:
+
+    if doctor:
         bookings = bookings.filter(doctor=doctor)
+    elif patient:
+        bookings = bookings.filter(patient=patient)
     else:
         bookings = DoctorBooking.objects.none()
         messages.warning(request, "You are not associated with any patient or doctor profile.")   
@@ -1319,7 +1577,6 @@ PrescriptionFormSet = modelformset_factory(
     can_delete=True,
 )
 
-from appointments.models import Appointment
 
 @login_required
 def create_doctor_prescription(request, booking_id, followup_id=None,appointment_id=None):
@@ -1329,15 +1586,18 @@ def create_doctor_prescription(request, booking_id, followup_id=None,appointment
     doctor = booking.doctor
     followup_booking = None
     appointment = None
+    user = patient.user 
 
+    if not doctor.policy_accepted:
+        messages.warning(request, "You must accept the doctor policy before providing consultations.")
+        return redirect("prescription:guidelines")
+
+    fcm_token = getattr(user, 'fcm_token', None)
     if appointment_id:
         appointment = get_object_or_404(Appointment, pk=appointment_id)
-
     if followup_id:
         followup_booking = get_object_or_404(DoctorFolloupBooking, pk=followup_id, doctor_booking=booking)
-
     ai_prescription = booking.ai_prescription if booking.ai_prescription else None
-
     if followup_booking:
         prescription_instance = None 
     else:
@@ -1456,6 +1716,16 @@ def create_doctor_prescription(request, booking_id, followup_id=None,appointment
                 text_message = f"Your prescription with  {doctor.full_name} completed. Please check your dashboard."
                 send_sms(tenant=request.tenant, phone_number=patient.phone, message=text_message)
                 create_notification(request.user, notification_type='Doctor Prescription readiness', message=text_message, patient=patient, doctor=doctor)
+                if fcm_token:
+                    send_push_notification(
+                    token=fcm_token,
+                    title="Prescription Readiness",
+                    body="Your Doctor has given prescription for you, Please check",
+                    path="/prescription/home/",
+                    schema=request.tenant.schema_name
+                )
+                else:
+                    print("❌ Patient user has no FCM token.")
                 return redirect('prescription:doctor_prescription_detail', pk=doctor_prescription.pk)
 
         # show errors if invalid
@@ -1465,6 +1735,8 @@ def create_doctor_prescription(request, booking_id, followup_id=None,appointment
             'prescription_formset': prescription_formset,
             'lab_test_form': lab_test_form,
             'lab_tests': LabTest.objects.all(),
+            'followup_booking':followup_booking,
+            'parent_booking':booking,
             'followup_booking':followup_booking
         })
 
@@ -1532,7 +1804,7 @@ def doctor_prescription_list(request):
 
 
 
-from django.db import models
+
 def doctor_prescription_detail(request, pk):
     prescription = get_object_or_404(DoctorPrescription, pk=pk)
 
@@ -1597,10 +1869,6 @@ def render_to_pdf(request, obj, template_path, filename_prefix, context):
     return response
 
 
-
-import qrcode
-import base64
-from io import BytesIO
 
 def doctor_prescription_pdf(request, pk):
     prescription = DoctorPrescription.objects.get(pk=pk)
@@ -1708,6 +1976,7 @@ def request_doctor_followup_booking(request, doctor_booking_id):
             booking.approved_followup_datetime = timezone.now()
             booking.proposed_followup_datetime = timezone.now()
             booking.status = 'confirmed'
+            booking.webrtc_room = str(uuid.uuid4())    
             booking.save()
  	   #===================== upload lab test result if any ===============
             lab_files = request.FILES.getlist('lab_files')
@@ -1949,6 +2218,7 @@ def request_zoom_meeting(request, followup_booking_id):
             zoom_meeting.doctor_folloup_booking = followup_booking_instance
             zoom_meeting.user = request.user
             zoom_meeting.proposed_meeting_datetime = timezone.now()
+            zoom_meeting.webrtc_room = str(uuid.uuid4())    
             zoom_meeting.save()
            #=========================================================
             if invoice:

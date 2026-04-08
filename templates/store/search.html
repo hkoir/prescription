@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+
+{% block content %}
+   
+    <div class="container">
+        <h3>Search Results</h3>
+        <div class="row row-cols-md-5 row-cols-2">          
+
+            {% for product in results %}  
+            <div class="col">
+                <h4>{{ product.title }}</h4>      
+                 <p>Price: BDT {{ product.regular_price }}</p>  
+                 {% if product.qty > 0 %}
+                 <p>Availability: In Stock ({{ product.qty }} available)</p>
+                {% else %}
+                    <p>Availability: Out of Stock</p>
+                {% endif %}
+              
+                {% for image in product.product_image.all %}
+                {% if image.is_feature %}
+                    <img src="{{ image.image.url }}" alt="{{ product.title }}" style="width:100px;height:100px">
+                {% endif %}
+                {% endfor %} <br>  
+                <a href="{% url 'store:store_home' %}"> View Product</a>      
+            </div>           
+
+            {% endfor %}
+        </div>
+    </div>
+    
+
+
+{% endblock %}

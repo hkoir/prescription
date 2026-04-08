@@ -1,0 +1,4 @@
+INFO daphne.cli Starting server at tcp:port=8000:interface=127.0.0.1
+INFO daphne.server HTTP/2 support not enabled (install the http2 and tls Twisted extras)
+INFO daphne.server Configuring endpoint tcp:port=8000:interface=127.0.0.1
+INFO daphne.server Listening on TCP address 127.0.0.1:8000

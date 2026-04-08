@@ -1,0 +1,2 @@
+humayun@ubuntu-s-1vcpu-1gb-sgp1-01:/var/www/html/download$ ls
+prescriptionInstaller.exe

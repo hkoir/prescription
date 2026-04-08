@@ -92,34 +92,48 @@ def generate_monthly_timeslots(doctor_id, year, month, start_time="09:00", end_t
 
 
 
+
 @login_required
-def create_doctor_timeslots(request, id=None):  
+def create_doctor_timeslots(request, id=None):
     instance = get_object_or_404(AppointmentSlot, id=id) if id else None
-    message_text = "updated successfully!" if id else "added successfully!"  
-    form = TimeSlotForm(request.POST or None, request.FILES or None, instance=instance)
+    message_text = "updated successfully!" if id else "added successfully!"
+    form = TimeSlotForm(request.POST or None, instance=instance, user=request.user)
 
     if request.method == 'POST':
         if form.is_valid():
-            form_instance = form.save(commit=False)
-            doctor = form.cleaned_data.get("doctor")
+            # Determine doctor based on role
+            if hasattr(request.user, 'role') and request.user.role == 'doctor':
+                doctor = Doctor.objects.filter(user=request.user).first()
+                if not doctor:
+                    messages.error(request, "Doctor profile not found.")
+                    return redirect('prescription:home')
+            elif request.user.is_staff:
+                doctor = form.cleaned_data.get("doctor")
+            else:
+                return redirect('prescription:home')
+
             slot_duration = form.cleaned_data.get("slot_duration")
             start_date = form.cleaned_data.get("start_date")
             end_date = form.cleaned_data.get("end_date")
 
-            # ✅ Check if both dates are present
             if start_date and end_date:
-                success = generate_time_slots(doctor, slot_duration, start_date, end_date)
-                if success:
+                if generate_time_slots(doctor, slot_duration, start_date, end_date):
                     messages.success(request, f"Time slots {message_text}")
                     return redirect("appointments:create_doctor_timeslots")
                 else:
-                    messages.success(request, f"Fail to create time slots, Please check all the form fields")
-                    form.add_error(None, "End date must be after start date.")
+                    form.add_error(None, "Fail to create time slots. Please check all the form fields.")
             else:
                 form.add_error(None, "Start date and End date are required.")
-        # form is invalid or error above — fall through to re-render form with errors
 
-    datas = AppointmentSlot.objects.all().order_by('-date')
+    datas =None
+    if request.user.role == 'doctor':
+        doctor = Doctor.objects.filter(user=request.user).first()
+        datas = AppointmentSlot.objects.filter(doctor=doctor).order_by('-date')
+    elif request.user.is_staff:
+        datas = AppointmentSlot.objects.all().order_by('-date')
+    else:
+        return redirect('prescription:home')
+
     paginator = Paginator(datas, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -165,10 +179,19 @@ def available_doctors(request):
             categorized_doctors[doctor.specialization] = []
         categorized_doctors[doctor.specialization].append(doctor)
 
+    all_specs = Doctor.objects.values_list('specialization', flat=True).distinct()
+    spec_set = set()
+    for spec_str in all_specs:
+        if spec_str:
+            specs = [s.strip() for s in spec_str.split(",") if s.strip()]
+            spec_set.update(specs)
+    unique_specializations = sorted(spec_set)
+
     return render(request, "appointments/available_doctors.html", {
         "categorized_doctors": categorized_doctors,
         "query": query,
         "specialization_filter": specialization_filter,
+         "unique_specializations": unique_specializations,
         'appointments': appointments
     })
 

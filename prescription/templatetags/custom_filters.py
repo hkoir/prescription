@@ -3,14 +3,16 @@ from django import template
 register = template.Library()
 import ast
 import os
-
+from accounts.views import is_user_online
 
 @register.filter
 def get_item(dictionary, key):
     return dictionary.get(key) if dictionary else None
 
 
-
+@register.filter
+def online(user):
+    return is_user_online(user.id)
 
 
 @register.simple_tag
@@ -104,6 +106,14 @@ def month_names(value):
 def is_image(file_url):
     ext = os.path.splitext(file_url)[1].lower()
     return ext in [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"]
+
+
+@register.filter
+def endswith(value, arg):
+    if not value:
+        return False
+    return str(value).lower().endswith(arg.lower())
+
 
 
 

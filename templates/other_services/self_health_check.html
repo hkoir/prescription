@@ -1,0 +1,729 @@
+{% extends "base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block content %}
+
+<style>
+  body { background:#f4f6f9; font-family: Arial, sans-serif; }
+  .card { border-radius: 12px; box-shadow: 0 6px 18px rgb(30 40 50 / 0.06); }
+  .form-section { max-width: 600px; margin: auto; }
+  .chart-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 1.5rem; margin-top: 1rem; }
+  canvas { background: #fff; border-radius: 12px; box-shadow: 0 3px 10px rgb(0 0 0 / 0.1); }
+  .small-canvas { width: 160px !important; height: 160px !important; }
+  .medium-canvas { width: 320px !important; height: 180px !important; }
+</style>
+
+<div class="container py-5">
+  <h2 class="mb-4 text-center fw-bold">Comprehensive Self Health Check</h2>
+
+  <!-- Test Selector -->
+  <div class="mb-4 text-center">
+    <label for="testSelector" class="form-label fw-semibold">Select Test Type:</label>
+    <select id="testSelector" class="form-select w-auto d-inline-block">
+      <option value="" selected disabled>-- Choose a test --</option>
+      <option value="bmi">BMI Check</option>
+      <option value="heart">Heart Rate Check</option>
+      <option value="stress">Stress Level Check</option>
+      <option value="bp">Blood Pressure Check</option>    
+      <option value="cholesterol">Cholesterol Check</option>
+      <option value="sleep">Sleep Quality</option>
+      <option value="phq9">Depression Screening (PHQ-9)</option>
+      <option value="activity">Physical Activity Level</option>
+      <option value="hydration">Hydration Check</option>
+    </select>
+  </div>
+
+  <form method="POST" id="formBmi" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="display:none;" novalidate>
+  {% csrf_token %}
+  <div class="row align-items-start">    
+    <!-- Left column: Form inputs -->
+    <div class="col-md-6 mb-3">
+      <h4 class="mb-3">BMI Check</h4>
+      <div class="mb-3">
+        <label for="weight" class="form-label">Weight (kg)</label>
+        <input id="weight" name="weight" type="number" step="0.1" min="1" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label for="height" class="form-label">Height (cm)</label>
+        <input id="height" name="height" type="number" step="0.1" min="30" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Calculate BMI</button>
+      <div id="errorBoxBmi" class="alert alert-danger mt-3 d-none"></div>
+    </div>
+
+    <!-- Right column: Result + Chart -->
+    <div class="col-md-6">
+      <div id="resultBmi" class="mb-3" style="display:none;">
+        <h5>Result</h5>
+        <p><strong>BMI:</strong> <span id="result_bmi">-</span></p>
+        <p><strong>Status:</strong> <span id="result_bmi_status">-</span></p>
+      </div>
+      <div class="d-flex justify-content-center">
+        <canvas id="bmiChart" style="width:160px; height:160px;"></canvas>
+      </div>
+    </div>
+
+  </div>
+</form>
+
+
+  <!-- Heart Rate Form -->
+  <form id="formHeart" class="healthForm card shadow-sm p-4 bg-white mx-auto" style="display:none;" novalidate>
+    {% csrf_token %}
+      
+  <div class="row align-items-start">
+    <h4 class="mb-3">Heart Rate Check</h4>
+        <div class="col-md-4">
+                <div>
+                    <label for="resting_hr_input" class="form-label">Resting Heart Rate (bpm)</label>
+                    <input id="resting_hr_input" name="resting_hr" type="number" min="30" max="220" class="form-control" required>
+                </div>
+                <div>
+                    <label for="after_walking_hr_input" class="form-label">Heart Rate After Walking</label>
+                    <input id="after_walking_hr_input" name="after_walking_hr" type="number" min="30" max="220" class="form-control" required>
+                </div>
+                <div>
+                    <label for="age_heart_input" class="form-label">Age</label>
+                    <input id="age_heart_input" name="age" type="number" min="10" max="120" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Check Heart Rate</button>
+     </div>
+
+     <div class="col-md-8 p-4">
+        <h5>Result</h5>
+        <div class="row">
+            <div class="col-12">
+                <div id="errorBoxHeart" class="alert alert-danger d-none"></div>
+                  <div id="resultHeart" style="display:none;">
+                    <strong>Resting HR:</strong> <span id="resting_hr">-</span>
+                    <strong>After walk HR:</strong> <span id="after_walk_hr">-</span><br>
+                    <strong>Resting Ideal Range:</strong> <span id="resting_ideal_hr">-</span>
+                    <strong>After walk Ideal Range:</strong> <span id="after_walk_ideal_hr">-</span><br>
+                    <strong>Rest HR Status:</strong> <span id="rest_heart_status">-</span>
+                    <strong>After walk HR Status:</strong> <span id="after_walk_heart_status">-</span>
+                 </div>
+            </div>
+            <div class="col-12">
+                <div class="chart-container justify-content-center p-4">
+                    <canvas id="heartChart"></canvas>
+                </div>
+            </div>
+         </div>
+    </div>
+
+
+
+  </div>
+  </form>
+
+  <!-- Stress Level Form -->
+  <form id="formStress" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="display:none;" novalidate>
+    {% csrf_token %}
+    <div class="row align-items-start">
+    <h4 class="mb-3">Stress Level Check</h4>
+        <div class="col-md-6">        
+            <small class="text-muted d-block mb-3">Answer each from 0 (Never) to 4 (Very Often)</small>
+            <div class="row g-3">
+            {% for i in "12345" %}
+            <div class="col-6 col-md-4">
+                <label class="form-label">{{ i }}. {{ stress_questions|get_item:i }}</label>
+                <select name="stress_q{{ i }}" class="form-select" required>
+                <option value="0" selected>0 - Never</option>
+                <option value="1">1 - Rarely</option>
+                <option value="2">2 - Sometimes</option>
+                <option value="3">3 - Often</option>
+                <option value="4">4 - Very Often</option>
+                </select>
+            </div>
+            {% endfor %}
+            </div>
+            <button type="submit" class="btn btn-primary w-100 mt-3">Check Stress Level</button>
+        </div>
+        <div class="col-md-6">
+             <h5>Result</h5>
+            <div id="errorBoxStress" class="alert alert-danger mt-3 d-none"></div>
+            <div id="resultStress" class="mt-3" style="display:none;">
+            <strong>Stress Level:</strong> <span id="result_stress_level">-</span><br>
+            <strong>Status:</strong> <span id="result_stress_status">-</span>
+            </div>
+            <div class="chart-container justify-content-center mt-3">
+            <canvas id="stressChart" class="medium-canvas"></canvas>
+            </div>
+        </div>
+
+    </div>
+  </form>
+
+  <!-- Blood Pressure Form -->
+  <form id="formBp" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="display:none;" novalidate>
+    {% csrf_token %}
+    <div class="row align-items-start">
+        <h4 class="mb-3">Blood Pressure Check</h4>
+      <div class="col-md-6">      
+        <div class="mb-3">
+        <label for="bp_sys" class="form-label">Systolic Blood Pressure (mm Hg)</label>
+        <input id="bp_sys" name="bp_sys" type="number" min="50" max="250" class="form-control" required>
+        </div>
+        <div class="mb-3">
+        <label for="bp_dia" class="form-label">Diastolic Blood Pressure (mm Hg)</label>
+        <input id="bp_dia" name="bp_dia" type="number" min="30" max="150" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Check Blood Pressure</button>
+     </div>
+     <div class="col-md-6">
+         <h5>Result</h5>
+        <div id="errorBoxBp" class="alert alert-danger mt-3 d-none"></div>
+        <div id="resultBp" class="mt-3" style="display:none;">
+        <strong>BP Category:</strong> <span id="result_bp_category">-</span><br>
+        <strong>Advice:</strong> <span id="result_bp_advice">-</span>
+        </div>
+    </div>     
+
+    </div>
+  </form>
+
+
+
+
+  <!-- Cholesterol Check Form -->
+  <form id="formCholesterol" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="display:none;" novalidate>
+    {% csrf_token %}
+    <h4 class="mb-3">Cholesterol Check</h4>
+      <div class="row align-items-start">
+        <div class="col-md-6">
+            <div class="mb-3">
+            <label for="total_chol" class="form-label">Total Cholesterol (mg/dL)</label>
+            <input id="total_chol" name="total_chol" type="number" min="100" max="400" class="form-control" required>
+            </div>
+            <div class="mb-3">
+            <label for="ldl" class="form-label">LDL (mg/dL)</label>
+            <input id="ldl" name="ldl" type="number" min="50" max="250" class="form-control" required>
+            </div>
+            <div class="mb-3">
+            <label for="hdl" class="form-label">HDL (mg/dL)</label>
+            <input id="hdl" name="hdl" type="number" min="20" max="100" class="form-control" required>
+            </div>
+            <div class="mb-3">
+            <label for="triglycerides" class="form-label">Triglycerides (mg/dL)</label>
+            <input id="triglycerides" name="triglycerides" type="number" min="50" max="500" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Check Cholesterol Risk</button>
+      </div>
+
+      <div class="col-md-6">   
+         <h5>Result</h5>   
+        <div id="errorBoxCholesterol" class="alert alert-danger mt-3 d-none"></div>
+        <div id="resultCholesterol" class="mt-3" style="display:none;">
+        <strong>Risk Level:</strong> <span id="result_cholesterol_risk">-</span><br>
+        <strong>Advice:</strong> <span id="result_cholesterol_advice">-</span>
+        </div>
+      </div>
+
+      </div>
+  
+
+  </form>
+
+  <!-- Sleep Quality Form -->
+  <form id="formSleep" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="display:none;" novalidate>
+    {% csrf_token %}
+    <h4 class="mb-3">Sleep Quality Check</h4>
+      <div class="row align-items-start">
+        <div class="col-md-6">
+                <div class="mb-3">
+                <label for="sleep_hours" class="form-label">Average Hours Slept per Night</label>
+                <input id="sleep_hours" name="sleep_hours" type="number" step="0.1" min="0" max="24" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Difficulty Falling Asleep?</label>
+                <select name="difficulty_sleep" class="form-select" required>
+                    <option value="" disabled selected>Choose...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Feel Rested on Waking?</label>
+                <select name="feel_rested" class="form-select" required>
+                    <option value="" disabled selected>Choose...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Snoring or Breathing Interruptions?</label>
+                <select name="snoring" class="form-select" required>
+                    <option value="" disabled selected>Choose...</option>
+                    <option value="yes">Yes</option>
+                    <option value="no">No</option>
+                </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Check Sleep Quality</button>
+        </div>
+
+        <div class="col-md-6">
+             <h5>Result</h5>
+            <div id="errorBoxSleep" class="alert alert-danger mt-3 d-none"></div>
+            <div id="resultSleep" class="mt-3" style="display:none;">
+            <strong>Sleep Quality:</strong> <span id="result_sleep_quality">-</span><br>
+            <strong>Advice:</strong> <span id="result_sleep_advice">-</span>
+            </div>
+        </div>
+
+      </div>
+  </form>
+<!-- PHQ-9 Depression Screening Form -->
+<form id="formPhq9" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="max-width: 900px; display:none;" novalidate>
+  {% csrf_token %}
+  <h4 class="mb-3">Depression Screening (PHQ-9)</h4>
+  <small class="text-muted d-block mb-3">Answer each from 0 (Not at all) to 3 (Nearly every day)</small>
+
+  <div class="row">
+    <!-- Questions Column -->
+    <div class="col-md-6">
+      <div class="row g-3">
+        {% for i in "123456789" %}
+        <div class="col-12">
+          <label class="form-label">{{ i }}. {{ phq9_questions|get_item:i }}</label>
+          <select name="phq9_q{{ i }}" class="form-select" required>
+            <option value="0" selected>0 - Not at all</option>
+            <option value="1">1 - Several days</option>
+            <option value="2">2 - More than half the days</option>
+            <option value="3">3 - Nearly every day</option>
+          </select>
+        </div>
+        {% endfor %}
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100 mt-4">Check Depression Level</button>
+    </div>
+
+    <!-- Results Column -->
+    <div class="col-md-6">
+         <h5>Result</h5>
+      <div id="errorBoxPhq9" class="alert alert-danger mt-3 d-none"></div>
+      <div id="resultPhq9" class="mt-3" style="display:none;">
+        <strong>Depression Severity:</strong> <span id="result_phq9_severity">-</span><br>
+        <strong>Advice:</strong> <span id="result_phq9_advice">-</span>
+      </div>
+    </div>
+
+  </div>
+</form>
+
+
+  <!-- Physical Activity Level Form -->
+  <form id="formActivity" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="display:none;" novalidate>
+    {% csrf_token %}
+    <h4 class="mb-3">Physical Activity Level</h4>
+    <div class="row">
+        <div class="col-md-6">
+    <div class="mb-3">
+      <label for="mod_activity" class="form-label">Minutes of Moderate Activity per Week</label>
+      <input id="mod_activity" name="moderate_minutes" type="number" min="0" max="1680" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="vig_activity" class="form-label">Minutes of Vigorous Activity per Week</label>
+      <input id="vig_activity" name="vigorous_minutes" type="number" min="0" max="1680" class="form-control" required>
+    </div>
+    <div class="mb-3">
+      <label for="sedentary_hours" class="form-label">Sedentary Hours per Day</label>
+      <input id="sedentary_hours" name="sedentary_hours" type="number" min="0" max="24" class="form-control" required>
+    </div>
+    <button type="submit" class="btn btn-primary w-100">Check Activity Level</button>
+        </div>
+        <div class="col-md-6">
+             <h5>Result</h5>
+    <div id="errorBoxActivity" class="alert alert-danger mt-3 d-none"></div>
+    <div id="resultActivity" class="mt-3" style="display:none;">
+      <strong>Activity Level:</strong> <span id="result_activity_level">-</span><br>
+      <strong>Advice:</strong> <span id="result_activity_advice">-</span>
+    </div>
+        </div>
+    </div>
+  </form>
+
+  <!-- Hydration Check Form -->
+  <form id="formHydration" class="healthForm card shadow-sm p-4 bg-white mx-auto mb-4" style="display:none;" novalidate>
+    {% csrf_token %}
+    <h4 class="mb-3">Hydration Check</h4>
+    <div class="row">
+        <div class="col-md-6">
+    
+                <div class="mb-3">
+                <label for="glasses_per_day" class="form-label">Number of Glasses of Water per Day</label>
+                <input id="glasses_per_day" name="glasses_per_day" type="number" min="0" max="20" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                <label class="form-label">Frequency of Thirst Symptoms</label>
+                <select name="thirst_frequency" class="form-select" required>
+                    <option value="" disabled selected>Choose...</option>
+                    <option value="never">Never</option>
+                    <option value="rarely">Rarely</option>
+                    <option value="sometimes">Sometimes</option>
+                    <option value="often">Often</option>
+                    <option value="very_often">Very Often</option>
+                </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">Check Hydration</button>
+        </div>
+
+        <div class="col-md-6">
+             <h5>Result</h5>
+            <div id="errorBoxHydration" class="alert alert-danger mt-3 d-none"></div>
+            <div id="resultHydration" class="mt-3" style="display:none;">
+            <strong>Hydration Status:</strong> <span id="result_hydration_status">-</span><br>
+            <strong>Advice:</strong> <span id="result_hydration_advice">-</span>
+            </div>
+        </div>
+
+    </div>
+  </form>
+
+</div>
+
+
+
+<script>
+  const testSelector = document.getElementById('testSelector');
+  const forms = document.querySelectorAll('.healthForm');
+
+  // Show only the selected form & reset others
+  testSelector.addEventListener('change', () => {
+    forms.forEach(form => {
+      form.style.display = 'none';
+      form.reset && form.reset();
+      const errorBox = form.querySelector('[id^=errorBox]');
+      if (errorBox) {
+        errorBox.classList.add('d-none');
+        errorBox.innerHTML = '';
+      }
+      const resultDiv = form.querySelector('[id^=result]');
+      if (resultDiv) resultDiv.style.display = 'none';
+    });
+    if (testSelector.value) {
+      document.getElementById('form' + testSelector.value.charAt(0).toUpperCase() + testSelector.value.slice(1)).style.display = 'block';
+    }
+  });
+
+  // Utility to show errors
+  function showError(form, message) {
+    const errorBox = form.querySelector('[id^=errorBox]');
+    errorBox.innerHTML = message;
+    errorBox.classList.remove('d-none');
+  }
+
+
+
+
+
+  // BMI Chart
+
+  const bmiChart = new Chart(document.getElementById('bmiChart').getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['BMI', 'Remaining'],
+      datasets: [{
+        label: 'BMI',
+        data: [0, 40],  // initial BMI is 0, max display is 40
+        backgroundColor: ['#007bff', '#e9ecef'],  // Initial color Blue for Underweight
+        hoverOffset: 30
+      }]
+    },
+    options: {
+      cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: { enabled: true }
+      },
+      maintainAspectRatio: false
+    },
+    plugins: [{
+      id: 'centerText',
+      afterDraw(chart) {
+        if (chart.config.type === 'doughnut') {
+          const {ctx, chartArea: {top, left, width, height}} = chart;
+          ctx.save();
+          ctx.font = 'bold 24px Arial';
+          ctx.fillStyle = bmiChart.data.datasets[0].backgroundColor[0];  // Use dynamic color
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          const bmiValue = chart.data.datasets[0].data[0].toFixed(1);
+          ctx.fillText(bmiValue, left + width / 2, top + height / 2);
+          ctx.restore();
+        }
+      }
+    }]
+  });
+
+
+  function getBmiColor(bmi) {
+    if (bmi < 18.5) return '#007bff';       // Blue (Underweight)
+    else if (bmi < 25) return '#28a745';    // Green (Normal)
+    else if (bmi < 30) return '#ffc107';    // Orange (Overweight)
+    else return '#dc3545';                   // Red (Obese)
+  }
+
+  function updateBmiChart(bmi) {
+    const val = Math.min(bmi, 40);
+    const color = getBmiColor(bmi);
+    bmiChart.data.datasets[0].data = [val, 40 - val];
+    bmiChart.data.datasets[0].backgroundColor[0] = color;
+    bmiChart.update();
+  }
+
+  updateBmiChart(27.3); 
+
+
+
+
+
+
+// Heart Rate Chart
+const heartChart = new Chart(document.getElementById('heartChart').getContext('2d'), {
+  type: 'bar',
+  data: {
+    labels: [
+      'Resting HR', 'Resting Ideal Min', 'Resting Ideal Max',
+      'After Walk HR', 'After Walk Ideal Min', 'After Walk Ideal Max'
+    ],
+    datasets: [{
+      label: 'BPM',
+      data: [0, 0, 0, 0, 0, 0],
+      backgroundColor: [
+        '#007bff', '#28a745', '#28a745',
+        '#6c757d', '#28a745', '#28a745'
+      ]
+    }]
+  },
+  options: {
+    scales: { y: { beginAtZero: true, max: 220 } },
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { display: true, position: 'bottom' },
+      tooltip: { enabled: true }
+    }
+  }
+});
+
+// Helper to pick bar color based on value vs min/max
+function getColor(value, min, max) {
+  if (value < min) return '#17a2b8';      // Cyan = below normal
+  if (value > max) return '#dc3545';      // Red = above normal
+  return '#28a745';                       // Green = normal
+}
+
+// Update chart and UI with backend data
+function updateHeartResult(data) {
+document.getElementById('resting_hr').innerText = data.resting_hr ?? '-';
+document.getElementById('after_walk_hr').innerText = data.after_walking_hr ?? '-';
+document.getElementById('resting_ideal_hr').innerText = `${data.ideal_hr_min} - ${data.ideal_hr_max}` ?? '-';
+document.getElementById('after_walk_ideal_hr').innerText = `${data.after_walking_hr_min} - ${data.after_walking_hr_max}` ?? '-';
+document.getElementById('rest_heart_status').innerText = data.heart_status ?? '-';
+document.getElementById('after_walk_heart_status').innerText = data.after_walking_status ?? '-';
+
+  const restingColor = getColor(data.resting_hr, data.ideal_hr_min, data.ideal_hr_max);
+  
+  let afterWalkColor = '#6c757d'; // gray default
+
+  if (data.after_walking_hr !== undefined && data.after_walking_hr !== null) {
+    afterWalkColor = getColor(data.after_walking_hr, data.after_walking_hr_min, data.after_walking_hr_max);
+  }
+
+  heartChart.data.datasets[0].data = [
+    data.resting_hr,
+    data.ideal_hr_min,
+    data.ideal_hr_max,
+    data.after_walking_hr ?? 0,
+    data.after_walking_hr_min ?? 0,
+    data.after_walking_hr_max ?? 0
+  ];
+
+  heartChart.data.datasets[0].backgroundColor = [
+    restingColor,
+    '#28a745',
+    '#28a745',
+    afterWalkColor,
+    '#28a745',
+    '#28a745'
+  ];
+
+  heartChart.update();
+  document.getElementById('resultHeart').style.display = 'block';
+}
+
+// Heart Rate Form submit handler
+document.getElementById('formHeart').addEventListener('submit', async e => {
+  e.preventDefault();
+  const form = e.target;
+  const data = await postForm(form);
+  if (!data) return;
+
+  // Call the right update function
+  updateHeartResult(data);
+});
+
+
+
+  // Stress Chart
+  const stressChart = new Chart(document.getElementById('stressChart').getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: ['Stress Level'],
+      datasets: [{
+        label: 'Stress Level',
+        data: [0],
+        backgroundColor: ['#007bff']
+      }]
+    },
+    options: {
+      scales: { y: { beginAtZero: true, max: 20 } },
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'bottom' },
+        tooltip: { enabled: true }
+      }
+    }
+  });
+
+  function updateStressChart(level) {
+    let color = '#007bff';
+    if (level <= 5) color = 'green';
+    else if (level <= 10) color = 'orange';
+    else if (level <= 15) color = 'orangered';
+    else color = 'red';
+
+    stressChart.data.datasets[0].data = [level];
+    stressChart.data.datasets[0].backgroundColor = [color];
+    stressChart.update();
+  }
+
+
+
+
+  // --- Form submit handlers ---
+  // Generalized fetch post with CSRF from formData
+  async function postForm(form) {
+    const errorBox = form.querySelector('[id^=errorBox]');
+    const resultDiv = form.querySelector('[id^=result]');
+    errorBox.classList.add('d-none'); errorBox.innerHTML = '';
+    if (resultDiv) resultDiv.style.display = 'none';
+
+    const formData = new FormData(form);
+    try {
+      const response = await fetch("{% url 'other_services:self_health_check_api' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': formData.get('csrfmiddlewaretoken') },
+        body: formData
+      });
+      const data = await response.json();
+
+      if (!data.ok) {
+        showError(form, data.errors.join('<br>'));
+        return null;
+      }
+      return data;
+    } catch (err) {
+      showError(form, 'Unexpected error occurred. Please try again.');
+      return null;
+    }
+  }
+
+  
+
+  // BMI Form submit
+  document.getElementById('formBmi').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_bmi').innerText = data.bmi;
+    form.querySelector('#result_bmi_status').innerText = data.bmi_status;
+    form.querySelector('#resultBmi').style.display = 'block';
+    updateBmiChart(data.bmi);
+  });
+
+
+
+  // Stress Form submit
+  document.getElementById('formStress').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_stress_level').innerText = data.stress_level;
+    form.querySelector('#result_stress_status').innerText = data.stress_status;
+    form.querySelector('#resultStress').style.display = 'block';
+    updateStressChart(data.stress_level);
+  });
+
+  // Blood Pressure Form submit
+  document.getElementById('formBp').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_bp_category').innerText = data.bp_category;
+    form.querySelector('#result_bp_advice').innerText = data.bp_advice;
+    form.querySelector('#resultBp').style.display = 'block';
+  });
+
+
+
+  // Cholesterol Form submit
+  document.getElementById('formCholesterol').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_cholesterol_risk').innerText = data.cholesterol_risk;
+    form.querySelector('#result_cholesterol_advice').innerText = data.cholesterol_advice;
+    form.querySelector('#resultCholesterol').style.display = 'block';
+  });
+
+  // Sleep Quality Form submit
+  document.getElementById('formSleep').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_sleep_quality').innerText = data.sleep_quality;
+    form.querySelector('#result_sleep_advice').innerText = data.sleep_advice;
+    form.querySelector('#resultSleep').style.display = 'block';
+  });
+
+  // PHQ-9 Form submit
+  document.getElementById('formPhq9').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_phq9_severity').innerText = data.phq9_severity;
+    form.querySelector('#result_phq9_advice').innerText = data.phq9_advice;
+    form.querySelector('#resultPhq9').style.display = 'block';
+  });
+
+  // Physical Activity Form submit
+  document.getElementById('formActivity').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_activity_level').innerText = data.activity_level;
+    form.querySelector('#result_activity_advice').innerText = data.activity_advice;
+    form.querySelector('#resultActivity').style.display = 'block';
+  });
+
+  // Hydration Form submit
+  document.getElementById('formHydration').addEventListener('submit', async e => {
+    e.preventDefault();
+    const form = e.target;
+    const data = await postForm(form);
+    if (!data) return;
+    form.querySelector('#result_hydration_status').innerText = data.hydration_status;
+    form.querySelector('#result_hydration_advice').innerText = data.hydration_advice;
+    form.querySelector('#resultHydration').style.display = 'block';
+  });
+</script>
+
+{% endblock %}

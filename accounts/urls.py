@@ -81,7 +81,22 @@ urlpatterns = [
     path('assign_user_to_group/', views.assign_user_to_group, name='assign_user_to_group'),
     path('assign_permissions_to_group/', views.assign_permissions_to_group, name='assign_permissions_to_group'),
     path('get_permissions_for_model/', views.get_permissions_for_model, name='get_permissions_for_model'),
-    path('search_all/', views.search_all, name='search_all')
-  
+    path('search_all/', views.search_all, name='search_all'),
+    path('heartbeat/', views.heartbeat, name='heartbeat'),
+
+
+
+
+
+    path("addresses/", views.view_address, name="addresses"),
+    path("add_address/", views.add_address, name="add_address"),
+    path("addresses/edit/<slug:id>/", views.edit_address, name="edit_address"),
+    path("addresses/delete/<slug:id>/", views.delete_address, name="delete_address"),
+    path("addresses/set_default/<slug:id>/", views.set_default, name="set_default"),
+    path("dashboard/", views.dashboard, name="dashboard"),
+
+    path("wishlist", views.wishlist, name="wishlist"),
+    path("wishlist/add_to_wishlist/<int:id>", views.add_to_wishlist, name="user_wishlist"),
+    path('admin-view/', views.admin_view, name='admin-view'), 
 
 ]

@@ -71,7 +71,7 @@ class Specialization(models.Model):
 
 
 class Doctor(models.Model): 
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, null=True,blank=True)
+    user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, null=True,blank=True,related_name="doctor_user")
     full_name = models.CharField(max_length=255)     
     department = models.CharField(max_length=100)
     specialization = models.TextField(null=True, blank=True)
@@ -100,8 +100,33 @@ class Doctor(models.Model):
     video_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     folloup_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     followup_validity_days = models.PositiveIntegerField(default=10, help_text="Follow-up discount validity in days",null=True,blank=True)
+   
+    has_chamber = models.BooleanField(default=False)
+    is_feature_doctor = models.BooleanField(default=False)
+
+    chamber_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)   
+    chamber_followup_consultation_fees = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
+    chamber_followup_validity_days = models.PositiveIntegerField(default=10, help_text="Follow-up discount validity in days",null=True,blank=True)
+   
     payment_wallet_number = models.CharField(max_length=11, blank=True, null=True)
+   
     created_at = models.DateTimeField(auto_now_add=True)
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
+
+    policy_accepted = models.BooleanField(default=False)
+    policy_accepted_at = models.DateTimeField(null=True, blank=True)
+    payout_preference = models.CharField(
+        max_length=16,
+        choices=[("Daily","Daily"),("Weekly","Weekly"),("Monthly","Monthly")],
+        default="Monthly"
+    )
+  
+
+    def accept_policy(self):
+        self.policy_accepted = True
+        self.policy_accepted_at = timezone.now()
+        self.save(update_fields=["policy_accepted", "policy_accepted_at"])
 
     def __str__(self):
         return self.full_name if  self.full_name else 'Unnamed Doctor'
@@ -130,6 +155,8 @@ class Patient(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     remarks=models.TextField(null=True,blank=True)
     email = models.EmailField(blank=True, null=True)
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.dob:
@@ -248,6 +275,7 @@ class DoctorBooking(models.Model):
     video_call_request_approve =  models.CharField(null=True,blank=True,choices=[('approved','Approved'),('rejected','Rejected')])
     video_call_time = models.DateTimeField(null=True,blank=True)
     video_link = models.URLField(blank=True, null=True)   
+    webrtc_room = models.CharField(max_length=200, blank=True, null=True) 
 
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -286,6 +314,7 @@ class DoctorBooking(models.Model):
 
 
 
+
 class DoctorFolloupBooking(models.Model):
     STATUS_CHOICES = (
         ('pending', 'Pending'),
@@ -305,6 +334,7 @@ class DoctorFolloupBooking(models.Model):
     approved_followup_datetime = models.DateTimeField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    webrtc_room = models.CharField(max_length=200, blank=True, null=True) 
     
     def save(self, *args, **kwargs):
         if not self.booking_code:
@@ -327,6 +357,7 @@ class ZoomMeeting(models.Model):
     scheduled_time = models.DateTimeField(null=True, blank=True)
     zoom_meeting_link = models.URLField(null=True, blank=True) 
     created_at = models.DateTimeField(auto_now_add=True)
+    webrtc_room = models.CharField(max_length=200, blank=True, null=True) 
 
     status = models.CharField(
         max_length=20,
@@ -368,6 +399,7 @@ class DoctorPrescription(models.Model):
     diagnosis = models.TextField(verbose_name="Clinical Diagnosis",null=True,blank=True)
     advice = models.TextField(help_text="Follow-up instructions, lifestyle, or dietary advice",null=True,blank=True)
     prescribed_at = models.DateTimeField(auto_now_add=True)
+
 
     def get_booking_reference(self):
         return self.booking_ref or self.booking_folloup_ref or (

@@ -17,7 +17,7 @@
     .cs-bn-text {
       font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
       font-weight: 700;           /* Bold for premium feel */
-      fill: #444;                 /* Elegant dark gray */
+      fill: #fff;                  /* Elegant dark gray */
       letter-spacing: 0.5px;      /* Slight spacing */
     }
   </style>

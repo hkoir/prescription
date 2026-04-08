@@ -1,5 +1,7 @@
 from django.urls import path
 from . import views
+from django.conf.urls.static import static
+from django.conf import settings
 
 app_name = 'prescription'
 
@@ -73,13 +75,16 @@ urlpatterns = [
     path('initiate_followup_video_consultation_payment/<int:followup_booking_id>/', views.initiate_followup_video_consultation_payment, name='initiate_followup_video_consultation_payment'),
     
     # path('translate/', views.translate_text, name='translate_text'),
+    path('request_test_video_call/<int:doctor_id>/', views.request_test_video_call, name="request_test_video_call"),
+    path('doctor_initiate_video_call/<int:patient_id>/', views.doctor_initiate_video_call, name="doctor_initiate_video_call"),
 
 
 
     path('about/', views.about_us, name='about_us'),
     path('contact/', views.contact_us, name='contact_us'),
+    path('downloads/<str:filename>/', views.download_file, name='download_file'),
+    path("guidelines/", views.DoctorGuidelinesView.as_view(), name="guidelines"),
+    path("guidelines/accept/", views.accept_doctor_policy, name="guidelines_accept"),
 
 
-
-]
-
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

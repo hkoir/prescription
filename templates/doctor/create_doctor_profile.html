@@ -15,8 +15,13 @@
                     <h3 class="mb-0"> {% if instance %} Update profile {% else %} Create Profile {% endif %}</h3>
                 </div> 
                 <div class="card-body">                       
+                    <div class="mb-3 text-center">
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#doctorGuidelinesModal">
+                        Read Doctor Guidelines
+                    </button>
+                    </div>
 
-		<form method="post" enctype="multipart/form-data">
+		            <form method="post" id="doctorForm" enctype="multipart/form-data">
                         {% csrf_token %}
                         <div class="row">
                         {% for field in form %}
@@ -33,12 +38,14 @@
                         {% endfor %}
 
                         <!-- Button inside a column -->
+                          <input type="hidden" name="guidelines_accepted" id="guidelinesAccepted" value="0">
                         <div class="col-md-3 mb-3 d-flex align-items-end">
                             <button type="submit" class="btn btn-sm btn-outline-success w-100">Submit</button>  
                         </div>
                         </div>                      
                     </form>
-                    </div>
+
+                </div>
             </div>           
         </div> 
         <div class="col-12 table-responsive">
@@ -84,7 +91,7 @@
                             <td>{{ data.consultation_fees }}</td>
                              <td>{{ data.folloup_consultation_fees }}</td>
                             <td>{{ data.followup_validity_days }}</td>
-			    <td>{{ data.medical_license_number }}
+			                <td>{{ data.medical_license_number }}
                             <td>{{ data.experience_years }}</td>
                             <td>{{ data.hospital_affiliations }}</td>
                             <td>{{ data.memberships }}</td>
@@ -99,7 +106,7 @@
             </table>
            
         </div>
-    </div>
+   
 
     <div style="height:50px"></div>
 </div>
@@ -125,11 +132,46 @@
         </div>
     </div>
 </div>
-</div>
+
+
+
+<!-- Doctor Guidelines Modal -->
+<div class="modal fade" id="doctorGuidelinesModal" tabindex="-1" aria-labelledby="doctorGuidelinesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="doctorGuidelinesLabel">Doctor Service Guidelines</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <ol>
+          <li><strong>Availability:</strong> Doctors should remain online as much as possible to receive patient bookings and real-time WebRTC calls.</li>
+          <li><strong>Notifications:</strong> You will be notified of new patient bookings via Firebase push notifications, web notifications, and SMS. Check notifications regularly to avoid delays.</li>
+          <li><strong>Consultation:</strong> Patients will fill symptoms, medical history, and upload images/videos. You must review this before providing prescription.</li>
+          <li><strong>Real-time Chat/Video:</strong> A link will be provided to start instant chat or video call. Ensure you are online and in the chat room to accept calls.</li>
+          <li><strong>Prescription Template:</strong> You must use the system’s prescription template for consistency.</li>
+          <li><strong>Fees Tracking:</strong> Consultation fees (chat/video/in-person) will be recorded in your dashboard. Track your earnings, pending payments, and prescriptions given.</li>
+          <li><strong>Payment:</strong> Doctors receive daily/weekly/monthly payments. Keep your wallet/bank details updated in your profile.</li>
+          <li><strong>Professional Conduct:</strong> Always provide timely consultations. Avoid unnecessary delays for patients.</li>
+          <li><strong>Follow-ups:</strong> Follow-up consultations must respect validity days as defined in the system.</li>
+          <li><strong>Consultation Service Charge:</strong> You can define standard consultation fees. For chat/video calls, you may choose free or charged. Higher fees may reduce patient bookings.</li>
+        </ol>
+      </div>
+      <div class="modal-footer">
+        <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-success" data-bs-dismiss="modal">I Agree</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </div>
 
 
+
 </div>
+
 
 
 

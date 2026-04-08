@@ -1,0 +1,20 @@
+{% comment %}
+Reusable chat buttons for doctor/patient dashboards.
+Required context:
+- chat_partner_id: user id of the opposite party (doctor or patient)
+- chat_partner_name: name to display
+- continue_url: URL to continue existing chat (no `?new=1`)
+- new_chat_url: URL to start a new chat (`?new=1`)
+{% endcomment %}
+
+<div class="chat-buttons">
+  <h5>Chat with {{ chat_partner_name }}</h5>
+  
+  <a href="{{ continue_url }}" class="btn btn-primary btn-sm">
+    Continue Last Chat
+  </a>
+
+  <a href="{{ new_chat_url }}" class="btn btn-outline-danger btn-sm">
+    Start New Chat
+  </a>
+</div>

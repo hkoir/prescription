@@ -1,0 +1,58 @@
+<!-- Optional Info Panel (Doctor Only) -->
+{% if user_role == 'doctor' %}
+<div class="px-3 pt-3 pb-0">
+  <div class="accordion" id="patientDetailsAccordion">
+
+    {% if active_bookings %}
+    <div class="accordion-item mb-2">
+      <h2 class="accordion-header" id="headingBooking">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBooking" aria-expanded="false" aria-controls="collapseBooking">
+          🩺 Active Bookings
+        </button>
+      </h2>
+      <div id="collapseBooking" class="accordion-collapse collapse" aria-labelledby="headingBooking" data-bs-parent="#patientDetailsAccordion">
+        <div class="accordion-body">
+          <ul class="list-group list-group-flush">
+            {% for booking in active_bookings %}
+              <li class="list-group-item">
+                <strong>Code:</strong> {{ booking.booking_code }}<br>
+                <strong>Time:</strong> {{ booking.preferred_time|date:"M d, Y H:i" }}<br>
+                <strong>Summary:</strong> {{ booking.symptoms_summary|default:"N/A" }}<br>
+                <strong>Status:</strong> {{ booking.status|capfirst }}<br>
+                {% if booking.video_link %}
+                  <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-primary mt-2" target="_blank">Join Video</a>
+                {% endif %}
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    {% if recent_followups %}
+    <div class="accordion-item">
+      <h2 class="accordion-header" id="headingFollowup">
+        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFollowup" aria-expanded="false" aria-controls="collapseFollowup">
+          📋 Recent Follow-ups
+        </button>
+      </h2>
+      <div id="collapseFollowup" class="accordion-collapse collapse" aria-labelledby="headingFollowup" data-bs-parent="#patientDetailsAccordion">
+        <div class="accordion-body">
+          <ul class="list-group list-group-flush">
+            {% for followup in recent_followups %}
+              <li class="list-group-item">
+                <strong>ID:</strong> {{ followup.booking_code }}<br>
+                <strong>Status:</strong> {{ followup.status|capfirst }}<br>
+                <strong>Created:</strong> {{ followup.created_at|date:"M d, Y H:i" }}<br>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+{% endif %}

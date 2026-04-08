@@ -1,0 +1,41 @@
+{% extends "../base.html" %}
+
+{% block content %}
+
+
+<div class="container">
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="reviewText" class="form-label">Review Form</label>
+        <textarea class="form-control" id="reviewText" name="text" rows="5" placeholder="Please write your review here"></textarea>
+    </div>
+    <div class="mb-3">
+        <label for="reviewRating" class="form-label">Rating (1-5)</label>
+        <input type="number" class="form-control" id="reviewRating" name="rating" min="1" max="5" placeholder="Rating (1-5)">
+    </div>
+    <div class="mb-3">
+        <label for="imageOne">Image One</label>
+        <input type="file" class="form-control" id="imageOne" name="image_one">
+    </div>
+    <div class="mb-3">
+        <label for="imageTwo">Image Two</label>
+        <input type="file" class="form-control" id="imageTwo" name="image_two">
+    </div>
+    <div class="mb-3">
+        <label for="imageThree">Image Three</label>
+        <input type="file" class="form-control" id="imageThree" name="image_three">
+    </div>
+    <div class="mb-3">
+        <label for="imageFour">Image Four</label>
+        <input type="file" class="form-control" id="imageFour" name="image_four">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+</form>
+
+
+</div>
+
+{% endblock %}

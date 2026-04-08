@@ -34,7 +34,7 @@ CustomUser = get_user_model()
 from.models import BillingRecord
 from django.core.exceptions import ValidationError
 
-
+from prescription.models import Doctor
 
 
 
@@ -52,10 +52,10 @@ def demo_request(request):
 
 
 
-
 def tenant_dashboard(request):  
     tenants = Client.objects.exclude(schema_name='public')  
     plans = SubscriptionPlan.objects.all().order_by('duration')
+    featured_doctors = Doctor.objects.filter(is_feature_doctor = True)[:5] 
     for plan in plans:
         plan.features_list = plan.features.split(',') if plan.features else [] 
 
@@ -70,8 +70,7 @@ def tenant_dashboard(request):
   
     is_public_schema = tenant.schema_name == get_public_schema_name()
     tenant_schema_name = request.tenant.schema_name
-   
-  
+    
 
     if is_public_schema:
         template_name = "tenant/default_dashboard.html"
@@ -79,7 +78,8 @@ def tenant_dashboard(request):
             "welcome_message": "Welcome to the public dashboard",
             'plans':plans,           
             'username':request.user.username,
-            'tenants':tenants
+            'tenants':tenants,
+            'featured_doctors':featured_doctors
 
         }
     elif is_public_schema and request.user.is_authenticated:
@@ -88,7 +88,8 @@ def tenant_dashboard(request):
             "welcome_message": "Welcome to the public dashboard",
             'plans':plans,           
             'username':request.user.username,
-             'tenants':tenants
+            'tenants':tenants,
+            'featured_doctors':featured_doctors
 
         }
     else:
@@ -100,7 +101,8 @@ def tenant_dashboard(request):
             'tenant_links':tenant_links,
             'plans':plans,      
             'username':request.user.username,
-            'tenants':tenants
+            'tenants':tenants,
+            'featured_doctors':featured_doctors
         }        
     return render(request, template_name, context)
 

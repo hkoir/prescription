@@ -23,7 +23,6 @@ class DoctorAdminForm(forms.ModelForm):
 
 
 
-
 class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
@@ -105,15 +104,6 @@ class DirectDoctorBookingForm(forms.ModelForm):
             'vital_signs': _("Enter any available vital signs like BP, HR."),
             'location': _("Specify your current location or area."),
         }
-
-
-class RequestVideoCallForm(forms.Form):
-    video_call_message = forms.CharField(
-        widget=forms.Textarea(attrs={'style': 'height:100px'}),
-        help_text=_("Write your request message (Optional)"),
-        label=_("Video Call Message"),
-        required=False
-    )
 
 
 
@@ -200,7 +190,7 @@ class PatientZoomRequestForm(forms.ModelForm):
             }),
         }
         labels = {
-            "request_message": _("Zoom Meeting Request Message"),
+            "request_message": _(" Enter message for Conference Meeting Request(Optional) "),
             "doctor_folloup_booking": _("Follow-up Booking ID"),
         }
 

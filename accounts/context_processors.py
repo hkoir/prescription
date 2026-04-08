@@ -96,3 +96,69 @@ def unread_notifications(request):
             filters |= Q(doctor=doctor)
     notifications = notifications.filter(filters).order_by('-created_at')
     return {'unread_notifications': notifications}
+
+
+
+
+
+from chat.models import ChatThread
+from django.db.models import Max,Count
+
+def tenant_context(request):
+    tenant_schema = getattr(request.tenant, "schema_name", "public")
+
+    if not request.user.is_authenticated:
+        return {
+            'tenant_prefix': tenant_schema,
+            'has_unread': False,
+        }
+
+    # Example: check if user is doctor or patient to query accordingly
+    if hasattr(request.user, 'role') and request.user.role == 'doctor':
+        threads_qs = (
+            ChatThread.objects
+            .filter(tenant_schema=tenant_schema, doctor_user=request.user)
+            .select_related('patient_user')
+            .annotate(
+                last_msg_at=Max('messages__sent_at'),
+                unread_count=Count(
+                    'messages',
+                    filter=Q(messages__read_at__isnull=True) & ~Q(messages__sender=request.user)
+                )
+            )
+            .order_by('-last_msg_at', '-created_at')
+        )
+        has_unread = any(t.unread_count > 0 for t in threads_qs)
+        user_role = 'doctor'
+
+    elif hasattr(request.user, 'role') and request.user.role == 'patient':
+        threads_qs = (
+            ChatThread.objects
+            .filter(tenant_schema=tenant_schema, patient_user=request.user)
+            .select_related('doctor_user')
+            .annotate(
+                last_msg_at=Max('messages__sent_at'),
+                unread_count=Count(
+                    'messages',
+                    filter=Q(messages__read_at__isnull=True) & ~Q(messages__sender=request.user)
+                )
+            )
+            .order_by('-last_msg_at', '-created_at')
+        )
+        has_unread = any(t.unread_count > 0 for t in threads_qs)
+        user_role = 'patient'
+
+    else:
+        # fallback for other roles or anonymous users
+        has_unread = False
+        user_role = None
+
+    return {
+        'tenant_prefix': tenant_schema,
+        'has_unread': has_unread,
+        'doctor_user_id': request.user.id if user_role == 'doctor' else None,
+        'patient_user_id': request.user.id if user_role == 'patient' else None,
+        'user_role': user_role,
+        'user_id':request.user.id,
+     
+    }

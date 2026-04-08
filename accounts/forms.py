@@ -80,7 +80,7 @@ class TenantUserRegistrationForm(UserCreationForm):
     def clean(self):
         cleaned_data = super().clean()
         email = cleaned_data.get('email')
-        phone = cleaned_data.get('phone_number')
+        phone = cleaned_data.get('phone_number')        
 
         if not email and not phone:
             raise ValidationError("Either email or phone number is required.")
@@ -300,3 +300,36 @@ class AssignPermissionsToGroupForm(forms.Form):
             self.fields['permissions'].queryset = Permission.objects.filter(content_type=content_type)
 
 
+
+
+
+
+
+from.models import Address  
+
+class UserAddressForm(forms.ModelForm):
+    class Meta:
+        model = Address
+        fields = ["full_name", "phone", "address_line", "address_line2", "town_city", "postcode"]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["full_name"].widget.attrs.update(
+            {"class": "form-control mb-2 account-form", "placeholder": "Full Name"}
+        )
+        self.fields["phone"].widget.attrs.update({"class": "form-control mb-2 account-form", "placeholder": "Phone"})
+        self.fields["address_line"].widget.attrs.update(
+            {"class": "form-control mb-2 account-form", "placeholder": "Address Line 1"}
+        )
+        self.fields["address_line2"].widget.attrs.update(
+            {"class": "form-control mb-2 account-form", "placeholder": "Address Line 2"}
+        )
+        self.fields["town_city"].widget.attrs.update(
+            {"class": "form-control mb-2 account-form", "placeholder": "Town/City"}
+        )
+        self.fields["postcode"].widget.attrs.update(
+            {"class": "form-control mb-2 account-form", "placeholder": "Postcode"}
+        )
+
+    def clean_address_line2(self):      
+        return self.cleaned_data.get('address_line2', '')

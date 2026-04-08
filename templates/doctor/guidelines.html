@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load static i18n %}
+{% block title %}Doctor Guidelines{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+      <div class="card border-0 shadow-sm">
+        <div class="card-body p-4">
+
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <h3 class="mb-0">{% trans "Doctor Service & Payment Policy" %}</h3>
+            <span class="badge bg-light text-dark">Last updated: {{ policy_last_updated }}</span>
+          </div>
+
+          <p class="text-muted">
+            {% trans "This policy applies to all verified doctors providing services via Care Setu." %}
+          </p>
+
+          <hr>
+
+          <h5 class="mt-3">1. Scope & Eligibility</h5>
+          <ul class="text-muted">
+            <li>Applies to all verified, registered doctors.</li>
+            <li>Maintain accurate profile & valid license documentation.</li>
+          </ul>
+
+          <h5 class="mt-3">2. Booking & Notifications</h5>
+          <p class="text-muted mb-1">
+            You will receive booking notifications via:
+          </p>
+          <ul class="text-muted">
+            {% for c in notification_channels %}
+              <li>{{ c }}</li>
+            {% endfor %}
+          </ul>
+          <p class="text-muted">You are responsible for checking notifications promptly so no patient is delayed.</p>
+
+          <h5 class="mt-3">3. Real-Time Consultation</h5>
+          <ul class="text-muted">
+            <li>Patients get a secure link to start real-time chat / WebRTC video call immediately after booking.</li>
+            <li>Stay online / open the website to receive chat/video calls; join the session from your dashboard.</li>
+          </ul>
+
+          <h5 class="mt-3">4. Consultation Workflow</h5>
+          <ul class="text-muted">
+            <li>Review symptoms, images, short videos, and medical history.</li>
+            <li>Use the platform’s standard prescription template only.</li>
+            <li>Communicate professionally and document key clinical reasoning.</li>
+          </ul>
+
+          <h5 class="mt-3">5. Clinical & Compliance Standards</h5>
+          <ul class="text-muted">
+            <li>Follow applicable laws, guidelines, and medical council rules.</li>
+            <li>Request additional tests/referrals when indicated.</li>
+            <li>Respect patient privacy; never export/share data outside the platform.</li>
+          </ul>
+
+          <h5 class="mt-3">6. Fees & Payments</h5>
+          <ul class="text-muted">
+            <li>Consultation fees are added to your dashboard after prescription submission.</li>
+            <li>View earnings, pending/paid amounts, and prescription history in the dashboard.</li>
+            <li>Payouts available: 
+              {% for opt in payout_options %}
+                <span class="badge bg-secondary">{{ opt }}</span>
+              {% endfor %}
+              — subject to platform fees, gateway charges, refunds/chargebacks.
+            </li>
+          </ul>
+
+          <h5 class="mt-3">7. Cancellations & No-Shows</h5>
+          <ul class="text-muted">
+            <li>Mark no-shows with proper status; fees may be partial/zero per policy.</li>
+            <li>If you can’t attend, notify and reschedule promptly. Repeated no-shows may lead to action.</li>
+          </ul>
+
+          <h5 class="mt-3">8. Availability Expectation</h5>
+          <p class="text-muted">
+            Patients can book anytime. Please remain online as much as possible or configure clear availability windows.
+          </p>
+
+          <h5 class="mt-3">9. Prohibited Conduct</h5>
+          <ul class="text-muted">
+            <li>Off-platform payments/solicitation; sharing personal contacts.</li>
+            <li>Inappropriate prescribing or controlled substances without proper clearance.</li>
+            <li>Harassment, discrimination, or unprofessional conduct.</li>
+          </ul>
+
+          <h5 class="mt-3">10. Support & Escalation</h5>
+          <p class="text-muted">Use in-app support for technical issues; report clinical safety concerns immediately.</p>
+
+         <h5 class="mt-3">11. Consultation Service Charge</h5>
+          <p class="text-muted">
+            When a doctor registers as a specialized doctor, they will have the option to set a standard consultation fee in our prescription template.  
+            For any patient requesting a chat or video call, the doctor may choose to apply this fee or provide the service free of charge if the patient has a valid booking.  
+            If the doctor decides to charge additionally for chat/video consultations, they must specify the amount. Keep in mind that higher fees may discourage patients from booking future appointments.
+          </p>
+
+
+
+          <h5 class="mt-3">12. Policy Changes</h5>
+          <p class="text-muted mb-4">This policy may be updated. Continued use after updates constitutes acceptance.</p>
+
+          <div class="alert {% if policy_accepted_at %}alert-success{% else %}alert-warning{% endif %}">
+            {% if policy_accepted_at %}
+              <strong>Accepted:</strong> {{ policy_accepted_at|date:"M d, Y H:i" }}
+            {% else %}
+              <strong>Action required:</strong> Please read and accept to continue providing services.
+            {% endif %}
+          </div>
+
+          <form method="post" action="{% url 'prescription:guidelines_accept' %}">
+            {% csrf_token %}
+            <div class="form-check mb-3">
+              <input class="form-check-input" type="checkbox" value="1" id="agreeCheck" required>
+              <label class="form-check-label" for="agreeCheck">
+                I have read and agree to the Doctor Service & Payment Policy.
+              </label>
+            </div>
+            <button class="btn btn-primary" type="submit" {% if policy_accepted_at %}disabled{% endif %}>
+              {% if policy_accepted_at %}Already Accepted{% else %}I Agree{% endif %}
+            </button>
+            <a href="{% url 'prescription:home' %}" class="btn btn-outline-secondary ms-2">Back to Dashboard</a>
+          </form>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

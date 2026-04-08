@@ -21,5 +21,6 @@ admin.site.register(LabResultFile)
 from .forms import DoctorAdminForm
 class DoctorAdmin(admin.ModelAdmin):
     form = DoctorAdminForm
+    list_display = ('full_name', 'has_chamber', 'is_feature_doctor')  # 👈 add here to see in list
 
 admin.site.register(Doctor, DoctorAdmin)

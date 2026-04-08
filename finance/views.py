@@ -114,8 +114,6 @@ def pay_doctor(request, doctor_id):
 
 
 
-
-
 @login_required
 def patient_dashboard(request):
     patient = None
@@ -124,7 +122,6 @@ def patient_dashboard(request):
     except Patient.DoesNotExist:
         messages.error(request, "Access denied. Only patients can view this dashboard.")
         return redirect('prescription:home')
-
     doctor_prescriptions = [
         {
             'type': 'Doctor',
@@ -337,6 +334,9 @@ from payment_gateway.models import PaymentInvoice
 from django.db.models import Sum
 from datetime import datetime, time
 from django.db.models.functions import TruncDate
+
+
+
 
 @doctor_required
 @login_required

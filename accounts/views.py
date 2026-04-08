@@ -42,6 +42,50 @@ from accounts.utils import send_sms
 
 import logging
 logger = logging.getLogger(__name__)
+from django.core.cache import cache
+from datetime import timedelta
+from django.views.decorators.http import require_POST
+
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+
+from.models import CustomUser
+INACTIVITY_THRESHOLD = 120  
+
+def mark_inactive_users():
+    cutoff = timezone.now() - timedelta(seconds=INACTIVITY_THRESHOLD)
+    CustomUser.objects.filter(is_online=True, last_seen__lt=cutoff).update(is_online=False)
+
+def mark_user_online(user_id):
+    cache.set(f"user_online_{user_id}", True, timeout=10)
+
+def is_user_online(user_id):
+    return cache.get(f"user_online_{user_id}") is not None
+
+
+ONLINE_TIMEOUT = 120
+@csrf_exempt
+@login_required
+@require_POST
+def heartbeat(request):
+    u = request.user
+    u.last_seen = timezone.now()
+    u.save(update_fields=['last_seen'])
+    cache.set(f"user_online_{u.id}", True, timeout=ONLINE_TIMEOUT + 5)
+    return HttpResponse(status=204)
+
+
+from django.contrib.auth.signals import user_logged_out
+from django.dispatch import receiver
+
+@receiver(user_logged_out)
+def on_user_logged_out(sender, request, user, **kwargs):
+    if user:
+        user.is_online = False
+        user.save(update_fields=['is_online'])
+        cache.delete(f"user_online_{user.id}")
+
+
 
 
 
@@ -670,3 +714,113 @@ def search_all(request):
         'query': query,
         
     })
+
+
+
+
+
+
+
+
+
+
+from accounts.models import Address
+from.forms import UserAddressForm
+from django.urls import reverse_lazy
+from django.urls import reverse
+from orders.views import user_orders
+from django.contrib.admin.views.decorators import user_passes_test
+from django.contrib.auth import get_user_model
+from store.models import Product
+from store.models import AudioModel
+
+
+@login_required
+def dashboard(request):
+    audio_files = AudioModel.objects.all()
+    orders = user_orders(request)
+    return render(request, "accounts/dashboard/dashboard.html", {"section": "profile", "orders": orders,'audio_files':audio_files})
+
+
+@login_required
+def view_address(request):
+    addresses = Address.objects.filter(customer=request.user)
+    return render(request, "accounts/dashboard/addresses.html", {"addresses": addresses})
+
+
+@login_required
+def add_address(request):
+    if request.method == "POST":
+        address_form = UserAddressForm(data=request.POST)
+        if address_form.is_valid():
+            address_form = address_form.save(commit=False)
+            address_form.customer = request.user
+            address_form.save()
+            return HttpResponseRedirect(reverse("accounts:addresses"))
+    else:
+        address_form = UserAddressForm()
+    return render(request, "accounts/dashboard/edit_addresses.html", {"form": address_form})
+
+
+@login_required
+def edit_address(request, id):
+    if request.method == "POST":
+        address = Address.objects.get(pk=id, customer=request.user)
+        address_form = UserAddressForm(instance=address, data=request.POST)
+        if address_form.is_valid():
+            address_form.save()
+            return HttpResponseRedirect(reverse("accounts:addresses"))
+    else:
+        address = Address.objects.get(pk=id, customer=request.user)
+        address_form = UserAddressForm(instance=address)
+    return render(request, "accounts/dashboard/edit_addresses.html", {"form": address_form})
+
+
+@login_required
+def delete_address(request, id):
+    address = Address.objects.filter(pk=id, customer=request.user).delete()
+    return redirect("accounts:addresses")
+
+
+@login_required
+def set_default(request, id):
+    Address.objects.filter(customer=request.user, default=True).update(default=False)
+    Address.objects.filter(pk=id, customer=request.user).update(default=True)
+    return redirect("accounts:addresses")
+
+
+
+@login_required
+def wishlist(request):
+    products = Product.objects.filter(users_wishlist=request.user)
+    return render(request, "accounts/dashboard/user_wish_list.html", {"wishlist": products})
+
+
+@login_required
+def add_to_wishlist(request, id):
+    product = get_object_or_404(Product, id=id)
+    if product.users_wishlist.filter(id=request.user.id).exists():
+        product.users_wishlist.remove(request.user)
+        messages.success(request, product.title + " has been removed from your WishList")
+    else:
+        product.users_wishlist.add(request.user)
+        messages.success(request, "Added " + product.title + " to your WishList")
+    return HttpResponseRedirect(request.META["HTTP_REFERER"])
+
+
+
+
+@user_passes_test(lambda u: u.is_staff)
+def admin_view(request):
+    user_id = request.user.id
+    User = get_user_model()
+    user = User.objects.get(pk=user_id)
+    user_name = user.username
+
+    videox = Product.objects.all()
+
+    if not request.user.is_staff:     
+        messages.error(request, "You are not authorized to view this page.")  
+        return HttpResponseRedirect(reverse("login"))
+     
+    return render(request, 'accounts/admin/admin_page.html', {'user': user_name,'videox':videox})

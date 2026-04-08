@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block content %}
+
+ <div class="container py-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6">
+        <div class="card shadow-sm">
+          <div class="card-body">
+            <h3 class="card-title text-center mb-4">Invite Doctor to Meeting</h3>
+            <p class="text-center text-muted mb-4">Meeting: <strong>{{ room.title }}</strong></p>
+
+            <form method="post">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="email" class="form-label">Doctor's Email</label>
+                <input type="text" class="form-control" id="emails" name="emails" placeholder="doctor1@example.com; doctor2@example.com" required>
+
+              </div>
+              <button type="submit" class="btn btn-primary w-100">Send Invite</button>
+            </form>
+            <div class="text-center mt-3">
+              <a href="{% url 'chat:meeting_room' room_id=room.id %}" class="btn btn-outline-secondary btn-sm">Go to Meeting Room</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+{% endblock %}

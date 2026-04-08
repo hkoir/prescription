@@ -509,17 +509,26 @@ html, body {
 }
 
 
-
+/* Hero Slider Section */
 .hero-slider-slide {
-  position: relative;
-  width: 100%;
-  height: 80vh;
+  position: relative;  
   overflow: hidden;
   font-family: inherit;
-  width: 100vw;
+  width: 100%;          /* full container width */
+  max-width: 100%;
   color: #fff;
+  margin: 0;
+  padding: 0;
+  height: 70vh;          /* slightly reduced default height */
+  box-sizing: border-box;
 }
 
+/* Prevent horizontal overflow globally */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Viewport and Track */
 .hero-slider-viewport {
   width: 100%;
   height: 100%;
@@ -528,31 +537,31 @@ html, body {
 
 .hero-slider-track {
   display: flex;
-  height: 100%;
-  transition: transform 0.8s ease; /* slide animation */
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  transition: transform 0.6s ease;
   will-change: transform;
 }
 
+/* Slides */
 .hero-slide {
+  flex: 0 0 100%;
+  margin: 0;
+  padding: 0;
   position: relative;
-  flex: 0 0 100%; /* each slide = full viewport width */
-  height: 100%;
   overflow: hidden;
 }
 
-
+/* Slide Images */
 .hero-slide img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;  /* or center/bottom */
+  height: 70vh;       
+  object-fit: cover; 
+  object-position: center;
 }
 
-
-
-
-
-/* dark overlay for text contrast */
+/* Dark overlay */
 .hero-slide::after {
   content: "";
   position: absolute;
@@ -561,7 +570,7 @@ html, body {
   z-index: 1;
 }
 
-/* caption */
+/* Caption */
 .hero-slide-caption {
   position: absolute;
   z-index: 2;
@@ -587,7 +596,7 @@ html, body {
   color: #e0e0e0;
 }
 
-/* CTA */
+/* CTA Button */
 .hero-slide-caption .btn-primary {
   display: inline-block;
   padding: .9rem 1.75rem;
@@ -650,50 +659,35 @@ html, body {
   transform: scale(1.2);
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .hero-slider-slide { height: 60vh; }
-  .hero-slide-caption h1 { font-size: 1.9rem; }
-  .hero-slide-caption p { font-size: 1rem; }
-}
-
-.hero-slider-slide {
-  height: 80vh; /* Default for large screens */
-}
-
-/* For tablets */
+/* Responsive Heights */
 @media (max-width: 992px) {
   .hero-slider-slide {
-    height: 65vh;
+    height: 60vh;
   }
 }
 
-/* For mobile phones */
 @media (max-width: 768px) {
   .hero-slider-slide {
     height: 50vh;
   }
+  .hero-slide-caption h1 { font-size: 1.8rem; }
+  .hero-slide-caption p { font-size: 1rem; }
 }
 
-/* For very small devices */
 @media (max-width: 480px) {
   .hero-slider-slide {
     height: 40vh;
   }
-
-  .hero-slide-caption h1 {
-    font-size: 1.5rem;
-  }
-
-  .hero-slide-caption p {
-    font-size: 0.9rem;
-  }
+  .hero-slide-caption h1 { font-size: 1.5rem; }
+  .hero-slide-caption p { font-size: 0.9rem; }
 }
+
+/* Hide controls if desired */
 .hero-slider-control{
   display: none;
 }
 
-
+/* ff...........................slider section end................................... */
 
 .hero-img {
   height: 100px;
@@ -708,21 +702,110 @@ html, body {
 }
 
 
+  .icon-circle {
+    width: 4rem;                /* Adjust as needed */
+    height: 4rem;               /* Same as width for square */
+    background-color: #28a745;  /* Bootstrap success */
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;      /* Optional: rounded square */
+  }
+
+
+
+
+.hover-scale:hover {
+  transform: scale(1.03);
+  transition: transform 0.2s ease-in-out;
+}
+
+
 </style>
 
 
- 
+
+<div class="container-fluid my-5">
+  <h2 class="text-center mb-4 fw-bold">Our Healthcare Services</h2>
+  <p class="text-center mb-5 text-muted">
+    Access quality healthcare from anywhere, with AI support and specialized Doctor services.
+  </p>
+
+  <div class="row g-4">
+    <!-- Feature 1 -->
+    <div class="col-md-4 text-center">
+      <a href="{% url 'prescription:available_doctors' %}" class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 hover-scale">
+          <div class="overflow-hidden rounded-3 mb-3" style="height: 220px;">
+            <img src="{% static 'images/online_consultation.jpg' %}" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover;" 
+                 alt="Online Consultation">
+          </div>
+          <h5 class="fw-bold">Doctor Consultation at Home</h5>
+          <p class="text-muted small">
+            Book online appointments and consult with doctors from the comfort of your home.
+          </p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="col-md-4 text-center">
+      <a href="{% url 'appointments:available_doctors' %}" class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 hover-scale">
+          <div class="overflow-hidden rounded-3 mb-3" style="height: 220px;">
+            <img src="{% static 'images/in_patient_chamber.jpg' %}" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover;" 
+                 alt="In Chamber Consultation">
+          </div>
+          <h5 class="fw-bold">Doctor Consultation in Chamber</h5>
+          <p class="text-muted small">
+            Visit our chambers for personal consultations with experienced specialists.
+          </p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="col-md-4 text-center">
+      <a href="{% url 'prescription:create_ai_prescription' %}" class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 hover-scale">
+          <div class="overflow-hidden rounded-3 mb-3" style="height: 280px;">
+            <img src="{% static 'images/ai_image.jpg' %}" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover;" 
+                 alt="AI Support">
+          </div>
+          <h5 class="fw-bold">AI Support</h5>
+          <p class="text-muted small">
+            Get AI-powered health suggestions and monitoring to support your treatment.
+          </p>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+
+
+
+ <div class="container-fluid px-0">
     <section class="hero-slider-slide fullscreen-dark-section px-0 mt-4" id="heroSlider">
       <div class="hero-slider-viewport">
         <div class="hero-slider-track">
           <!-- Slide 1 -->
           <div class="hero-slide">
-           <img src="{% static 'images/doctors/doctor_group_1.png' %}" alt="Tracking" />
+           <img src="{% static 'images/sliders/slider-8.png' %}" alt="Slider Image"
+              class="w-100">
 
             <div class="hero-slide-caption">
               <h1>Care Setu</h1>
               <p>AI-powered healthcare assistance and expert doctor support.</p>
-              <a href="#" class="btn-primary">Get AI Prescription</a>
+              <br><br><br><br><br><br>
+              <a href="#" class="btn-primary">Book now</a>
             </div>
           </div>
           <!-- Slide 2 -->
@@ -777,6 +860,7 @@ html, body {
         <button data-slide="2" aria-label="Slide 3"></button>
       </div>
     </section>
+    </div>
         
 
 	    <div class="text-center my-4">
@@ -784,12 +868,12 @@ html, body {
             class="btn btn-outline-success btn-sm mx-2">
             <i class="bi bi-windows me-1"></i> Download for Windows
           </a>
-
-          <a id="android-download" href="https://play.google.com/store/apps/" target="_blank" 
+         
+           <a id="android-download" href="{% url 'prescription:download_file' 'prescription.apk' %}"
             class="btn btn-outline-primary btn-sm mx-2">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" 
-          style="height: 20px; vertical-align: middle;"> Download for android
-          </a>
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" 
+               style="height: 20px; vertical-align: middle;"> Download for Android
+              </a>
 	    </div>   
 
 
@@ -825,9 +909,186 @@ html, body {
   </div>
 </div>
 
+<div class="col d-flex justify-content-center mt-4">
+{% if request.user.role == 'patient' %}
+<a href="{% url 'chat:patient_notifications_view' %}"
+class="btn btn-sm btn-info">Message History</a>
+{% else %}
+<a href="{% url 'chat:doctor_notifications_view' %}"
+class="btn btn-sm btn-outline-success">Chat Message History</a>
+{% endif %}
+<a href="{% url 'prescription:available_doctors' %}"
+class="btn btn-sm btn-primary">Doctor Online appointment</a>
+<a href="{% url 'appointments:available_doctors' %}"
+class="btn btn-sm btn-success">Doctor chamber appointment</a>
+</div>
 
-      
-  <div class="row d-flex g-3 justify-content-center mt-4">      
+
+    <div class="row d-flex g-3 justify-content-center mt-4">
+        <h2 class="text-center mt-4 fw-bold text-success">{% trans "Specialized Doctor Services" %}</h2>      
+        <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/doctors/doctor_group_1.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Search your Specialized Doctor" %}</h5>
+                  <p class="small mb-1 text-muted"> {% trans "Book Specialised doctor now. Describe your problem as per our template" %}</p>
+                    <a href="{% url 'prescription:available_doctors' %}" class="stretched-link"></a>
+                </div>
+              
+              </div>
+            </div>
+          </div>       
+              
+          <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/icons/medical-report.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Doctor Booking History" %}</h5>
+                  <p class="small mb-1 text-muted"> {% trans "Your Specialized Doctor Booking history are here" %}</p>
+                    <a href="{% url 'prescription:doctor_bookings_list' %}" class="stretched-link"></a>
+                </div>
+              
+              </div>
+            </div>
+          </div>    
+
+           <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/doctors/prescription_1.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Doctor Prescription History" %}</h5>
+                  <p class="small mb-1 text-muted"> {% trans "Track all of Your Prescriptions given by specialized Doctors" %}</p>
+                     <a href="{% url 'prescription:doctor_prescription_list' %}" class="stretched-link"></a>
+                </div>
+              
+              </div>
+            </div>
+          </div>    
+
+
+           <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/male_doctor-1.jpg' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Book and Visit Doctor Chamber" %}</h5>
+                  <p class="small mb-1 text-muted"> {% trans "You can now book Docctor Time slots and Visit Doctor Chamber" %}</p>
+                     <a href="{% url 'appointments:available_doctors' %}" class="stretched-link"></a>
+                </div>
+              
+              </div>
+            </div>
+          </div>    
+
+           <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Doctor Chamber Visit history" %} </h5>
+                  <p class="small mb-1 text-muted">{% trans "Click here to view all of your Doctor Chamber visit appointments" %}</p>
+                    <a href="{% url 'appointments:appointment_list' %}" class="stretched-link"></a>
+                </div>
+              
+              </div>
+            </div>
+          </div>    
+
+          <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/icons/drugs-1.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Medicines @ medical Instruments" %} </h5>
+                  <p class="small mb-1 text-muted"> {% trans "Search your desired medicines and medical instrument and order right from here." %}</p>
+                    <a href="{% url 'store:store_home' %}" class="stretched-link"></a>
+                </div>              
+              </div>
+            </div>
+          </div>  
+
+
+       <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/icons/health_check_1.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Self health Checking" %} </h5>
+                  <p class="small mb-1 text-muted"> {% trans "Check your health yourself and take care." %}</p>
+                    <a href="{% url 'other_services:self_health_check' %}" class="stretched-link"></a>
+                </div>              
+              </div>
+            </div>
+          </div>  
+
+          <div class="col-12 col-md-4 col-lg-3 mb-2">
+            <div class="card-android ai-service-card h-100">
+              <div class="d-flex align-items-center w-100">                
+                <!-- Left: Image -->
+                <div class="me-3">
+                  <img src="{% static 'images/icons/nearby.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>                
+                <!-- Right: Text and Link -->
+                <div class="flex-grow-1">
+                  <h5 class="fw-bold mb-1 text-dark">{% trans "Nearby Services" %} </h5>
+                  <p class="small mb-1 text-muted"> {% trans "Nearby Services, Hospital, Ambulance, Nursing, Medicine etc." %}</p>
+                    <a href="{% url 'other_services:service_list' %}" class="stretched-link"></a>
+                </div>              
+              </div>
+            </div>
+          </div>  
+
+       </div>
+
+
+      <div class="row d-flex g-3 justify-content-center mt-2">      
       <h2 class="text-center mt-4 fw-bold text-primary"> {% trans "Ai Services" %}</h2>             
          <!-- Card 1 -->
   <div class="col-12 col-md-4 col-lg-3 mb-2">
@@ -835,7 +1096,7 @@ html, body {
       <div class="d-flex align-items-center w-100">
         <div class="me-3">
           <div class="icon-circle bg-success text-white d-flex align-items-center justify-content-center">
-            <i class="bi bi-robot" style="font-size: 1.5rem;"></i>
+            <i class="bi bi-robot" style="font-size: 2.5rem;"></i>
           </div>
         </div>
         <div class="flex-grow-1">       
@@ -942,178 +1203,241 @@ html, body {
   </div>
 
 
-    </div>
-
-    <div class="row d-flex g-3 justify-content-center mt-4">
-        <h2 class="text-center mt-4 fw-bold text-success">{% trans "Specialized Doctor Services" %}</h2>      
-        <div class="col-12 col-md-4 col-lg-3 mb-2">
-            <div class="card-android ai-service-card h-100">
-              <div class="d-flex align-items-center w-100">                
-                <!-- Left: Image -->
-                <div class="me-3">
-                  <img src="{% static 'images/doctors/doctor_group_1.png' %}" alt="AI Doctor"
-                      class="rounded-circle shadow-sm border border-success"
-                      style="width:70px; height:70px; object-fit:cover;">
-                </div>                
-                <!-- Right: Text and Link -->
-                <div class="flex-grow-1">
-                  <h5 class="fw-bold mb-1 text-dark">{% trans "Search your Specialized Doctor" %}</h5>
-                  <p class="small mb-1 text-muted"> {% trans "Book Specialised doctor now. Describe your problem as per our template" %}</p>
-                    <a href="{% url 'prescription:available_doctors' %}" class="stretched-link"></a>
-                </div>
-              
-              </div>
-            </div>
-          </div>       
-              
-          <div class="col-12 col-md-4 col-lg-3 mb-2">
-            <div class="card-android ai-service-card h-100">
-              <div class="d-flex align-items-center w-100">                
-                <!-- Left: Image -->
-                <div class="me-3">
-                  <img src="{% static 'images/icons/medical-report.png' %}" alt="AI Doctor"
-                      class="rounded-circle shadow-sm border border-success"
-                      style="width:70px; height:70px; object-fit:cover;">
-                </div>                
-                <!-- Right: Text and Link -->
-                <div class="flex-grow-1">
-                  <h5 class="fw-bold mb-1 text-dark">{% trans "Doctor Booking History" %}</h5>
-                  <p class="small mb-1 text-muted"> {% trans "Your Specialized Doctor Booking history are here" %}</p>
-                    <a href="{% url 'prescription:doctor_bookings_list' %}" class="stretched-link"></a>
-                </div>
-              
-              </div>
-            </div>
-          </div>    
-
-           <div class="col-12 col-md-4 col-lg-3 mb-2">
-            <div class="card-android ai-service-card h-100">
-              <div class="d-flex align-items-center w-100">                
-                <!-- Left: Image -->
-                <div class="me-3">
-                  <img src="{% static 'images/doctors/prescription_1.png' %}" alt="AI Doctor"
-                      class="rounded-circle shadow-sm border border-success"
-                      style="width:70px; height:70px; object-fit:cover;">
-                </div>                
-                <!-- Right: Text and Link -->
-                <div class="flex-grow-1">
-                  <h5 class="fw-bold mb-1 text-dark">{% trans "Doctor Prescription History" %}</h5>
-                  <p class="small mb-1 text-muted"> {% trans "Track all of Your Prescriptions given by specialized Doctors" %}</p>
-                     <a href="{% url 'prescription:doctor_prescription_list' %}" class="stretched-link"></a>
-                </div>
-              
-              </div>
-            </div>
-          </div>    
+</div>
 
 
-           <div class="col-12 col-md-4 col-lg-3 mb-2">
-            <div class="card-android ai-service-card h-100">
-              <div class="d-flex align-items-center w-100">                
-                <!-- Left: Image -->
-                <div class="me-3">
-                  <img src="{% static 'images/male_doctor-1.jpg' %}" alt="AI Doctor"
-                      class="rounded-circle shadow-sm border border-success"
-                      style="width:70px; height:70px; object-fit:cover;">
-                </div>                
-                <!-- Right: Text and Link -->
-                <div class="flex-grow-1">
-                  <h5 class="fw-bold mb-1 text-dark">{% trans "Book and Visit Doctor Chamber" %}</h5>
-                  <p class="small mb-1 text-muted"> {% trans "You can now book Docctor Time slots and Visit Doctor Chamber" %}</p>
-                     <a href="{% url 'appointments:available_doctors' %}" class="stretched-link"></a>
-                </div>
-              
-              </div>
-            </div>
-          </div>    
 
-           <div class="col-12 col-md-4 col-lg-3 mb-2">
-            <div class="card-android ai-service-card h-100">
-              <div class="d-flex align-items-center w-100">                
-                <!-- Left: Image -->
-                <div class="me-3">
-                  <img src="{% static 'images/male_doctor-2.jpg' %}" alt="AI Doctor"
-                      class="rounded-circle shadow-sm border border-success"
-                      style="width:70px; height:70px; object-fit:cover;">
-                </div>                
-                <!-- Right: Text and Link -->
-                <div class="flex-grow-1">
-                  <h5 class="fw-bold mb-1 text-dark">{% trans "Doctor Chamber Visit history" %} </h5>
-                  <p class="small mb-1 text-muted">{% trans "Click here to view all of your Doctor Chamber visit appointments" %}</p>
-                    <a href="{% url 'appointments:appointment_list' %}" class="stretched-link"></a>
-                </div>
-              
-              </div>
-            </div>
-          </div>    
-
-
-          <div class="col-12 col-md-4 col-lg-3 mb-2">
-            <div class="card-android ai-service-card h-100">
-              <div class="d-flex align-items-center w-100">                
-                <!-- Left: Image -->
-                <div class="me-3">
-                  <img src="{% static 'images/doctors/ambulance_1.png' %}" alt="AI Doctor"
-                      class="rounded-circle shadow-sm border border-success"
-                      style="width:70px; height:70px; object-fit:cover;">
-                </div>                
-                <!-- Right: Text and Link -->
-                <div class="flex-grow-1">
-                  <h5 class="fw-bold mb-1 text-dark">{% trans "Other Services" %} </h5>
-                  <p class="small mb-1 text-muted"> {% trans "Nearby Services, Hospital, Ambulance, Nursing, Medicine etc." %}</p>
-                    <a href="{% url 'other_services:service_list' %}" class="stretched-link"></a>
-                </div>              
-              </div>
-            </div>
-          </div>  
-
-       </div>
-                                 
-        <!-- Additional Benefits Section -->
-        <div class="row d-flex justify-content-center mt-5">
-
-            <div class="col-12 col-md-6 col-lg-6 mb-3">
-                <div class="p-4 bg-light border-start border-success border-4 rounded shadow-sm">
-                   <h5 class="text-success fw-semibold mb-3">🩺 {% trans "I am AI. What can you expect:" %}</h5>
-                    <ul class="list-unstyled text-muted">
-                      <li class="mb-2">✅ {% trans "I will ask you health-related questions and listen to your answers" %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}I will generate a <strong>summary of findings</strong> from your symptoms{% endblocktrans %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}I will suggest <strong>probable disease names</strong>{% endblocktrans %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}I will give you a <strong>professional-like prescription</strong> including medicines, lab tests & advice{% endblocktrans %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}I will recommend the <strong>type of specialized doctor</strong> you need to consult{% endblocktrans %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}You can <strong>book specialized doctors, request video calls</strong>, upload images or short videos{% endblocktrans %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}Specialized doctors will <strong>analyze your records and give prescriptions</strong>{% endblocktrans %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}You can <strong>view & download doctor prescriptions</strong> anytime from your profile{% endblocktrans %}</li>
-                      <li class="mb-2">✅ {% blocktrans trimmed %}Enjoy all these healthcare services <strong>from the comfort of your home</strong>{% endblocktrans %}</li>
-                    </ul>
-
-                </div>
-            </div>           
+<!-- features specialized doctor -->
+<div class="container my-5">
+  <h3 class="mb-4 text-center">Doctor services at home. Our Specialized Doctors</h3>
+  <div class="row justify-content-center">
+    {% for doctor in featured_doctors %}
+      <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card h-100 shadow-lg border-0 rounded-3 text-center p-3">
+          {% if doctor.photo %}
+            <img src="{{ doctor.photo.url }}" 
+                 class="mx-auto rounded-circle shadow-sm"
+                 style="width:100px; height:100px; object-fit:cover; border:4px solid #28a745;" 
+                 alt="{{ doctor.full_name }}">
+          {% else %}
+            <img src="{% static 'images/doctor_avatar.jpg' %}" 
+                 class="mx-auto rounded-circle shadow-sm"
+                 style="width:100px; height:100px; object-fit:cover; border:4px solid #28a745;" 
+                 alt="Default Doctor">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title mb-1">{{ doctor.full_name }}</h5>
+            <p class="text-muted mb-2">{{ doctor.department }}</p>
+            <p class="small text-secondary">{{ doctor.specialization|truncatechars:50 }}</p>
             
-            <div class="col-12 col-md-6 col-lg-6 mb-3">
-                <video class="w-100 rounded shadow" controls>
-                <source src="{% static 'videos/symptom-checkerv2.mp4' %}"
-                style="border-radius: 30%;" type="video/mp4">
-                Your browser does not support the video tag.
-                </video>
-          </div>     
-
-          <div class="col-12 col-md-6 col-lg-6 mb-3">
-              <div class="p-4 bg-light border-start border-success border-4 rounded shadow-sm">
-                  <h4 class="mt-5 text-start"> 💡 {% trans "Why Use AI-Powered Prescriptions?" %}</h4>
-                  <p class="text-justify">
-                  {% trans "In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked" %}
-                </p>
-              </div>
-          </div>            
-          
+            <!-- More Info Button (Modal Trigger) -->
+            <button type="button" class="btn btn-outline-success btn-sm mt-2" 
+                    data-bs-toggle="modal" data-bs-target="#doctorModal{{ doctor.id }}">
+              More Info
+            </button>
+          </div>
+        </div>
       </div>
-  
+
+      <!-- Doctor Modal -->
+      <div class="modal fade" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ doctor.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content shadow-lg rounded-3">
+            
+            <!-- Header -->
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title" id="doctorModalLabel{{ doctor.id }}">{{ doctor.full_name }}</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+              <div class="row">
+                <!-- Left: Doctor Photo -->
+                <div class="col-md-4 text-center">
+                  {% if doctor.photo %}
+                    <img src="{{ doctor.photo.url }}" class="rounded-circle mb-3 shadow-sm" 
+                         style="width:140px; height:140px; object-fit:cover;" 
+                         alt="{{ doctor.full_name }}">
+                  {% else %}
+                    <img src="{% static 'images/doctor_avatar.jpg' %}" class="rounded-circle mb-3 shadow-sm" 
+                         style="width:140px; height:140px; object-fit:cover;" 
+                         alt="Default Doctor">
+                  {% endif %}
+                  <p class="fw-bold text-success">{{ doctor.department }}</p>
+                  <p class="small text-muted">{{ doctor.specialization }}</p>
+                <a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}"
+                    class="btn btn-sm btn-primary text-center mt-4">Book Online consultation</a>
+
+                <a href="{% url 'appointments:view_available_slots' doctor.id %}"
+                    class="btn btn-sm btn-success text-center mt-4">Book Chamber appointment</a>
+
+                
+                </div>
+
+                
+
+                <!-- Right: Info -->
+                <div class="col-md-8">
+                  {% if doctor.description %}
+                    <p class="mb-3"><em>{{ doctor.description }}</em></p>
+                  {% endif %}
+                  
+                  <ul class="list-group list-group-flush">
+                    {% if doctor.education %}
+                      <li class="list-group-item"><strong>Education:</strong> {{ doctor.education }}</li>
+                    {% endif %}
+                    {% if doctor.experience_years %}
+                      <li class="list-group-item"><strong>Experience:</strong> {{ doctor.experience_years }} years</li>
+                    {% endif %}
+                    {% if doctor.hospital_affiliations %}
+                      <li class="list-group-item"><strong>Hospital Affiliations:</strong> {{ doctor.hospital_affiliations }}</li>
+                    {% endif %}
+                    {% if doctor.memberships %}
+                      <li class="list-group-item"><strong>Memberships:</strong> {{ doctor.memberships }}</li>
+                    {% endif %}
+                    {% if doctor.awards %}
+                      <li class="list-group-item"><strong>Awards:</strong> {{ doctor.awards }}</li>
+                    {% endif %}
+                    {% if doctor.chamber_location %}
+                      <li class="list-group-item"><strong>Chamber Location:</strong> {{ doctor.chamber_location }}</li>
+                    {% endif %}
+                    {% if doctor.start_time and doctor.end_time %}
+                      <li class="list-group-item">
+                        <strong>Chamber Hours:</strong> {{ doctor.start_time }} – {{ doctor.end_time }}
+                      </li>
+                    {% endif %}
+                    {% if doctor.hospital_start_time and doctor.hospital_end_time %}
+                      <li class="list-group-item">
+                        <strong>Hospital Duty:</strong> {{ doctor.hospital_start_time }} – {{ doctor.hospital_end_time }}
+                      </li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Fees Section -->
+              <div class="mt-3">
+                <h6 class="fw-bold">Online Consultation Fees</h6>
+                <ul class="list-inline">
+                  {% if doctor.consultation_fees %}
+                    <li class="list-inline-item">🏥 Online Consultation fees: {{ doctor.consultation_fees }} Tk</li>
+                  {% endif %}
+                  {% if doctor.video_consultation_fees %}
+                    <li class="list-inline-item">💻 Video: {{ doctor.video_consultation_fees }} Tk</li>
+                  {% endif %}
+                  {% if doctor.folloup_consultation_fees %}
+                    <li class="list-inline-item">🔄 Follow-up: {{ doctor.folloup_consultation_fees }} Tk</li><br>
+                    <span>Follow-up validity days : {{doctor.followup_validity_days}}</span>
+                  {% endif %}
+                </ul>
+                 <h6 class="fw-bold">Chamber Consultation Fees</h6>
+                <ul class="list-inline">
+                  {% if doctor.chamber_consultation_fees %}
+                    <li class="list-inline-item">🏥 In-Chamber fees: {{ doctor.chamber_consultation_fees }} Tk</li>
+                  {% endif %}                
+                  {% if doctor.chamber_followup_consultation_fees %}
+                    <li class="list-inline-item">🔄 Follow-up: {{ doctor.chamber_followup_consultation_fees }} Tk</li>||
+                    <span>Follow-up validity days : {{doctor.chamber_followup_validity_days}}</span>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+              {% if doctor.phone %}
+                <a href="#">📞 Call</a>
+              {% endif %}
+              {% if doctor.email %}
+                <a href="mailto:{{ doctor.email }}" class="btn btn-outline-primary btn-sm">✉ Email</a>
+              {% endif %}
+              <a href="{% url 'finance:doctor_detail' doctor.id %}" class="btn btn-success btn-sm">View Full Profile</a>
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% endfor %}
+  </div>
+
+  <!-- See More Doctors -->
+  <div class="text-center mt-3">
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-primary btn-lg">See More Doctors</a>
+  </div>
+</div>
+
+<!-- features specialized doctor end -->
+
+
+<hr><hr>
+                              
+    <!-- Additional Benefits Section -->
+    <div class="row d-flex justify-content-center mt-5">
+
+        <div class="col-12 col-md-6 col-lg-6 mb-3">
+            <div class="p-4 bg-light border-start border-success border-4 rounded shadow-sm">
+                <h5 class="text-success fw-semibold mb-3">🩺 {% trans "I am AI. What can you expect:" %}</h5>
+                <ul class="list-unstyled text-muted">
+                  <li class="mb-2">✅ {% trans "I will ask you health-related questions and listen to your answers" %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}I will generate a <strong>summary of findings</strong> from your symptoms{% endblocktrans %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}I will suggest <strong>probable disease names</strong>{% endblocktrans %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}I will give you a <strong>professional-like prescription</strong> including medicines, lab tests & advice{% endblocktrans %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}I will recommend the <strong>type of specialized doctor</strong> you need to consult{% endblocktrans %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}You can <strong>book specialized doctors, request video calls</strong>, upload images or short videos{% endblocktrans %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}Specialized doctors will <strong>analyze your records and give prescriptions</strong>{% endblocktrans %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}You can <strong>view & download doctor prescriptions</strong> anytime from your profile{% endblocktrans %}</li>
+                  <li class="mb-2">✅ {% blocktrans trimmed %}Enjoy all these healthcare services <strong>from the comfort of your home</strong>{% endblocktrans %}</li>
+                </ul>
+
+            </div>
+        </div>           
+        
+        <div class="col-12 col-md-6 col-lg-6 mb-3">
+            <video class="w-100 rounded shadow" controls>
+            <source src="{% static 'videos/symptom-checkerv2.mp4' %}"
+            style="border-radius: 30%;" type="video/mp4">
+            Your browser does not support the video tag.
+            </video>
+      </div>     
+
+    <div class="row">
+      <!-- Left box -->
+      <div class="col-md-6 mb-3">
+        <div class="card h-100 hover-scale p-4 bg-light border-0 border-start border-success border-4 rounded shadow-sm">
+          <div class="overflow-hidden rounded-3 mb-3" style="height: 280px;">
+            <img src="{% static 'images/ai_image-2.jpeg' %}" 
+                class="w-100 h-100" 
+                style="object-fit: cover;"  
+                alt="AI Support">
+          </div>
+          <h5 class="fw-bold">AI Contribution in healthcare</h5>
+          <p class="text-muted small">
+            Get AI-powered health suggestions and monitoring to support your treatment.
+          </p>
+        </div>
+      </div>
+
+      <!-- Right box -->
+      <div class="col-md-6 mb-3">
+        <div class="p-4 bg-light border-start border-success border-4 rounded shadow-sm h-100">
+          <h4 class="mt-5 text-start"> 💡 {% trans "How Ai generated prescription can help us ?" %}</h4>
+          <p class="text-justify">
+            {% trans "In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked" %}
+          </p>
+        </div>
+      </div>
+    </div>
+              
+      
+  </div>
+
 
 
   <section class="py-5 bg-light">
       <div class="container">
-        <h2 class="text-center mb-5 text-success">{% trans "Why Join Our AI-Powered Healthcare Platform?" %}</h2>
+        <h2 class="text-center mb-5 text-success">{% trans "Why Join Our Healthcare Platform?" %}</h2>
         <div class="row g-4">
 
           <!-- Doctor Benefits -->
@@ -1167,7 +1491,58 @@ html, body {
       </div>
     </div>
 
-                          
+
+
+
+     
+<div class="row mt-5">
+  <h3 class="text-center mb-4">Explore Modern Medical Services</h3>
+
+  <!-- Video 1 -->
+  <div class="col-md-6 mb-4">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+      <div class="position-relative ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/2WzIiMtrNbI" 
+          title="The future of health care is digital"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          class="rounded-4">
+        </iframe>
+      </div>
+      <div class="card-body text-center bg-light">
+        <h5 class="card-title fw-bold mb-2">🔮 Digital Healthcare</h5>
+        <p class="card-text text-muted small">
+          Discover how technology is transforming patient services with modern digital tools.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video 2 -->
+  <div class="col-md-6 mb-4">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+      <div class="position-relative ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/oQ-XsHRGRS8" 
+          title="The Making of a Modern Healthcare System and AI"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          class="rounded-4">
+        </iframe>
+      </div>
+      <div class="card-body text-center bg-light">
+        <h5 class="card-title fw-bold mb-2">🤖 AI in Healthcare</h5>
+        <p class="card-text text-muted small">
+          Inspiring insights into building a modern smart healthcare system with AI technology.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+             
            
     <div class="col-12 box3 my-5">
         <div class="container-fluid text-center py-5">
@@ -1254,7 +1629,7 @@ html, body {
 
   let current = 0;
   const total = slides.length;
-  const autoDelay = 5000; // ms
+  const autoDelay = 2000; // ms
   let autoTimer = null;
 
   function goTo(i) {

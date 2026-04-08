@@ -1,10 +1,13 @@
 
 from django.contrib import admin
-from django.urls import path,include
+from django.urls import path,include,re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth import views as auth_views
 
+from django.views.static import serve as static_serve
+from django.conf import settings
+import os
 
 urlpatterns = [
     path('admin/', admin.site.urls),   
@@ -19,6 +22,15 @@ urlpatterns = [
     path('i18n/', include('django.conf.urls.i18n')),
     path('other_services/',include('other_services.urls',namespace='other_services')),
     path('appointments/',include('appointments.urls',namespace='appointments')),
+
+    path('chat/',include('chat.urls',namespace='chat')),
+    path('mobile_api/',include('mobile_api.urls',namespace='mobile_api')),  
+
+    path('store/',include('store.urls',namespace='store')), 
+    path('basket/',include('basket.urls',namespace='basket')),  
+    path('payment/',include('payment.urls',namespace='payment')),  
+    path('orders/',include('orders.urls',namespace='orders')),   
+
 
 
 ]

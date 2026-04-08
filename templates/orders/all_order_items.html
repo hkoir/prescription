@@ -1,0 +1,103 @@
+{% extends "../base.html" %}
+
+{% block content %}
+
+<style>
+
+.scrolling-control {
+        overflow: scroll; 
+    } 
+.scrolling-control::-webkit-scrollbar {
+    width: 16px; 
+    height:10px;
+    -webkit-appearance: none;
+}
+
+.scrolling-control::-webkit-scrollbar-thumb {
+    background: blue; 
+    border-radius: 8px;
+}    
+
+.scrolling-control::-webkit-scrollbar-thumb:hover {
+    background: red; 
+}
+
+
+  @media (max-width: 576px) {
+        .pagination .page-link {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.85rem;
+        }
+    }
+
+</style>
+
+<div class="container scrolling-control">    
+    <div class="col table-container table-responsive">
+        <table class="table table-hover table-bordered">
+            <thead class="table-light">
+            <tr>
+                <th>User</th><th>Order Key</th><th>Created</th><th>Phone</th><th>Email</th><th>Invoice</th><th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for order in orders %}
+            <tr>
+                <td>{{ order.user.username }}</td>
+                <td style="white-space:nowrap">{{ order.order_key }}</td>
+                <td style="white-space:nowrap">{{ order.created|date:"Y-m-d H:i" }}</td>
+                <td>{{ order.phone }}</td>
+                <td>{{ order.user.email }}</td>
+                <td>
+                {% if order.invoice_pdf %}<a href="{{ order.invoice_pdf.url }}" target="_blank">View</a>{% else %}—{% endif %}
+                </td>
+                <td>
+                <a class="btn btn-sm btn-primary" href="{% url 'orders:order_detail' order.id %}">View items</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7">No orders found.</td></tr>
+            {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- pagination -->
+     
+            <nav aria-label="Page navigation" class="d-flex justify-content-center">
+                <ul class="pagination flex-wrap">
+                    {% if orders.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page=1">&laquo; First</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ orders.previous_page_number }}">Previous</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">&laquo; First</span></li>
+                        <li class="page-item disabled"><span class="page-link">Previous</span></li>
+                    {% endif %}
+
+                    <li class="page-item disabled">
+                        <span class="page-link">
+                            Page {{ orders.number }} of {{ orders.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if orders.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ orders.next_page_number }}">Next</a></li>
+                        <li class="page-item"><a class="page-link" href="?page={{ orders.paginator.num_pages }}">Last &raquo;</a></li>
+                    {% else %}
+                        <li class="page-item disabled"><span class="page-link">Next</span></li>
+                        <li class="page-item disabled"><span class="page-link">Last &raquo;</span></li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+
+
+
+        </div>               
+           
+    </div>
+    
+
+
+
+
+{% endblock %}

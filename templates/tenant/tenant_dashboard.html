@@ -1,5 +1,6 @@
 {% extends "sub_base.html" %}
 {% load static %}
+{% load i18n %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <style>
@@ -61,16 +62,16 @@
 /* Responsive Design */
 @media (max-width: 768px) {
     .login-circle2 {
-        width: 150px;
-        height: 150px;
+        width: 250px;
+        height: 250px;
         font-size: 16px;
     }
 }
 
 @media (max-width: 480px) {
     .login-circle2 {
-        width: 130px;
-        height: 130px;
+        width: 200px;
+        height: 200px;
         font-size: 14px;
     }
 }
@@ -109,76 +110,873 @@ html, body {
   margin: 0 auto;       /* Centers the SVG */
 }
 
+
+
+
+  #signupModal {
+    display: none;
+    position: fixed;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
+    animation: slideDown 0.5s ease-out;
+  }
+
+  @keyframes slideDown {
+    0% { opacity: 0; transform: translate(-50%, -50px); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
+  }
+
+  /* Modal content */
+  .modal-content {
+    background: #ffffff;
+    padding: 30px 35px;
+    border-radius: 15px;
+    text-align: center;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    min-width: 350px;
+    max-width: 450px;
+    position: relative;
+  }
+
+  .modal-content h2 {
+    font-size: 24px;
+    color: #007bff;
+    margin-bottom: 15px;
+  }
+
+  .modal-content .modal-text {
+    font-size: 16px;
+    color: #333333;
+    margin-bottom: 25px;
+    line-height: 1.5;
+  }
+
+  /* Close button */
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 22px;
+    color: #999999;
+    border: none;
+    background: none;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .close-btn:hover {
+    color: #ff5722;
+  }
+
+  /* Sign Up button */
+  .signup-btn {
+    display: inline-block;
+    padding: 12px 25px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    text-decoration: none;
+    border-radius: 50px;
+    background: linear-gradient(90deg, #007bff, #00c6ff);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .signup-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+
+
+
+
+
+
+
+  
+
+/* Hero Slider Section */
+.hero-slider-slide {
+  position: relative;  
+  overflow: hidden;
+  font-family: inherit;
+  width: 100%;          /* full container width */
+  max-width: 100%;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+  height: 70vh;          /* slightly reduced default height */
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal overflow globally */
+html, body {
+  overflow-x: hidden;
+}
+
+/* Viewport and Track */
+.hero-slider-viewport {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hero-slider-track {
+  display: flex;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  transition: transform 0.6s ease;
+  will-change: transform;
+}
+
+/* Slides */
+.hero-slide {
+  flex: 0 0 100%;
+  margin: 0;
+  padding: 0;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Slide Images */
+.hero-slide img {
+  width: 100%;
+  height: 70vh;       
+  object-fit: cover; 
+  object-position: center;
+
+}
+
+
+/* Dark overlay */
+.hero-slide::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  z-index: 1;
+}
+
+/* Caption */
+.hero-slide-caption {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  width: min(90%, 700px);
+  transform: translate(-50%, -50%);
+  text-align: center;
+  padding: 1.5rem;
+  border-radius: 0.75rem;
+  background: rgba(0,0,0,.35);
+}
+
+.hero-slide-caption h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: .75rem;
+}
+
+.hero-slide-caption p {
+  font-size: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #e0e0e0;
+}
+
+/* CTA Button */
+.hero-slide-caption .btn-primary {
+  display: inline-block;
+  padding: .9rem 1.75rem;
+  background: #28a745;
+  color: #fff;
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: 999px;
+  transition: background .25s;
+}
+.hero-slide-caption .btn-primary:hover {
+  background: #218838;
+}
+
+/* Controls */
+.hero-slider-control {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 46px;
+  height: 46px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0,0,0,.5);
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 46px;
+  cursor: pointer;
+  z-index: 3;
+  transition: background .25s;
+}
+.hero-slider-control:hover {
+  background: rgba(0,0,0,.75);
+}
+.hero-slider-control.prev { left: 1rem; }
+.hero-slider-control.next { right: 1rem; }
+
+/* Dots */
+.hero-slider-dots {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: .5rem;
+  z-index: 3;
+}
+.hero-slider-dots button {
+  width: 12px;
+  height: 12px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255,255,255,.4);
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+.hero-slider-dots button.active {
+  background: #28a745;
+  transform: scale(1.2);
+}
+
+/* Responsive Heights */
+@media (max-width: 992px) {
+  .hero-slider-slide {
+    height: 60vh;
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-slider-slide {
+    height: 50vh;
+  }
+  .hero-slide-caption h1 { font-size: 1.8rem; }
+  .hero-slide-caption p { font-size: 1rem; }
+}
+
+@media (max-width: 480px) {
+  .hero-slider-slide {
+    height: 40vh;
+  }
+  .hero-slide-caption h1 { font-size: 1.5rem; }
+  .hero-slide-caption p { font-size: 0.9rem; }
+}
+
+/* Hide controls if desired */
+.hero-slider-control{
+  display: none;
+}
+
+
+
 </style>
 
 
 
 
-
-<div class="text-center" style="margin-top:250px">
-  {% include "partials/caresetu-logo.svg" %}
-</div>
-
-<div class="container-fluid">
+<div class="container-fluid" style="margin-top:250px">
     <!-- Marquee Section -->
     <div class="row">
 
-	<div class="welcome-banner animate__animated animate__fadeInDown">
+	      <div class="welcome-banner animate__animated animate__fadeInDown">
            <h2>👋 Welcome to Care Setu</h2>
            <p>Your intelligent healthcare assistant is ready to help.</p>
         </div>
-	  <div>
-	   <p class="text-dark fs-6 mb-2">
-            To access personalized medical services powered by artificial intelligence, please login or register.
-            </p>
-            <p class="text-muted fs-6">
-            🔒 For your security, access is restricted to registered users only.<br>
-            🩺 Patients are kindly requested to complete their profile, including basic info and medical history, when prompted.<br>
-            ✅ This is a one-time process to ensure faster and smarter service in future visits.
-            </p>
- 
-	 </div>
+
+      <div>
+      <p class="text-dark fs-6 mb-2">
+        To access personalized medical services powered by artificial intelligence and specialized doctor support, please login or register.
+      </p>
+
+      <p class="text-muted fs-6">
+        🔒 For your security, access is restricted to registered users only.<br>
+        🩺 Patients are kindly requested to complete their profile, including basic info and medical history, when prompted.<br>
+        ✅ This is a one-time process to ensure faster and smarter service in future visits.
+      </p>
+
+      <p class="fs-6">
+        <strong>Patients are not required to visit a doctor physically.</strong>  
+        Simply provide your symptoms, upload images or short videos, and share your medical history.  
+        Our doctors will prepare and deliver your prescription based on these factors.
+      </p>
+
+      <p class="fs-6">
+        <strong>If you prefer an in-person consultation,</strong>  
+        you can also book an appointment with our specialized doctors directly through this platform.
+      </p>
+
+      <p class="fs-6 text-primary">
+        💡 Additionally, we offer <strong>AI Assistance / AI-Prescription</strong>  
+        to provide you with faster guidance and support, complementing your medical care.
+      </p>
+    </div>
+
+  </div>
+</div>
+
 
            
-    <div class="col-12">
-        <div class="container">       
-            <div class="row">
-                    <!-- Spinning Login Box -->
-                    
-                        <!-- Spinning Login Box -->
-                        <div class="col-12 col-md-6 login-circle-container2">
-                        <a href="{% url 'accounts:login' %}" class="login-circle2">
-                            <span class="text-center text-primary fw-bold" style="font-size: 14px;">
-                                <i class="fas fa-user-tie"></i><br>&nbsp;Login<br>
-                                <span style="font-size: 16px; font-weight: bold; color:darkgreen"><i class="fas fa-sign-in"></i></span></span>
-                            
-                        </a>
-                    </div>
+<div class="container my-4">
+  <div class="row g-3 justify-content-center">
+      <!-- Download Box -->
+    <div class="col-12 text-center">
+      <a id="windows-download" 
+        href="https://prescription.aiha.live/download/prescriptionInstaller.exe" 
+        download
+        class="btn btn-outline-success btn-sm mb-2">
+        <i class="bi bi-windows me-1"></i> Download for Windows
+      </a>
 
-                        <!-- Spinning Login Box -->
-                        <div class="col-12 col-md-6 login-circle-container2">
-                        <a href="{% url 'accounts:register_patient' %}" class="login-circle2">
-                            <span class="text-center text-primary fw-bold" style="font-size: 14px;">
-                                
-                                <i class="fas fa-user-tie"></i><br>&nbsp; Don't have accunt??<br>Register
-                                <span style="font-size: 16px; font-weight: bold; color:darkgreen"><i class="fas fa-sign-in"></i></span></span>
-                            
-                        </a>
-                    </div>
-                    
+      <a id="android-download" 
+        href="{% url 'prescription:download_file' 'prescription.apk' %}"
+        class="btn btn-outline-primary btn-sm">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" 
+            alt="Google Play" style="height: 20px; vertical-align: middle;">
+        Download for Android
+      </a>
+
+      <a id="mac-download" 
+        href="" 
+        download
+        class="btn btn-outline-secondary btn-sm mb-2">
+        <i class="bi bi-apple me-1"></i> Download for macOS
+      </a>
+    </div>
+
+    <!-- Login Box -->
+    <div class="col-12 col-md-6 d-flex justify-content-center">
+      <a href="{% url 'accounts:login' %}" class="login-circle2 text-center">
+        <span class="fw-bold text-primary" style="font-size: 14px;">
+          <i class="fas fa-user-tie"></i><br>
+          Login<br>
+          <span style="font-size: 16px; font-weight: bold; color:darkgreen">
+            <i class="fas fa-sign-in"></i>
+          </span>
+        </span>
+      </a>
+    </div>        
+
+      <!-- Register Box -->
+      <div class="col-12 col-md-6 d-flex justify-content-center">
+        <a href="{% url 'accounts:register_patient' %}" class="login-circle2 text-center">
+          <span class="fw-bold text-primary" style="font-size: 14px;">
+            <i class="fas fa-user-plus"></i><br>
+            Don't have account?<br>Register
+            <span style="font-size: 16px; font-weight: bold; color:darkgreen">
+              <i class="fas fa-sign-in"></i>
+            </span>
+          </span>
+        </a>
+      </div>
+
+    </div>
+</div>
+       
+
+    <!-- FEATURES -->
+  <section class="py-5 bg-light">
+   <div class="container">
+      <div class="row align-items-center g-0 mt-4 text-center">
+          <!-- Left image (on large) / Top image (on small) -->
+          <div class="col-12 col-lg-3 mb-3 mb-lg-0 px-0">
+              <img src="{% static 'images/doctors/doctor_group_1.png' %}" 
+                  alt="Medical Left"
+                  class="hero-img rounded-circle shadow-sm border border-success img-fluid"
+                  style="height:100px; width:150px; object-fit: cover;"
+                  >
+          </div>
+
+          <!-- Center text -->
+          <div class="col-12 col-lg-6 px-3">
+              <div class="hero-welcome-text">
+              <h1 class="fw-bold">
+                  {% trans "Welcome to" %} 
+                  <span class="fw-bold text-success">{% trans "Care Setu" %}</span>
+              </h1>
+              <p>{% trans "AI-powered health assistance and Specialized doctor support" %}</p>
+              </div>
+          </div>
+
+          <!-- Right image (on large) / Bottom image (on small) -->
+          <div class="col-12 col-lg-3 mt-3 mt-lg-0 px-0">
+              <img src="{% static 'images/doctors/website-2.png' %}" 
+                  alt="Medical Right"
+                  class="hero-img rounded-circle shadow-sm border border-success img-fluid"
+                  style="height:100px; width:150px; object-fit: cover;"
+                  >
+          </div>
+     </div>
+   </div>
+  </section>
+      
+
+<div class="container-fluid px-0">
+   <section class="hero-slider-slide px-0 mt-4" id="heroSlider">
+      <div class="hero-slider-viewport">
+        <div class="hero-slider-track">
+          <!-- Slide 1 -->
+          <div class="hero-slide">
+          <img src="{% static 'images/sliders/slider-8.png' %}" alt="Slider Image"
+          class="w-100">
+
+            <div class="hero-slide-caption">
+              <h1>Care Setu</h1>
+              <p>AI-powered healthcare assistance and expert doctor support.</p>
+              <a href="#" class="btn-primary">Get AI Prescription</a>
             </div>
+          </div>
+          <!-- Slide 2 -->
+          <div class="hero-slide">
+            <img src="{% static 'images/doctors/doctors_v1.jpeg' %}" alt="Tracking" />
+            <div class="hero-slide-caption">
+              <h1>Expert Care Anytime</h1>
+              <p>Consult with AI-driven insights backed by specialists.</p>
+              <a href="#" class="btn-primary">Start Symptom Check</a>
+            </div>
+          </div>
+          <!-- Slide 3 -->
+          <div class="hero-slide">
+             <img src="{% static 'images/doctors/website-1.png' %}" alt="Tracking" />
+           
+          </div>
+
+          <div class="hero-slide">
+            <img src="{% static 'images/doctors/website-2.png' %}" alt="Tracking" />
+            
+          </div>
+          <div class="hero-slide">
+            <img src="{% static 'images/doctors/website-3.png' %}" alt="Tracking" />
+            
+          </div>
+
+          <div class="hero-slide">
+            <img src="{% static 'images/doctors/website-4.png' %}" alt="Tracking" />
+            
+          </div>
+
+          <div class="hero-slide">
+            <img src="{% static 'images/doctors/doctors_v1.1.png' %}" alt="Tracking" />
+            <div class="hero-slide-caption">
+              <h1>Check your health symtomp now</h1>
+              <p>Keep all prescriptions and symptom history in one place.</p>
+              <a href="#" class="btn-primary">View History</a>
+            </div>
+          </div>
+
         </div>
-    </div>    
-       
-       
+      </div>      
+
+      <!-- Controls -->
+      <button class="hero-slider-control prev" aria-label="Previous">&#10094;</button>
+      <button class="hero-slider-control next" aria-label="Next">&#10095;</button>
+
+      <!-- Indicators -->
+      <div class="hero-slider-dots">
+        <button data-slide="0" class="active" aria-label="Slide 1"></button>
+        <button data-slide="1" aria-label="Slide 2"></button>
+        <button data-slide="2" aria-label="Slide 3"></button>
+      </div>
+    </section>
+
+    </div>
+
+
+<div class="container-fluid my-5">
+  <h2 class="text-center mb-4 fw-bold">Our Core Healthcare Services</h2>
+  <p class="text-center mb-5 text-muted">
+    Access quality healthcare from anywhere, with AI support and specialized Doctor services.
+  </p>
+
+  <div class="row g-4">
+    <!-- Feature 1 -->
+    <div class="col-md-4 text-center">
+      <a href="{% url 'prescription:available_doctors' %}" class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 hover-scale">
+          <div class="overflow-hidden rounded-3 mb-3" style="height: 220px;">
+            <img src="{% static 'images/online_consultation.jpg' %}" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover;" 
+                 alt="Online Consultation">
+          </div>
+          <h5 class="fw-bold">Doctor Consultation at Home</h5>
+          <p class="text-muted small">
+            Book online appointments and consult with doctors from the comfort of your home.
+          </p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="col-md-4 text-center">
+      <a href="{% url 'appointments:available_doctors' %}" class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 hover-scale">
+          <div class="overflow-hidden rounded-3 mb-3" style="height: 220px;">
+            <img src="{% static 'images/in_patient_chamber.jpg' %}" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover;" 
+                 alt="In Chamber Consultation">
+          </div>
+          <h5 class="fw-bold">Doctor Consultation in Chamber</h5>
+          <p class="text-muted small">
+            Visit our chambers for personal consultations with experienced specialists.
+          </p>
+        </div>
+      </a>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="col-md-4 text-center">
+      <a href="{% url 'prescription:create_ai_prescription' %}" class="text-decoration-none text-dark">
+        <div class="card border-0 shadow-sm rounded-4 p-3 h-100 hover-scale">
+          <div class="overflow-hidden rounded-3 mb-3" style="height: 280px;">
+            <img src="{% static 'images/ai_image.jpg' %}" 
+                 class="w-100 h-100" 
+                 style="object-fit: cover;" 
+                 alt="AI Support">
+          </div>
+          <h5 class="fw-bold">AI Support</h5>
+          <p class="text-muted small">
+            Get AI-powered health suggestions and monitoring to support your treatment.
+          </p>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+
+    
+<div class="container-fluid">
+  <div class="row mt-5" style="margin-top:200px">
+    <div class="col">
+      <h2 class="fw-bold text-center mb-4">What We Offer</h2>
+      <div class="row g-4 justify-content-center">
+        
+        <!-- Card Item -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🤖</div>
+            <h5 class="card-title fw-semibold">AI-powered Prescription Generation</h5>
+            <p class="card-text text-muted">Fast and accurate AI-driven prescriptions tailored to your needs.</p>
+            <a href="{% url 'prescription:create_ai_prescription' %}" class="stretched-link"></a>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">👩‍⚕️</div>
+            <h5 class="card-title fw-semibold">Verified Doctor Consultations</h5>
+            <p class="card-text text-muted">Trusted telemedicine with licensed physicians.
+              You do not need to go to Doctor.Choose a doctor, describe your medical issues and get doctor's Prescription.After booking you can chat and  make video call with doctor
+            </p>
+            <a href="{% url 'prescription:available_doctors' %}" class="stretched-link"></a>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">👩‍⚕️</div>
+            <h5 class="card-title fw-semibold">Book Doctor chamber appointment</h5>
+            <p class="card-text text-muted">If you want to visit to Doctor chamber then you can now book appointment right now from here</p>
+            <a href="{% url 'appointments:available_doctors' %}" class="stretched-link"></a>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🤖</div>
+            <h5 class="card-title fw-semibold">Chat with Ai and get Ai consultancy</h5>
+            <p class="card-text text-muted">You can chat with Ai for your desired medical issues and get a consultancy report.</p>
+            <a href="{% url 'symptom_checker:start_symptom_check' %}" class="stretched-link"></a>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🧾</div>
+            <h5 class="card-title fw-semibold">Secure Electronic Records</h5>
+            <p class="card-text text-muted">Confidential storage of prescriptions and medical reports accessible anytime.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">📊</div>
+            <h5 class="card-title fw-semibold">Smart Health Tracking</h5>
+            <p class="card-text text-muted">Comprehensive patient history and analytics for better health insights.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🔒</div>
+            <h5 class="card-title fw-semibold">Full Data Privacy</h5>
+            <p class="card-text text-muted">End-to-end encryption ensuring your medical data stays secure.</p>
+          </div>
+        </div>
+
+
+          <div class="col-md-6 col-lg-4">           
+            <div class="card h-100 shadow-sm border-0 text-center p-4">
+              <div class="d-flex flex-column align-items-center w-100">               
+                  <!-- Left: Image -->
+                  <div class="me-3">
+                    <img src="{% static 'images/icons/drugs-1.png' %}" alt="AI Doctor"
+                        class="rounded-circle shadow-sm border border-success"
+                        style="width:70px; height:70px; object-fit:cover;">
+                  </div>                
+                  <!-- Right: Text and Link -->
+                  <div class="flex-grow-1">
+                    <h5 class="fw-bold mb-1 text-dark">{% trans "Medicines @ medical Instruments" %} </h5>
+                    <p class="small mb-1 text-muted"> {% trans "Search your desired medicines and medical instrument and order right from here." %}</p>
+                      <a href="{% url 'store:store_home' %}" class="stretched-link"></a>
+                  </div>              
+                </div>
+              </div>
+            </div>  
+
+        <div class="col-md-6 col-lg-4">           
+            <div class="card h-100 shadow-sm border-0 text-center p-4">
+              <div class="d-flex flex-column align-items-center w-100">                
+                <!-- Top: Image -->
+                <div class="mb-3">
+                  <img src="{% static 'images/icons/health_check_1.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>
+                <!-- Bottom: Text and Link -->
+                <div>
+                  <h5 class="fw-bold mb-1 text-dark">
+                    {% trans "Self health Checking" %}
+                  </h5>
+                  <p class="small mb-1 text-muted">
+                    {% trans "Check your health yourself and take care." %}
+                  </p>
+                  <a href="{% url 'other_services:self_health_check' %}" class="stretched-link"></a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
+          <div class="col-md-6 col-lg-4">           
+            <div class="card h-100 shadow-sm border-0 text-center p-4">
+              <div class="d-flex flex-column align-items-center w-100">                
+                <!-- Top: Image -->
+                <div class="mb-3">
+                    <img src="{% static 'images/icons/nearby.png' %}" alt="AI Doctor"
+                        class="rounded-circle shadow-sm border border-success"
+                        style="width:70px; height:70px; object-fit:cover;">
+                </div>
+                <!-- Bottom: Text and Link -->
+                <div>
+                  <h5 class="fw-bold mb-1 text-dark">
+                    {% trans "Nearby Services" %}
+                  </h5>
+                  <p class="small mb-1 text-muted">
+                    {% trans "Find other medical services nearby and utilize as you need." %}
+                  </p>
+                  <a href="{% url 'other_services:service_list' %}" class="stretched-link"></a>
+                </div>
+
+              </div>
+            </div>
+          </div>     
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<!-- features specialized doctor -->
+<div class="container-fluid mt-5">
+  <h3 class="mb-4 text-center">Doctor services at home. Our Specialized Doctors</h3>
+  <div class="row justify-content-center">
+    {% for doctor in featured_doctors %}
+      <div class="col-md-3 col-sm-6 mb-4">
+        <div class="card h-100 shadow-lg border-0 rounded-3 text-center p-3">
+          {% if doctor.photo %}
+            <img src="{{ doctor.photo.url }}" 
+                 class="mx-auto rounded-circle shadow-sm"
+                 style="width:100px; height:100px; object-fit:cover; border:4px solid #28a745;" 
+                 alt="{{ doctor.full_name }}">
+          {% else %}
+            <img src="{% static 'images/doctor_avatar.jpg' %}" 
+                 class="mx-auto rounded-circle shadow-sm"
+                 style="width:100px; height:100px; object-fit:cover; border:4px solid #28a745;" 
+                 alt="Default Doctor">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title mb-1">{{ doctor.full_name }}</h5>
+            <p class="text-muted mb-2">{{ doctor.department }}</p>
+            <p class="small text-secondary">{{ doctor.specialization|truncatechars:50 }}</p>
+            
+            <!-- More Info Button (Modal Trigger) -->
+            <button type="button" class="btn btn-outline-success btn-sm mt-2" 
+                    data-bs-toggle="modal" data-bs-target="#doctorModal{{ doctor.id }}">
+              More Info
+            </button>           
+          </div>
+        </div>
+      </div>
+
+      <!-- Doctor Modal -->
+      <div class="modal fade w-100" id="doctorModal{{ doctor.id }}" tabindex="-1" aria-labelledby="doctorModalLabel{{ doctor.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+          <div class="modal-content shadow-lg rounded-3">
+            
+            <!-- Header -->
+            <div class="modal-header bg-success text-white">
+              <h5 class="modal-title" id="doctorModalLabel{{ doctor.id }}">Doctor Name:{{ doctor.full_name }}</h5>
+              <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body">
+              <div class="row">
+                <!-- Left: Doctor Photo -->
+                <div class="col-md-12 text-center">
+                 
+                  {% if doctor.photo %}
+                    <img src="{{ doctor.photo.url }}" class="rounded-circle mb-3 shadow-sm" 
+                         style="width:140px; height:140px; object-fit:cover;" 
+                         alt="{{ doctor.full_name }}">
+                  {% else %}
+                    <img src="{% static 'images/doctor_avatar.jpg' %}" class="rounded-circle mb-3 shadow-sm" 
+                         style="width:140px; height:140px; object-fit:cover;" 
+                         alt="Default Doctor">
+                  {% endif %}
+                  <p class="fw-bold text-success">{{ doctor.department }}</p>
+                  <p class="small text-muted">{{ doctor.specialization }}</p>
+                <a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}"
+                    class="btn btn-sm btn-primary text-center mb-2">Book Online consultation</a>
+
+                <a href="{% url 'appointments:view_available_slots' doctor.id %}"
+                    class="btn btn-sm btn-success text-center mb-3">Book Chamber appointment</a>
+
+                
+                </div>
+
+                
+
+                <!-- Right: Info -->
+                <div class="col-md-12">
+                  {% if doctor.description %}
+                    <p class="mb-3"><em>{{ doctor.description }}</em></p>
+                  {% endif %}
+                  
+                  <ul class="list-group list-group-flush">
+                    {% if doctor.education %}
+                      <li class="list-group-item"><strong>Education:</strong> {{ doctor.education }}</li>
+                    {% endif %}
+                    {% if doctor.experience_years %}
+                      <li class="list-group-item"><strong>Experience:</strong> {{ doctor.experience_years }} years</li>
+                    {% endif %}
+                    {% if doctor.hospital_affiliations %}
+                      <li class="list-group-item"><strong>Hospital Affiliations:</strong> {{ doctor.hospital_affiliations }}</li>
+                    {% endif %}
+                    {% if doctor.memberships %}
+                      <li class="list-group-item"><strong>Memberships:</strong> {{ doctor.memberships }}</li>
+                    {% endif %}
+                    {% if doctor.awards %}
+                      <li class="list-group-item"><strong>Awards:</strong> {{ doctor.awards }}</li>
+                    {% endif %}
+                    {% if doctor.chamber_location %}
+                      <li class="list-group-item"><strong>Chamber Location:</strong> {{ doctor.chamber_location }}</li>
+                    {% endif %}
+                    {% if doctor.start_time and doctor.end_time %}
+                      <li class="list-group-item">
+                        <strong>Chamber Hours:</strong> {{ doctor.start_time }} – {{ doctor.end_time }}
+                      </li>
+                    {% endif %}
+                    {% if doctor.hospital_start_time and doctor.hospital_end_time %}
+                      <li class="list-group-item">
+                        <strong>Hospital Duty:</strong> {{ doctor.hospital_start_time }} – {{ doctor.hospital_end_time }}
+                      </li>
+                    {% endif %}
+                  </ul>
+                </div>
+              </div>
+
+              <!-- Fees Section -->
+              <div class="mt-3">
+                <h6 class="fw-bold">Online Consultation Fees</h6>
+                <ul class="list-inline">
+                  {% if doctor.consultation_fees %}
+                    <li class="list-inline-item">🏥 Online Consultation fees: {{ doctor.consultation_fees }} Tk</li>
+                  {% endif %}
+                  {% if doctor.video_consultation_fees %}
+                    <li class="list-inline-item">💻 Video: {{ doctor.video_consultation_fees }} Tk</li>
+                  {% endif %}
+                  {% if doctor.folloup_consultation_fees %}
+                    <li class="list-inline-item">🔄 Follow-up: {{ doctor.folloup_consultation_fees }} Tk</li><br>
+                    <span>Follow-up validity days : {{doctor.followup_validity_days}}</span>
+                  {% endif %}
+                </ul>
+                 <h6 class="fw-bold">Chamber Consultation Fees</h6>
+                <ul class="list-inline">
+                  {% if doctor.chamber_consultation_fees %}
+                    <li class="list-inline-item">🏥 In-Chamber fees: {{ doctor.chamber_consultation_fees }} Tk</li>
+                  {% endif %}                
+                  {% if doctor.chamber_followup_consultation_fees %}
+                    <li class="list-inline-item">🔄 Follow-up: {{ doctor.chamber_followup_consultation_fees }} Tk</li>||
+                    <span>Follow-up validity days : {{doctor.chamber_followup_validity_days}}</span>
+                  {% endif %}
+                </ul>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="modal-footer">
+              {% if doctor.phone %}
+                <a href="#">📞 Call</a>
+              {% endif %}
+              {% if doctor.email %}
+                <a href="mailto:{{ doctor.email }}" class="btn btn-outline-primary btn-sm">✉ Email</a>
+              {% endif %}
+              <a href="{% url 'finance:doctor_detail' doctor.id %}" class="btn btn-success btn-sm">View Full Profile</a>
+              <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    {% endfor %}
+  </div>
+
+  <!-- See More Doctors -->
+  <div class="text-center mt-3">
+    <a href="{% url 'prescription:available_doctors' %}" class="btn btn-primary btn-lg">See More Doctors</a>
+  </div>
+</div>
+
+<!-- features specialized doctor end -->
+
+
+
+
+
+
 	{% include 'addition.html' %}
-	{% include 'hero_section.html' %}
 	{% include 'feedback.html' %}  
     
     <hr>
-     <div class="col-12 mt-5">
+    {% if request.user.role == 'admin' %}
+     <div class="col-12 mt-5 card card-shadow">
             <!-- Tenant Content -->
-        <h4 class="text-center">Subscription details</h4>
+        <h4 class="text-center">Service Provider Subscription details</h4>
             <div class="container-fluid">
                 <div class="row">
                     <div class="col-12 col-md-2"></div>
@@ -220,11 +1018,13 @@ html, body {
                     
                 </div>
             {% endif %}
+            {% endif %}
                 </div>
                 <div class="col-12 col-md-2 my-5"></div>
              </div>
             </div>
         </div>
+      
     <hr>
 
 	<div class="container my-5">
@@ -237,9 +1037,132 @@ html, body {
        </div>
 
 
-   </div>
-  
+
+<!-- Modal -->
+<div id="signupModal">
+  <div class="modal-content">
+    <button class="close-btn" id="closeModal">&times;</button>    
+    <!-- Smartwatch Image -->
+     <img src="{% static 'images/smart_watch.png' %}" alt="Smartwatch" style="width:90px; margin-bottom:15px;">
+
+    <h2>💡 Doctors, Earn From Anywhere!</h2>
+    <p class="modal-text">
+      Sign up on <strong>https://prescription.aiha.live</strong> today and start prescribing digitally from home or on the move. 
+      Boost your income, save time, and manage your practice efficiently. 
+      <strong>First 10 doctors</strong> will receive a FREE <span style="color:#ff5722;">healthcare Smartwatch</span>!
+    </p>
+    <a href="{% url 'accounts:register' %}" class="signup-btn">Sign Up & Start Earning</a>
+  </div>
 </div>
+
+
+<script>
+(function() {
+  const slider = document.getElementById('heroSlider');
+  const track  = slider.querySelector('.hero-slider-track');
+  const slides = slider.querySelectorAll('.hero-slide');
+  const nextBtn = slider.querySelector('.hero-slider-control.next');
+  const prevBtn = slider.querySelector('.hero-slider-control.prev');
+  const dots = slider.querySelectorAll('.hero-slider-dots button');
+
+  let current = 0;
+  const total = slides.length;
+  const autoDelay = 2000; // ms
+  let autoTimer = null;
+
+  function goTo(i) {
+    current = (i + total) % total;
+    const offset = -current * 100;
+    track.style.transform = 'translateX(' + offset + '%)';
+    dots.forEach((d, idx) => d.classList.toggle('active', idx === current));
+  }
+
+  function next() { goTo(current + 1); }
+  function prev() { goTo(current - 1); }
+
+  function startAuto() {
+    stopAuto();
+    autoTimer = setInterval(next, autoDelay);
+  }
+function stopAuto() {
+  if (autoTimer) {
+    clearInterval(autoTimer);
+    autoTimer = null;   // 👈 reset so startAuto() can create a new one
+  }
+}
+
+
+  // controls
+  nextBtn.addEventListener('click', () => { next(); startAuto(); });
+  prevBtn.addEventListener('click', () => { prev(); startAuto(); });
+
+  // dots
+  dots.forEach((dot, i) => {
+    dot.addEventListener('click', () => { goTo(i); startAuto(); });
+  });
+
+  // pause on hover (desktop)
+   slider.addEventListener('mouseenter', stopAuto);
+   slider.addEventListener('mouseleave', startAuto);
+
+  // swipe (mobile)
+  let startX = 0;
+  slider.addEventListener('touchstart', e => { startX = e.touches[0].clientX; stopAuto(); }, {passive:true});
+  slider.addEventListener('touchend', e => {
+    const diff = e.changedTouches[0].clientX - startX;
+    if (diff > 50) prev();
+    else if (diff < -50) next();
+    startAuto();
+  }, {passive:true});
+
+  // init
+  goTo(0);
+  startAuto();
+})();
+</script>
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('signupModal');
+    const closeBtn = document.getElementById('closeModal');  
+    modal.style.display = 'block';
+    closeBtn.addEventListener('click', () => modal.style.display = 'none');
+  });
+</script>
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const els = {
+    android: document.getElementById('android-download'),
+    windows: document.getElementById('windows-download'),
+    mac:     document.getElementById('mac-download'),
+  };
+
+  function show(os) {
+    Object.values(els).forEach(el => el && (el.style.display = 'none'));
+    if (els[os]) els[os].style.display = 'inline-block';
+  }
+
+  const ua = navigator.userAgent || '';
+  const platform = navigator.platform || '';
+
+  if (/Android/i.test(ua)) {
+    show('android');
+  } else if (/Mac/i.test(platform)) {
+    show('mac');
+  } else if (/Win/i.test(platform)) {
+    show('windows');
+  } else {
+    // fallback, show all
+    Object.values(els).forEach(el => el && (el.style.display = 'inline-block'));
+  }
+});
+</script>
+
+
+
 
 <script>
   const messages = [

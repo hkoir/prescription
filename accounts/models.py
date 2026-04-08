@@ -13,16 +13,13 @@ class CustomUser(AbstractUser):
     tenant = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='tenant_users', null=True, blank=True)   
     biometrict_id = models.CharField(max_length=50, unique=True, null=True, blank=True)
     ROLE_CHOICES = [
-        ('student', 'Student'),
-        ('teacher', 'Teacher'),
-        ('admin', 'Admin'),
-        ('parent', 'Parent'),
-        ('doctor', 'Doctor'),
-        ('consultant', 'Consultant'),
+        
+        ('doctor', 'Doctor'),      
         ('patient', 'Patient'),
         ('staff', 'Staff'),
-        ('superadmin', 'SuperAdmin'),
+      
     ]
+    
 
     role = models.CharField(max_length=15, choices=ROLE_CHOICES, default='patient')
     email = models.EmailField(blank=True, null=True, unique=False)
@@ -31,7 +28,10 @@ class CustomUser(AbstractUser):
     is_phone_verified = models.BooleanField(default=False)
     date_of_birth = models.DateField(null=True, blank=True)   
     photo_id = models.ImageField(upload_to='user_photo', null=True, blank=True)
+    fcm_token = models.CharField(max_length=255, blank=True, null=True)
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
+    is_online = models.BooleanField(default=False)
+    last_seen = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'phone_number'
     REQUIRED_FIELDS = ['username']  # keep username if still used internally
@@ -60,3 +60,29 @@ class PhoneOTP(models.Model):
         self.otp = str(random.randint(100000, 999999))
         self.valid_until = timezone.now() + timedelta(minutes=5)
         self.save()
+
+
+
+from django.utils.translation import gettext_lazy as _
+import uuid
+class Address(models.Model):  
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    customer = models.ForeignKey(CustomUser, verbose_name=_("Customer"), on_delete=models.CASCADE)
+    full_name = models.CharField(_("Full Name"), max_length=150)
+    phone = models.CharField(_("Phone Number"), max_length=50)
+    postcode = models.CharField(_("Postcode"), max_length=50)
+    address_line = models.CharField(_("Address Line 1"), max_length=255)
+    address_line2 = models.CharField(_("Address Line 2"), max_length=250,blank=True, null=True)
+    town_city = models.CharField(_("Town/City/State"), max_length=150)
+    delivery_instructions = models.CharField(_("Delivery Instructions"), max_length=255)
+    created_at = models.DateTimeField(_("Created at"), auto_now_add=True)
+    updated_at = models.DateTimeField(_("Updated at"), auto_now=True)
+    default = models.BooleanField(_("Default"), default=False)  
+
+   
+    class Meta:
+        verbose_name = "Address"
+        verbose_name_plural = "Addresses"
+
+    def __str__(self):
+        return "Address"

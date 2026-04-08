@@ -71,6 +71,7 @@ def create_payment_invoice(
     doctor_followup_booking =None,
     zoom_meeting=None,
     symptom_checker=None,
+    ecommerce_order=None
 ):
     from .models import PaymentInvoice  # Optional: if circular import issues
 
@@ -84,6 +85,7 @@ def create_payment_invoice(
         doctor_followup_booking =doctor_followup_booking ,
         zoom_meeting=zoom_meeting,
         symptom_checker=symptom_checker,
+        ecommerce_order=ecommerce_order,
 
         invoice_type=invoice_type,
         amount=amount,

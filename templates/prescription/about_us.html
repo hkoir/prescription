@@ -1,59 +1,221 @@
 {% extends "sub_base.html" %}
 {% load static %}
+{% load i18n %}
 {% block content %}
-<div class="container py-5">
-    <div class="row mb-4">
-        <div class="col text-center">
-            <h2 class="display-5 fw-bold">About Us</h2>
-            <p class="lead text-muted">Bridging AI technology and compassionate care</p>
-        </div>
-    </div>
 
-    <div class="row mb-5">
-        <div class="col-md-6">
-            <h4>Who We Are</h4>
-            <p>
-                We are a team of medical professionals, AI engineers, and healthcare innovators dedicated to reshaping the future of healthcare. 
-                Our platform seamlessly combines the precision of AI-powered symptom analysis and prescription generation with the experience and insight of licensed physicians.
-            </p>
-        </div>
-        <div class="col-md-6">
-            <img src="{% static 'images/Logo.png' %}" 
-            class="img-fluid rounded shadow-sm" alt="Our Team" style="width:100px;height:100px">
-        </div>
-    </div>
-
-    <div class="row mb-5">
-        <div class="col-md-6 order-md-2">
-            <h4>Our Mission</h4>
-            <p>
-                To make healthcare faster, more accessible, and affordable through AI-driven prescriptions and 24/7 doctor consultations. 
-                Whether you need an instant AI-based diagnosis or a trusted opinion from a certified doctor, we're here for you.
-            </p>
-        </div>
-        <div class="col-md-6 order-md-1">
-            <img src="{% static 'images/Logo.png' %}" 
-            class="img-fluid rounded shadow-sm" alt="AI in Healthcare" style="width:100px;height:100px">
-        </div>
-    </div>
-
-    <div class="row mb-5">
-        <div class="col-md-12">
-            <h4>What We Offer</h4>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">🤖 AI-powered prescription generator</li>
-                <li class="list-group-item">👩‍⚕️ Verified doctor consultations (in-person or telemedicine)</li>
-                <li class="list-group-item">🧾 Electronic prescription records and reports</li>
-                <li class="list-group-item">📊 Smart health history and patient tracking</li>
-                <li class="list-group-item">🔒 Secure and confidential medical data</li>
-            </ul>
-        </div>
-    </div>
-
-    <div class="row text-center mt-4">
+<div class="container">
+    <!-- Intro Section -->
+    <div class="row mb-5 text-center">
         <div class="col">
-            <a href="{% url 'prescription:contact_us' %}" class="btn btn-primary px-4 py-2">Contact Us</a>
+            <h2 class="display-5 fw-bold text-primary">About Us</h2>
+            <p class="lead text-muted fw-bold">Redefining healthcare through the synergy of Artificial Intelligence and human expertise.</p>
+        </div>
+    </div>
+
+    <!-- Who We Are -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6">
+            <h4 class="fw-bold">Who We Are</h4>
+            <p class="text-muted">
+                We are a diverse team of licensed medical professionals, AI engineers, and healthcare visionaries united by a shared mission: 
+                to transform the way healthcare is delivered. Our platform merges the accuracy of AI-driven symptom analysis with the empathy and
+                experience of seasoned doctors—ensuring every patient gets precise, timely, and personalized care.
+            </p>
+        </div>
+        <div class="col-md-6 text-center">
+            <img src="{% static 'images/prescription_gpt.png' %}" 
+                 class="img-fluid rounded shadow-sm" alt="Our Team" style="max-width:250px;">
+        </div>
+    </div>
+
+    <!-- Our Mission -->
+    <div class="row align-items-center mb-5">
+        <div class="col-md-6 order-md-2">
+            <h4 class="fw-bold">Our Mission</h4>
+            <p class="text-muted">
+                We aim to make healthcare faster, more accessible, and affordable—anytime, anywhere. 
+                Whether you seek an instant AI-based diagnosis or a detailed consultation with a certified doctor, 
+                our system bridges the gap between technology and human compassion.
+            </p>
+        </div>
+        <div class="col-md-6 order-md-1 text-center">
+            <img src="{% static 'images/doctor_group.png' %}" 
+                 class="img-fluid rounded shadow-sm" alt="AI in Healthcare" style="max-width:350px;">
+        </div>
+    </div>
+
+  <div class="row mt-5" style="margin-top:200px">
+    <div class="col">
+      <h2 class="fw-bold text-center mb-4">What We Offer</h2>
+      <div class="row g-4 justify-content-center">
+        
+        <!-- Card Item -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🤖</div>
+            <h5 class="card-title fw-semibold">AI-powered Prescription Generation</h5>
+            <p class="card-text text-muted">Fast and accurate AI-driven prescriptions tailored to your needs.</p>
+            <a href="{% url 'prescription:create_ai_prescription' %}" class="stretched-link"></a>
+          </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">👩‍⚕️</div>
+            <h5 class="card-title fw-semibold">Verified Doctor Consultations</h5>
+            <p class="card-text text-muted">Trusted telemedicine or in-person appointments with licensed physicians.
+              You do not need to go to Doctor.Choose a doctor, describe your medical issues and get doctor's Prescription.After booking you can chat and  make video call with doctor
+            </p>
+            <a href="{% url 'prescription:available_doctors' %}" class="stretched-link"></a>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">👩‍⚕️</div>
+            <h5 class="card-title fw-semibold">Book Doctor chamber appointment</h5>
+            <p class="card-text text-muted">If you want to visit to Doctor chamber then you can now book appointment right now from here</p>
+            <a href="{% url 'appointments:available_doctors' %}" class="stretched-link"></a>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🤖</div>
+            <h5 class="card-title fw-semibold">Chat with Ai and get Ai consultancy</h5>
+            <p class="card-text text-muted">You can chat with Ai for your desired medical issues and get a consultancy report.</p>
+            <a href="{% url 'symptom_checker:start_symptom_check' %}" class="stretched-link"></a>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🧾</div>
+            <h5 class="card-title fw-semibold">Secure Electronic Records</h5>
+            <p class="card-text text-muted">Confidential storage of prescriptions and medical reports accessible anytime.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">📊</div>
+            <h5 class="card-title fw-semibold">Smart Health Tracking</h5>
+            <p class="card-text text-muted">Comprehensive patient history and analytics for better health insights.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-4">
+          <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 mb-3" style="line-height:1;">🔒</div>
+            <h5 class="card-title fw-semibold">Full Data Privacy</h5>
+            <p class="card-text text-muted">End-to-end encryption ensuring your medical data stays secure.</p>
+          </div>
+        </div>
+
+
+
+        <div class="col-md-6 col-lg-4">           
+            <div class="card h-100 shadow-sm border-0 text-center p-4">
+              <div class="d-flex flex-column align-items-center w-100">
+                
+                <!-- Top: Image -->
+                <div class="mb-3">
+                  <img src="{% static 'images/icons/health_check_1.png' %}" alt="AI Doctor"
+                      class="rounded-circle shadow-sm border border-success"
+                      style="width:70px; height:70px; object-fit:cover;">
+                </div>
+
+                <!-- Bottom: Text and Link -->
+                <div>
+                  <h5 class="fw-bold mb-1 text-dark">
+                    {% trans "Self health Checking" %}
+                  </h5>
+                  <p class="small mb-1 text-muted">
+                    {% trans "Check your health yourself and take care." %}
+                  </p>
+                  <a href="{% url 'other_services:self_health_check' %}" class="stretched-link"></a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
+          <div class="col-md-6 col-lg-4">           
+            <div class="card h-100 shadow-sm border-0 text-center p-4">
+              <div class="d-flex flex-column align-items-center w-100">
+                
+                <!-- Top: Image -->
+                <div class="mb-3">
+                    <img src="{% static 'images/icons/nearby.png' %}" alt="AI Doctor"
+                        class="rounded-circle shadow-sm border border-success"
+                        style="width:70px; height:70px; object-fit:cover;">
+                </div>
+
+                <!-- Bottom: Text and Link -->
+                <div>
+                  <h5 class="fw-bold mb-1 text-dark">
+                    {% trans "Nearby Services" %}
+                  </h5>
+                  <p class="small mb-1 text-muted">
+                    {% trans "Find other medical services nearby and utilize as you need." %}
+                  </p>
+                  <a href="{% url 'other_services:service_list' %}" class="stretched-link"></a>
+                </div>
+
+              </div>
+            </div>
+          </div>   
+
+      </div>
+    </div>
+</div>
+
+
+<div class="row mt-5">
+  <h3 class="text-center mb-4">Explore Modern Medical Services</h3>
+  
+  <!-- Video 1 -->
+  <div class="col-md-6 mb-3">
+    <div class="ratio ratio-16x9">
+      <iframe 
+        src="https://www.youtube.com/embed/2WzIiMtrNbI" 
+        title="The future of health care is digital"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <p class="mt-2 text-center text-muted">
+      🔮 The future of health care is digital—discover how technology is transforming patient services.
+    </p>
+  </div>
+
+  <!-- Video 2 -->
+  <div class="col-md-6 mb-3">
+    <div class="ratio ratio-16x9">
+      <iframe 
+        src="https://www.youtube.com/embed/oQ-XsHRGRS8" 
+        title="The Making of a Modern Healthcare System and AI"
+        frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen>
+      </iframe>
+    </div>
+    <p class="mt-2 text-center text-muted">
+      🤖 The Making of a Modern Healthcare System and AI—inspiring insights into smart healthcare’s future.
+    </p>
+  </div>
+</div>  
+
+    <!-- Call to Action -->
+    <div class="row text-center">
+        <div class="col">
+            <a href="{% url 'prescription:contact_us' %}" class="btn btn-primary px-4 py-2 btn-lg shadow-sm">
+                Get in Touch
+            </a>
         </div>
     </div>
 </div>
+
 {% endblock %}

@@ -17,8 +17,13 @@
         <p class="text-muted">{{ doctor.department }}</p>
         <p><strong>License:</strong> {{ doctor.medical_license_number }}</p>
         <p><strong>Phone:</strong> {{ doctor.phone }}</p>
-        <p><strong>Email:</strong> {{ doctor.email }}</p><br><br>
-        <a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}">Book now</a>
+        <p><strong>Email:</strong> {{ doctor.email }}</p><br><br>       
+         <a href="{% url 'prescription:initiate_book_doctor_direct_payment' doctor.id %}"
+            class="btn btn-sm btn-primary text-center mt-4">Book Online consultation</a>
+
+        <a href="{% url 'appointments:view_available_slots' doctor.id %}"
+            class="btn btn-sm btn-success text-center mt-4">Book Chamber appointment</a>
+
       </div>
       <div class="col-md-8 p-4">
         <h5 class="mb-3">👨‍⚕️ About</h5>
@@ -43,8 +48,32 @@
 
         <hr>
         <h6>💵 Consultation Fees</h6>
-        <p><strong>Regular:</strong> {{ doctor.consultation_fees }} BDT</p>
-        <p><strong>Follow-up:</strong> {{ doctor.folloup_consultation_fees }} BDT (within {{ doctor.followup_validity_days }} days)</p>
+    <!-- Fees Section -->
+          <div class="mt-3">
+            <h6 class="fw-bold">Online Consultation Fees</h6>
+            <ul class="list-inline">
+              {% if doctor.consultation_fees %}
+                <li class="list-inline-item">🏥 Online Consultation fees: {{ doctor.consultation_fees }} Tk</li>
+              {% endif %}
+              {% if doctor.video_consultation_fees %}
+                <li class="list-inline-item">💻 Video: {{ doctor.video_consultation_fees }} Tk</li>
+              {% endif %}
+              {% if doctor.folloup_consultation_fees %}
+                <li class="list-inline-item">🔄 Follow-up: {{ doctor.folloup_consultation_fees }} Tk</li><br>
+                <span>Follow-up validity days : {{doctor.followup_validity_days}}</span>
+              {% endif %}
+            </ul>
+              <h6 class="fw-bold">Chamber Consultation Fees</h6>
+            <ul class="list-inline">
+              {% if doctor.chamber_consultation_fees %}
+                <li class="list-inline-item">🏥 In-Chamber fees: {{ doctor.chamber_consultation_fees }} Tk</li>
+              {% endif %}                
+              {% if doctor.chamber_followup_consultation_fees %}
+                <li class="list-inline-item">🔄 Follow-up: {{ doctor.chamber_followup_consultation_fees }} Tk</li>||
+                <span>Follow-up validity days : {{doctor.chamber_followup_validity_days}}</span>
+              {% endif %}
+            </ul>
+          </div>
 
         <hr>
         <h6>🎓 Education & Experience</h6>

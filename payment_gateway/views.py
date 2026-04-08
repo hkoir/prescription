@@ -9,12 +9,9 @@ import time, requests
 from django.shortcuts import render, redirect, get_object_or_404
 from django.urls import reverse
 from .models import PaymentInvoice
-
 import time
 from django.utils import timezone
 from .models import PaymentInvoice
-
-
 from payment_gateway.utils import create_payment_invoice
 from prescription.models import Patient,Doctor
 from prescription.models import DoctorBooking
@@ -22,22 +19,12 @@ from prescription.forms import DirectDoctorBookingForm
 from django.core.files.base import ContentFile
 import base64
 from django.db import IntegrityError
-
 from django.contrib.auth.decorators import login_required
-
-
 from prescription.models import DoctorFolloupBooking,AIPrescription,ZoomMeeting
 from django.contrib import messages
 from django.utils.http import urlencode
+from accounts.utils import send_sms
 
-
-
-def review_invoice2(request):
-    tran_id = request.GET.get('tran_id')
-    invoice = get_object_or_404(PaymentInvoice, tran_id=tran_id)
-    return render(request, 'payment_gateway/review_invoice.html', {
-        'invoice': invoice
-    })
 
 
 
@@ -72,15 +59,14 @@ def review_invoice(request):
     elif invoice.invoice_type == 'followup-video-consultation':
         parsed_description = f"Video Follow-up Consultation with {doctor.full_name}"
 
+    elif invoice.invoice_type == 'ecommerce':
+        parsed_description = "Ecommerce purchase"
     else:
         parsed_description = invoice.description or "N/A"
-
     return render(request, 'payment_gateway/review_invoice.html', {
         'invoice': invoice,
         'parsed_description': parsed_description,
     })
-
-
 
 
 
@@ -119,7 +105,6 @@ def initiate_payment(request):
             if settings.SSLZCOMMERZ_IS_SANDBOX
             else "https://securepay.sslcommerz.com/gwprocess/v4/api.php"
         )
-
         response = requests.post(url, data=post_data)
         data = response.json()
 
@@ -127,7 +112,6 @@ def initiate_payment(request):
             return redirect(data['GatewayPageURL'])
         else:
             return HttpResponse("Payment failed: " + data.get('failedreason', 'Unknown'))
-
     return HttpResponse("Invalid request.")
 
 
@@ -135,6 +119,7 @@ def initiate_payment(request):
 @csrf_exempt
 def payment_success(request):
     if request.method == 'POST':
+        invoice =None
         data = request.POST
         tran_id = data.get('tran_id')
         invoice_id = data.get('value_a') 
@@ -144,10 +129,9 @@ def payment_success(request):
         except PaymentInvoice.DoesNotExist:
             return HttpResponse("Invalid invoice ID.")
 
-        # Check if the payment already exists
         if Payment.objects.filter(transaction_id=tran_id).exists():
             return redirect('payment_gateway:post_payment_redirect', invoice_id=invoice.id)
-
+    
         try:
             Payment.objects.create(
                 transaction_id=tran_id,
@@ -158,6 +142,12 @@ def payment_success(request):
                 invoice=invoice,
                 gateway_response=json.dumps(dict(data))
             )
+
+            order = invoice.ecommerce_order
+            if order:
+                order.status = 'paid'
+                order.save()
+
         except IntegrityError:
             # In rare cases of race conditions
             return redirect('payment_gateway:post_payment_redirect', invoice_id=invoice.id)
@@ -165,9 +155,6 @@ def payment_success(request):
     return HttpResponse("❌ Invalid request method.")
 
 
-
-
-from accounts.utils import send_sms
 
 def post_payment_redirect(request, invoice_id):
     invoice = get_object_or_404(PaymentInvoice, id=invoice_id)
@@ -220,6 +207,9 @@ def post_payment_redirect(request, invoice_id):
         elif invoice.invoice_type == 'labtest':
             messages.success(request, "Payment successful for lab test.")
             return redirect('lab:lab_test_home')
+
+        elif invoice.invoice_type == 'ecommerce':    
+            next_url = reverse('payment:order_placed')
 
         else:
             return HttpResponse("✅ Payment successful, but no redirection defined.")

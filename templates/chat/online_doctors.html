@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% load static %}
+
+{% block content %}
+<style>
+.online-dot {
+  width: 8px;
+  height: 8px;
+  background: green;
+  display: inline-block;
+  border-radius: 50%;
+  margin-left: 5px;
+}
+</style>
+
+
+<ul>
+  {% for doctor in doctors %}
+    <li data-patient-id="{{ patient.id }}">
+      {{ doctor.get_full_name }} 
+      <span class="online-dot"></span>
+      <button class="chat-btn" data-patient-id="{{ patient.id }}">Chat</button>
+    </li>
+  {% empty %}
+    <li>No doctor online</li>
+  {% endfor %}
+</ul>
+
+
+{% endblock %}

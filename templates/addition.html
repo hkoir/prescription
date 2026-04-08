@@ -1,6 +1,6 @@
 
 {% load static %}
-
+{% load i18n %}
 
 
 <style>
@@ -364,79 +364,69 @@ h4 {
                 </svg>
             </div>
         </section>    
-        
-
-        <!-- FEATURES -->
-        <section class="py-5">
-            <div class="container text-center">  
-                         
-                <div class="container text-center">
-                    <h2 class="fw-bold mb-4 text-success">Welcome to NextGen Rx</h2>                   
-                </div>                                 
-        
-                <p class="mb-4">
-                    A powerful combination of AI technology and experienced medical specialists.<br>
-                    Bridging the gap between expert doctors and patients in need of quality healthcare.
-                </p>  
-        </section>   
-
-
-     <div class="d-flex justify-content-center align-items-center flex-wrap gap-4">
-        <div class="w-50 rounded shadow d-flex justify-content-center ">
-            <img src="{% static 'images/prescription_gpt.png' %}" style="max-width: 100%; max-height: 400px;">
+                    
+            
+    <div class="container my-4">
+    <div class="row justify-content-center align-items-center g-4">
+        <!-- Image -->
+        <div class="col-12 col-md-6 text-center">
+        <img src="{% static 'images/prescription_gpt.png' %}" 
+            class="w-100 rounded shadow" 
+            style="max-height: 400px;">
         </div>
-        <div class="col-md-5">
-            <video class="w-100 rounded shadow" controls style="border-radius: 30%; height:400px">
-            <source src="{% static 'videos/symptom-checkerv2.mp4' %}" style="height:400px" type="video/mp4">
+
+        <!-- Video -->
+        <div class="col-12 col-md-6">
+        <video class="w-100 rounded shadow" controls style="max-height: 400px; object-fit: cover;">
+            <source src="{% static 'videos/symptom-checkerv2.mp4' %}" type="video/mp4">
             Your browser does not support the video tag.
-            </video>
+        </video>
         </div>
-     </div>
-         
+    </div>
+    </div>      
        
-        <h4 class="mt-5 text-start"> 💡 Why Use AI-Powered Prescriptions?</h4>
-        <p class="justify-content">   
-        In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked.
-        </p>
-        
+    <h4 class="mt-5 text-start"> 💡 How  AI-Powered Medical assistance help us?</h4>
+    <p class="justify-content">   
+    In today's fast-paced healthcare environment, AI-powered prescriptions serve as a first-line support system for patients. While specialized doctors remain essential for thorough diagnosis and treatment, AI helps streamline the process by collecting and analyzing patient symptoms, history, and inputs instantly. This allows doctors to focus on validation and refinement rather than starting from scratch—especially in high-demand scenarios or remote areas. It also empowers patients to receive quick preliminary guidance, improves triage efficiency, and reduces waiting times. AI doesn't replace doctors—it enhances their accuracy, saves time, and ensures no symptom is overlooked.
+    </p>   
 
+    <section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5 text-success">Why Join Our Healthcare Platform?</h2>
+        <div class="row g-4">
 
-     <section class="py-5 bg-light">
-        <div class="container">
-            <h2 class="text-center mb-5 text-success">Why Join Our AI-Powered Healthcare Platform?</h2>
-            <div class="row g-4">
-
-            <!-- Doctor Benefits -->
-            <div class="col-md-6">
-                <div class="p-4 bg-white rounded shadow border-start border-5 border-success">
-                <h4 class="text-success mb-3"> <i class="fas fa-user-md fa-1x mb-3 text-success"></i> For Doctors</h4>
-                <ul class="list-unstyled">
-                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Earn consultation fees from home or on the go</li>
-                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Work flexible hours, even part-time</li>
-                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Gain exposure to a wide patient base</li>
-                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Vet AI-generated prescriptions efficiently</li>
-                    <li><i class="bi bi-check-circle-fill text-success me-2"></i> Conduct video consultations securely</li>
-                </ul>
-                </div>
-            </div>
-
-            <!-- Patient Benefits -->
-            <div class="col-md-6">
-                <div class="p-4 bg-white rounded shadow border-start border-5 border-primary h-100">
-                <h4 class="text-primary mb-3"><i class="bi bi-person-check me-2"></i> For Patients</h4>
-                <ul class="list-unstyled">
-                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Get AI-powered prescriptions instantly</li>
-                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Book expert doctors from home</li>
-                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Share symptoms and medical files online</li>
-                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Request video consultations as needed</li>
-                    <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Access prescriptions from anywhere</li>
-                </ul>
-                </div>
-            </div>
-
+        <!-- Doctor Benefits -->
+        <div class="col-md-6">
+            <div class="p-4 bg-white rounded shadow border-start border-5 border-success">
+            <h4 class="text-success mb-3"> <i class="fas fa-user-md fa-1x mb-3 text-success"></i> For Doctors</h4>
+            <ul class="list-unstyled">
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i> Earn consultation fees from home or on the go</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i> Work flexible hours, even part-time</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i> Gain exposure to a wide patient base</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i> Vet AI-generated prescriptions efficiently</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i> Conduct video consultations securely</li>
+            </ul>
             </div>
         </div>
-        </section>
+
+        <!-- Patient Benefits -->
+        <div class="col-md-6">
+            <div class="p-4 bg-white rounded shadow border-start border-5 border-primary h-100">
+            <h4 class="text-primary mb-3"><i class="bi bi-person-check me-2"></i> For Patients</h4>
+            <ul class="list-unstyled">
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Get AI-powered prescriptions instantly</li>
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Book expert doctors appointment from home</li>
+                   <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Consult with expert doctor's from home</li>
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Share symptoms and medical files online</li>
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Request video consultations as needed</li>
+                <li><i class="bi bi-check-circle-fill text-primary me-2"></i> Access prescriptions from anywhere</li>
+            </ul>
+            </div>
+        </div>
+
+        </div>
+    </div>
+ </section>
 
     <div class="container my-5">
       <div class="row justify-content-center">
@@ -461,6 +451,56 @@ h4 {
         </div>
       </div>
     </div>
+
+
+
+<div class="row mt-5">
+  <h3 class="text-center mb-4">Explore Modern Medical Services</h3>
+
+  <!-- Video 1 -->
+  <div class="col-md-6 mb-4">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+      <div class="position-relative ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/2WzIiMtrNbI" 
+          title="The future of health care is digital"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          class="rounded-4">
+        </iframe>
+      </div>
+      <div class="card-body text-center bg-light">
+        <h5 class="card-title fw-bold mb-2">🔮 Digital Healthcare</h5>
+        <p class="card-text text-muted small">
+          Discover how technology is transforming patient services with modern digital tools.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video 2 -->
+  <div class="col-md-6 mb-4">
+    <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+      <div class="position-relative ratio ratio-16x9">
+        <iframe 
+          src="https://www.youtube.com/embed/oQ-XsHRGRS8" 
+          title="The Making of a Modern Healthcare System and AI"
+          frameborder="0"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+          class="rounded-4">
+        </iframe>
+      </div>
+      <div class="card-body text-center bg-light">
+        <h5 class="card-title fw-bold mb-2">🤖 AI in Healthcare</h5>
+        <p class="card-text text-muted small">
+          Inspiring insights into building a modern smart healthcare system with AI technology.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
 
 
   </div>

@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>Update Delivery Status</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ formset.management_form }}  
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Delivery Status</th>
+                    <th>Confirmation Status</th>
+                
+                    <th>Item ID</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for form in formset %}
+                    <tr>
+                        <td>{{ form.product}}</td>
+                        <td>{{ form.price }}</td>
+                        <td>{{ form.quantity }}</td>
+                        <td>{{ form.delivery_status }}</td>
+                        <td>{{ form.confirmation_status }}</td>                      
+                        <td>{{ form.order}}</td>
+                        <td>{{ form.instance.id}}</td>
+                        
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Update        
+    </form>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% load static %}
+{% load tz %} {# if you want localtime formatting #}
+
+{% block content %}
+
+<style>
+.text-right { text-align: right; }
+.text-left { text-align: left; }
+
+</style>
+
+
+<h2 class="text-center my-2">Doctor</h2>
+<h2>Chat with {{ chat_partner.get_full_name|default:chat_partner.username }}</h2>
+
+<div id="chatBox"
+     style="height:300px; border:1px solid #ccc; overflow-y:auto; padding:8px;">
+{% for m in initial_messages %}
+  <div class="{% if m.sender_id == user_id %}text-right{% else %}text-left{% endif %}">
+    <strong>{{ m.sender_name }}:</strong> {{ m.text }}
+    <small style="opacity:0.6;">{{ m.sent_at|localtime|date:"Y-m-d H:i" }}</small>
+  </div>
+{% empty %}
+  <div style="opacity:0.6;">No messages yet.</div>
+{% endfor %}
+
+
+</div>
+
+<div style="margin-top:10px;">
+  <input id="chatInput" type="text" placeholder="Type a message..." style="width:70%;" autofocus />
+  <button id="sendBtn" class="btn btn-primary" type="button">Send</button>
+</div>
+
+{# Optional: audio / badge elements if you use them globally #}
+<audio id="chatAlertSound" src="{% static 'sounds/ring.mp3' %}" preload="auto"></audio>
+<audio id="chatTone" src="{% static 'sounds/ring.mp3' %}" preload="auto"></audio>
+<span id="chatUnreadBadge" style="display:none;"></span>
+
+
+
+
+<script>
+(function() {
+  const wsScheme    = window.location.protocol === "https:" ? "wss" : "ws";
+  const userId      = "{{ user_id }}";
+  const partnerId   = "{{ chat_partner_id }}";
+  const threadId    = "{{ thread_id }}";
+  const userRole    = "{{ user_role }}";
+  const tenantPrefix = "{{ tenant_prefix|default:'public' }}";
+
+  const chatBox   = document.getElementById("chatBox");
+  const chatInput = document.getElementById("chatInput");
+  const sendBtn   = document.getElementById("sendBtn");
+
+  const chatSound = document.getElementById("chatAlertSound");
+  const chatTone  = document.getElementById("chatTone");
+  const unreadBadge = document.getElementById("chatUnreadBadge");
+
+  // Open WebSocket
+  const socket = new WebSocket(
+    `${wsScheme}://${window.location.host}/ws/chat/${tenantPrefix}/${userId}/`
+  );
+
+  socket.onopen = () => console.log("Thread chat WebSocket connected.");
+  socket.onerror = (err) => console.error("Thread chat WebSocket error:", err);
+  socket.onclose = () => console.log("Thread chat WebSocket closed.");
+
+  socket.onmessage = (event) => {
+    let data;
+    try {
+      data = JSON.parse(event.data);
+    } catch (err) {
+      console.warn("Bad WS frame:", err);
+      return;
+    }
+    console.log("Thread chat IN:", data);
+
+    switch (data.type) {
+      case "chat.message":
+        handleIncomingChatMessage(data);
+        break;
+      case "chat_notify":
+        handleChatNotify(data);
+        break;
+      case "incoming_chat":
+        handleIncomingChat(data);
+        break;
+      default:
+        console.log("Unknown WS type:", data.type);
+    }
+  };
+
+  // Send message
+  function sendMessage() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    socket.send(JSON.stringify({
+      type: "chat.message",
+      message: text,
+      to_user_id: partnerId,
+      thread_id: threadId,
+    }));
+    chatInput.value = "";
+  }
+  sendBtn.addEventListener("click", sendMessage);
+  chatInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+
+  // Display chat messages
+  function handleIncomingChatMessage(data) {
+    appendChatLine(data.sender_name, data.message, String(data.sender_id) === String(userId));
+  }
+
+  function appendChatLine(senderName, message, isOwn) {
+    const div = document.createElement("div");
+    div.style.textAlign = isOwn ? "right" : "left";
+    div.innerHTML = `<strong>${escapeHtml(senderName)}:</strong> ${escapeHtml(message)}`;
+    chatBox.appendChild(div);
+    chatBox.scrollTop = chatBox.scrollHeight;
+  }
+
+  // Chat notification (sound + badge)
+  function handleChatNotify(data) {
+    if (String(data.thread_id) === String(threadId)) {
+      // We’re already in this thread; no badge increment needed
+      return;
+    }
+    if (chatSound) {
+      try { chatSound.currentTime = 0; chatSound.play(); } catch(_) {}
+    }
+    if (unreadBadge) {
+      const count = parseInt(unreadBadge.textContent || "0", 10) + 1;
+      unreadBadge.textContent = count;
+      unreadBadge.style.display = "inline-block";
+    }
+    alert(`New message from ${data.sender_name}: ${data.preview}`);
+  }
+
+  function handleIncomingChat(data) {
+    console.log("Incoming new chat request from", data.from_user_name);
+    if (chatTone) {
+      chatTone.loop = true;
+      chatTone.currentTime = 0;
+      chatTone.play().catch(()=>{});
+      setTimeout(() => { chatTone.pause(); chatTone.currentTime = 0; }, 30000);
+    }
+    alert(`Incoming chat request from ${data.from_user_name}`);
+  }
+
+  function escapeHtml(str) {
+    return (str || "").replace(/[&<>"']/g, s => (
+      {"&":"&amp;","<":"&lt;","&gt;":">","\"":"&quot;","'":"&#39;"}[s] || s
+    ));
+  }
+})();
+</script>
+{% endblock %}

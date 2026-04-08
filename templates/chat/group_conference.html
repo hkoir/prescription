@@ -1,0 +1,485 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<!-- Optional: Additional CSS for polished look -->
+<style>
+.card {
+  background-color: #fff;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* Badge styling */
+.badge {
+  font-size: 0.95rem;
+  border-radius: 0.5rem;
+}
+
+
+#localVideo {
+  border-radius: 0.5rem;
+  width: 180px;       /* desired floating width */
+  height: 135px;      /* maintain 4:3 ratio or adjust as needed */
+  position: fixed;    /* float on top */
+  top: 20px;
+  right: 20px;
+  z-index: 1050;      /* above other content */
+  object-fit: cover;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+/* Override .w-100 applied in HTML */
+#localVideo.w-100 {
+  width: 180px !important;
+  height: 135px !important;
+}
+/* Optional: make it draggable on desktop */
+#localVideo.draggable {
+  cursor: move;
+}
+
+/* Remote video wrapper */
+#remotes .ratio {
+  border: 1px solid #dee2e6;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Video labels */
+#remotes .ratio div {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.5);
+  color: #fff;
+  text-align: center;
+  font-weight: 500;
+  padding: 0.2rem 0;
+  font-size: 0.9rem;
+}
+
+/* Buttons hover effects */
+button.btn {
+  transition: all 0.2s ease;
+}
+
+button.btn:hover {
+  transform: translateY(-1px);
+}
+
+
+@media (max-width: 576px) {
+  #remotes > div {
+    flex: 1 1 100%; /* full width on small screens */
+  }
+}
+video{
+  object-fit: cover;
+}
+
+</style>
+
+
+<div class="container py-2">
+
+    <div class="col-12 col-md-4 mb-3">
+      <div class="card shadow-sm">    
+        <div class="card-body text-center py-2">
+          <video id="localVideo" autoplay playsinline muted></video>
+          <button id="toggleMic" class="btn btn-sm btn-outline-primary me-1">Mute</button>
+          <button id="toggleCam" class="btn btn-sm btn-outline-primary me-1">Camera Off</button>
+          <button id="shareScreen" class="btn btn-sm btn-outline-secondary">Share Screen</button>
+          {% if request.user.role == 'doctor' %}
+          <a href = "{% url 'chat:doctor_notifications_view' %}" class="btn btn-sm btn-outline-primary my-2" target="_blank">Open chat room for better video</a>      
+           {% elif request.user.role == 'patient' %}
+          <a href = "{% url 'chat:patient_notifications_view' %}" class="btn btn-sm btn-outline-primary my-2" target="_blank">Open chat room for better video</a>
+          {% endif %}
+          {% if request.user.role == 'patient' %}
+             <button type="button"
+              class="btn btn-sm btn-primary callDoctorBtn my-2"
+              data-doctor-id="{{ booking.doctor.id }}"
+              data-patient-id="{{ request.user.id }}">
+              Call doctor
+            </button>
+            {% endif %}
+        </div>
+      </div>
+    </div>
+
+
+    
+  <!-- Header -->
+  <div class="text-center mb-4">
+    <h3 class="mb-2">Video Consultation</h3>
+    <p class="text-muted mb-1">Parrent Booking Code: <span class="fw-bold">{{ booking.booking_code }}</span>
+   {% if request.user.role == 'doctor' %}
+  {% if booking %}
+    {# Parent booking prescription #}
+    {% if booking.is_followup %}
+      {# If this booking is actually a follow-up, use follow-up prescription URL #}
+      <a href="{% url 'prescription:create_followup_doctor_prescription' booking.parent_booking.id booking.id %}" target="_blank">
+        Create Follow-up Prescription
+      </a>
+    {% else %}
+      {# Parent booking prescription URL #}
+      {% if booking.status != 'completed' %}
+        <a href="{% url 'prescription:create_doctor_prescription' booking.id %}" target="_blank">
+          Create Prescription
+        </a>
+      {% endif %}
+    {% endif %}
+  {% endif %}
+{% endif %}
+
+   </p>
+
+
+  <div class="mt-3">
+  <h5>Follow-up Bookings:</h5>
+  {% if followup_bookings %}
+    {% for followup in followup_bookings %}
+      Booking Code: {{ followup.booking_code }} |
+      Date: {{ followup.created_at|date:"M d, Y H:i" }} |
+
+      {% if request.user.role == 'doctor' and followup.status != 'completed' and followup.status != 'cancelled' %}
+        <a href="{% url 'prescription:create_followup_doctor_prescription' booking.id followup.id %}" target="_blank">
+            Create Follow-up Prescription
+        </a>
+      {% endif %}
+    {% endfor %}
+  {% else %}
+    <p class="text-muted">No follow-up bookings.</p>
+  {% endif %}
+</div>
+
+
+  <!-- Room Controls -->
+ <div class="d-flex flex-column flex-md-row justify-content-center align-items-center mb-4 gap-2">
+  <div class="d-flex flex-column w-50">
+    <label for="roomId" class="form-label fw-bold text-center">Meeting Room ID</label>
+    <input id="roomId" class="form-control shadow-sm border-0 rounded text-center"
+           placeholder="Enter Room ID (e.g., team-123)"
+           value="{{ room_id|default:'' }}"
+           {% if room_id %}readonly{% endif %} />
+  </div>
+  <button id="joinBtn" class="btn btn-success shadow-sm">Join Room</button>
+  <button id="leaveBtn" class="btn btn-outline-danger shadow-sm" disabled>Leave</button>
+</div>
+
+
+
+
+  <div class="row g-3">  
+    <!-- Remote Participants -->
+    <div class="col-12 col-md-8">
+      <div id="remotes" class="row g-3">
+        <!-- Remote videos will be dynamically added here -->
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+
+
+
+
+
+
+<script>
+(() => {
+  const wsBase = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
+  let ws, roomId, myId, myUsername;
+  let localStream;
+  const peers = new Map(); // remoteId -> RTCPeerConnection
+  const remoteVideos = new Map(); // remoteId -> <video>
+
+  const iceServers = [{ urls: "stun:stun.l.google.com:19302" }];
+  const $ = sel => document.querySelector(sel);
+  const localVideo = $("#localVideo");
+  const remotes = $("#remotes");
+
+  const joinBtn = $("#joinBtn");
+  const leaveBtn = $("#leaveBtn");
+  const roomInput = $("#roomId");
+
+  // ===== Get room ID from Django context =====
+  roomId = "{{ room_id }}";
+  roomInput.value = roomId; // pre-fill input
+  joinBtn.disabled = false;
+
+  joinBtn.addEventListener("click", joinRoom);
+  leaveBtn.addEventListener("click", leaveRoom);
+  $("#toggleMic").addEventListener("click", toggleMic);
+  $("#toggleCam").addEventListener("click", toggleCam);
+  $("#shareScreen").addEventListener("click", startScreenShare);
+
+  // Auto-join room (optional)
+  joinRoom();
+
+  async function joinRoom() {
+    joinBtn.disabled = true;
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideo.srcObject = localStream;
+    } catch (e) {
+      console.error("getUserMedia failed:", e);
+      alert("Camera/Mic permission denied.");
+      joinBtn.disabled = false;
+      return;
+    }
+
+    ws = new WebSocket(`${wsBase}/ws/video/group/${encodeURIComponent(roomId)}/`);
+    ws.onopen = () => leaveBtn.disabled = false;
+    console.log("✅ Video socket connected.");
+    ws.onmessage = onWsMessage;
+    ws.onclose = () => leaveRoom();
+  }
+
+  function leaveRoom() {
+    cleanupAllPeers();
+    if (localStream) {
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;     
+      localVideo.srcObject = null;
+      
+    }
+    joinBtn.disabled = false;
+    leaveBtn.disabled = true;
+  }
+
+  function onWsMessage(ev) {
+    const msg = JSON.parse(ev.data);
+    
+    switch (msg.type) {
+      case "welcome":
+        myId = msg.user_id;
+        myUsername = msg.username;
+        ws.send(JSON.stringify({ type: "ready", from: myId, username: myUsername }));
+        break;
+
+      case "user_present":
+          if (msg.user_id !== myId) ensurePeer(msg.user_id, true, msg.username);
+          break;
+
+      case "user_joined":
+          if (msg.user_id !== myId) ensurePeer(msg.user_id, true, msg.username);
+          break;
+
+
+      case "user_left":
+        removePeer(msg.user_id);
+        break;
+     
+      case "offer":
+        if (msg.to === myId) handleOffer(msg.from, msg.sdp, msg.username);
+        break;
+
+
+      case "answer":
+        if (msg.to === myId) handleAnswer(msg.from, msg.sdp);
+        break;
+
+      case "candidate":
+        if (msg.to === myId) handleCandidate(msg.from, msg.candidate);
+        break;
+    }
+  }
+
+  function ensurePeer(remoteId, initiate, username) {
+    if (peers.has(remoteId)) return peers.get(remoteId);
+
+    const pc = new RTCPeerConnection({ iceServers });
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    pc.onicecandidate = e => {
+      if (e.candidate) {
+        ws.send(JSON.stringify({ type: "candidate", from: myId, to: remoteId, candidate: e.candidate }));
+      }
+    };
+
+    pc.ontrack = (e) => {
+      const vid = addRemoteVideo(remoteId, username);
+      vid.srcObject = e.streams[0];
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (["failed", "disconnected", "closed"].includes(pc.connectionState)) removePeer(remoteId);
+    };
+
+    peers.set(remoteId, pc);
+
+    if (initiate) createAndSendOffer(remoteId);
+    return pc;
+  }
+
+  function addRemoteVideo(remoteId, username) {
+    let vid = remoteVideos.get(remoteId);
+    if (!vid) {
+      vid = document.createElement("video");
+      vid.autoplay = true;
+      vid.playsInline = true;
+      vid.dataset.id = remoteId;
+      // vid.className = "col-6 col-md-4";
+      vid.className = "w-100 rounded";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "ratio ratio-16x9 border rounded";
+      wrapper.appendChild(vid);
+
+      const label = document.createElement("div");
+      label.className = "text-center mt-1 fw-bold";
+      label.textContent = username || "Anonymous";
+      wrapper.appendChild(label);
+
+      const col = document.createElement("div");
+      col.className = "col-12 col-md-6";
+      col.id = `remote-${remoteId}`;
+      col.appendChild(wrapper);
+
+      remotes.appendChild(col);
+      remoteVideos.set(remoteId, vid);
+    }
+    return vid;
+  }
+
+  async function createAndSendOffer(remoteId) {
+    const pc = peers.get(remoteId);
+    if (!pc) return;
+    const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+    await pc.setLocalDescription(offer);
+    ws.send(JSON.stringify({ type: "offer", from: myId, to: remoteId, sdp: offer, username: myUsername }));
+  }
+
+async function handleOffer(remoteId, sdp, username) {
+    const pc = ensurePeer(remoteId, false, username); // use correct username
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    ws.send(JSON.stringify({ type: "answer", from: myId, to: remoteId, sdp: answer, username: myUsername }));
+}
+
+
+  async function handleAnswer(remoteId, sdp) {
+    const pc = peers.get(remoteId);
+    if (!pc) return;
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  }
+
+  async function handleCandidate(remoteId, candidate) {
+    const pc = peers.get(remoteId);
+    if (!pc || !candidate) return;
+    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+  }
+
+  function removePeer(remoteId) {
+    const pc = peers.get(remoteId);
+    if (pc) pc.close();
+    peers.delete(remoteId);
+
+    const card = document.getElementById(`remote-${remoteId}`);
+    if (card) card.remove();
+
+    const vid = remoteVideos.get(remoteId);
+    if (vid) {
+      vid.srcObject = null;
+      remoteVideos.delete(remoteId);
+    }
+  }
+
+  function cleanupAllPeers() {
+    [...peers.keys()].forEach(removePeer);
+    remotes.innerHTML = "";
+  }
+
+  function toggleMic() {
+    if (!localStream) return;
+    const enabled = localStream.getAudioTracks()[0].enabled;
+    localStream.getAudioTracks().forEach(t => t.enabled = !enabled);
+    $("#toggleMic").textContent = enabled ? "Unmute" : "Mute";
+  }
+
+  function toggleCam() {
+    if (!localStream) return;
+    const enabled = localStream.getVideoTracks()[0].enabled;
+    localStream.getVideoTracks().forEach(t => t.enabled = !enabled);
+    $("#toggleCam").textContent = enabled ? "Camera On" : "Camera Off";
+  }
+
+  async function startScreenShare() {
+    if (!localStream) return;
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const screenTrack = screenStream.getVideoTracks()[0];
+
+      peers.forEach(pc => {
+        const sender = pc.getSenders().find(s => s.track && s.track.kind === "video");
+        if (sender) sender.replaceTrack(screenTrack);
+      });
+
+      localVideo.srcObject = screenStream;
+
+      screenTrack.onended = () => {
+        const camTrack = localStream.getVideoTracks()[0];
+        peers.forEach(pc => {
+          const sender = pc.getSenders().find(s => s.track && s.track.kind === "video");
+          if (sender) sender.replaceTrack(camTrack);
+        });
+        localVideo.srcObject = localStream;
+      };
+    } catch (e) {
+      console.error("Screen share failed:", e);
+    }
+  }
+
+})();
+</script>
+
+
+
+
+
+<script>
+document.querySelectorAll(".callDoctorBtn").forEach((btn) => {
+  btn.addEventListener("click", async function () {
+    const doctorId = this.dataset.doctorId;
+    const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+   try {
+      const response = await fetch(`/chat/send_doctor_ringtone/${doctorId}/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken,
+          "Accept": "application/json",
+        },
+        body: JSON.stringify({})
+      });
+
+      console.log("HTTP status:", response.status); // <-- log status
+
+      const data = await response.json();
+      console.log("Server response:", data); // <-- log response
+
+      if (data.success) {
+        console.log("Ringtone sent to doctor!");
+      } else {
+        alert("Failed to send ringtone: " + (data.error || "Unknown error"));
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
+      alert("Request failed.");
+    }
+
+  });
+});
+
+</script>
+
+
+
+{% endblock %}

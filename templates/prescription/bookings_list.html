@@ -1,6 +1,7 @@
-
-
 {% extends 'base.html' %}
+{% load custom_filters %}
+
+
 {% block content %}
 
 <div class="container">
@@ -30,7 +31,13 @@
                   {% endif %}
 
                   <div class="d-flex flex-column justify-content-center">
-                    <h6 class="mb-0 fw-semibold">⚕️ {{ booking.doctor.full_name }}</h6>
+                    <h6 class="mb-0 fw-semibold">⚕️ {{ booking.doctor.full_name }}
+                           {% if booking.doctor.user.is_online %}
+                                <span style="color: green;">● Online</span>
+                            {% else %}
+                                <span style="color: gray;">● Offline <br>Last seen {{ booking.doctor.user.last_seen|timesince }} ago</span>
+                            {% endif %}
+                    </h6>
                     <small class="text-muted">{{ booking.doctor.specialization|default:"Specialist" }}</small>
                   </div>
                 </a>
@@ -47,15 +54,22 @@
                     {% else %}
                     <div class="bg-secondary rounded-circle me-2" style="width: 40px; height: 40px;"></div>
                   {% endif %}
-                  <h6 class="card-title mb-0">👨 Patient: {{ booking.patient.full_name }}</h6>
-                  </a>
+                  <h6 class="card-title mb-0">👨 Patient: {{ booking.patient.full_name }}
+                      {% if booking.patient.user|online %}
+                      <span class="badge bg-success">Online</span>
+                    {% else %}
+                      <span class="badge bg-secondary">Offline</span>
+                    {% endif %}
+                  </h6>                  
+                  </a>                   
+                   
                 </div>
 
                 <p class="mb-1"><strong>Booking Code:</strong> {{ booking.booking_code }}</p>
                 <p class="mb-1"><strong>Symptoms:</strong> {{ booking.symptoms_summary }}</p>
                 <p class="mb-3"><strong>Preferred Time:</strong> {{ booking.preferred_time }}</p>
 
-                <a href="{% url 'prescription:doctor_booking_detail' booking.id %}" class="btn btn-sm btn-outline-success mb-2">Booking Details</a>
+                <a href="{% url 'prescription:doctor_booking_detail' booking.id %}" class="btn btn-sm btn-success mb-1">Booking Details</a>
 
                 <p class="mb-2 btn btn-sm btn-outline-success">
                   <strong>Status:</strong>
@@ -69,49 +83,73 @@
                 </p>
 
                 {% if booking.doctor_folloup_bookings.exists %}
-                  <a href="{% url 'prescription:all_follow_up_schedules' booking.pk %}" class="btn btn-sm btn-outline-success mb-2">View Follow-up bookings</a>
+                  <a href="{% url 'prescription:all_follow_up_schedules' booking.pk %}" class="btn btn-sm btn-success mb-2">View Follow-up bookings</a>
                 {% else %}
                   <span class="text-muted mb-2 btn btn-sm btn-outline-success">No follow-up yet</span>
                 {% endif %}
 
                 {% if request.user.role == 'patient' %}
-                  <a href="{% url 'prescription:initiate_doctor_followup_booking_payment' booking.pk %}" class="btn btn-sm btn-outline-primary mb-2">
+                  <a href="{% url 'prescription:initiate_doctor_followup_booking_payment' booking.pk %}" class="btn btn-sm btn-primary mb-2">
                     Make Follow-up Booking
                   </a>
                 {% endif %}
 
                 {% if request.user.role == 'doctor' %}
-                  <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" class="btn btn-sm btn-outline-success mb-2">
+                  <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" class="btn btn-sm btn-warning mb-2">
                     {% if booking.status != "completed" %}View & Prescribe{% endif %}
                   </a>
                 {% endif %}
 
 
           {% if not booking.video_call_request_message and booking.status != 'completed' %}
-              <a href="{% url 'prescription:initiate_video_call_payment' booking.pk %}" class="btn btn-sm btn-outline-info mb-2">Request Video Call</a>
+              <a href="{% url 'prescription:initiate_video_call_payment' booking.pk %}" class="btn btn-sm btn-info mb-2">Request Video Call</a>
             {% elif booking.video_call_request_message and not booking.video_call_request_approve %}
                   {% if request.user.role == 'patient' %}
                       <span class="text-primary fw-bold mb-2 btn btn-sm btn-outline-success">Waiting for video call approval</span>
                     {% else %}
-                      <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" class="btn btn-sm btn-outline-secondary mb-2">Approve Video Call</a>
+                      <a href="{% url 'prescription:approve_request_video_call' booking.pk %}" class="btn btn-sm btn-danger mb-2">Video Call Approval pending</a>
                       {% endif %}
-            {% elif booking.video_call_request_approve == 'approved' and booking.status != 'completed' %}
-             <a href="{{ booking.video_link }}" class="btn btn-sm btn-outline-success mb-2 d-flex align-items-center justify-content-between gap-2" target="_blank">
-                <span>Join video call</span>
-                <small>{{ booking.video_call_time }}</small>
-              </a>
-
+        
             {% endif %}
-                           
-            
 
-                {% if booking.doctor_booking_refs.exists %}
-                  {% with parent_prescription=booking.doctor_booking_refs.first %}
-                    <a href="{% url 'prescription:doctor_prescription_detail_single' parent_prescription.id %}" class="btn btn-sm btn-outline-success mb-2">
-                      View Main Doctor Prescription
-                    </a>
-                  {% endwith %}
-                {% endif %}
+            {% if booking.video_call_request_approve == 'approved' and booking.status != 'completed' %}
+              {% if booking.webrtc_room %}
+                <a href="{% url 'chat:group_conference_id' booking.webrtc_room %}" 
+                  class="btn btn-sm btn-primary mb-2 d-flex align-items-center justify-content-between gap-2" target="_blank">
+                  <span>Scheduled Video Conf.</span>
+                  <small>{{ booking.video_call_time }}</small>
+                </a>
+              {% endif %}
+            {% endif %}   
+
+
+            {% if booking.doctor_booking_refs.exists %}
+              {% with parent_prescription=booking.doctor_booking_refs.first %}
+                <a href="{% url 'prescription:doctor_prescription_detail_single' parent_prescription.id %}" class="btn btn-sm btn-outline-success mb-2">
+                  View Main Doctor Prescription
+                </a>
+              {% endwith %}
+            {% endif %}
+
+
+
+           {% if booking.status != 'completed' %}         
+            <a href="#" 
+              class="btn btn-sm btn-success chatDoctorBtn mb-1"
+              data-doctor-id="{{ booking.doctor.id }}"
+              data-patient-id="{{ booking.patient.id }}"  >
+              Start Conversation
+            </a>
+
+            <!-- <button type="button"
+              class="btn btn-sm btn-primary callDoctorBtn my-2"
+              data-doctor-id="{{ booking.doctor.id }}"
+              data-patient-id="{{ booking.patient.id }}" >
+              Instant Video Call
+            </button> -->
+             
+          {% endif %}
+           
 
                 {% if booking.ai_prescription %}
                   <a href="{% url 'prescription:ai_prescription_detail' booking.ai_prescription.id %}" class="btn btn-sm btn-outline-secondary">
@@ -188,10 +226,10 @@
 				                           {% if request.user.role == 'doctor' %}
                                     {% if booking.status == " completed" %}
                                        <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" 
-                                         class="btn btn-sm btn-outline-success">View and Prescribe</a>
+                                         class="btn btn-sm btn-outline-success">View Prescription</a>
                                     {% else %}
                                         <a href="{% url 'prescription:doctor_booking_detail' booking.pk %}" 
-                                          class="btn btn-sm btn-outline-success">View prescription</a>
+                                          class="btn btn-sm btn-outline-success">Start Prescription</a>
                                      {% endif %}   
                                  {% endif %}                                    
                                    
@@ -230,6 +268,7 @@
                                 {% endif %}
                                 {% endif %}
 
+
                             </td>
                         </tr>
                         {% empty %}
@@ -263,5 +302,124 @@
         </div>
     </div>
 </div>
+
+
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+ const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+  const tenantPrefix = "{{ tenant_prefix|default:'public' }}";
+  const patientId = "{{ user.id }}";
+
+  const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/chat/${tenantPrefix}/${patientId}/`);
+
+  socket.onopen = () => {
+    console.log("Patient WebSocket connected");
+  };
+
+  socket.onerror = (error) => {
+    console.error("Patient WebSocket error:", error);
+  };
+
+  socket.onclose = () => {
+    console.log("Patient WebSocket closed");
+  };
+
+  // Attach to all chat buttons
+  document.querySelectorAll(".chatDoctorBtn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const doctorId = btn.dataset.doctorId;
+
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: "incoming_chat",
+          to_user_id: doctorId,
+          from_user_id: patientId,
+          from_user_name: "{{ user.get_full_name|default:user.username }}",
+        }));
+      }
+
+      setTimeout(() => {
+        window.location.href = `/chat/patient_chat_view/${doctorId}/`;
+      }, 100);
+    });
+  });
+});
+</script>
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+  document.querySelectorAll(".callDoctorBtn").forEach((btn) => {
+    btn.addEventListener("click", async function () {
+      const doctorId = this.dataset.doctorId;
+
+      try {
+        const response = await fetch(`/prescription/request_test_video_call/${doctorId}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+            "Accept": "application/json",
+          },
+          body: JSON.stringify({})
+        });
+
+        const data = await response.json();
+        if (data.success && data.join_url) {
+          window.open(data.join_url, "_blank");
+        } else {
+          alert("Call failed: " + (data.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Request failed.");
+      }
+    });
+  });
+});
+</script>
+
+
+
+
+<!-- Firbebase push -->
+<script>
+  function sendPushToDoctor(doctorId, actionType) {
+    console.log("Sending push to doctor:", doctorId, actionType);
+    fetch('/chat/send-push/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': '{{ csrf_token }}',  // ensure this is available
+      },
+      body: JSON.stringify({
+        doctor_id: doctorId,
+        action: actionType
+      })
+    })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('Network response was not OK');
+      }
+      return response.json();
+    })
+    .then(data => {
+      console.log("✅ Push notification sent:", data);
+    })
+    .catch(error => {
+      console.error("❌ Error sending push:", error);
+    });
+  }
+</script>
+
 
 {% endblock %}

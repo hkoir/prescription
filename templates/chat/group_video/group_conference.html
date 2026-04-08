@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block content %}
+
+
+<!-- Optional: Additional CSS for polished look -->
+<style>
+  #remotes video {
+    width: 100%;
+    border-radius: 8px;
+    background: #000;
+  }
+
+  #remotes .card {
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Hover effect for remote video cards */
+  #remotes .card:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease-in-out;
+  }
+</style>
+
+<div class="container py-4">
+  <h3 class="mb-3 text-center">Group Video Conference</h3>
+ <h3 class="text-center">Meeting Room: {{ room.title|default:"Board Consultation" }}</h3>
+  <p class="text-center">
+    Host: <strong>{{ host_name }}</strong> |
+    Started at: <strong>{{ start_time|date:"M d, Y H:i" }}</strong>
+  </p>
+  <!-- Room Controls -->
+  <div class="d-flex flex-column flex-md-row justify-content-center align-items-center mb-4 gap-2">
+    
+    <input type="hidden" id="roomId" value="{{ room_id }}">
+
+    <button id="joinBtn" class="btn btn-primary">Join Room</button>
+    <button id="leaveBtn" class="btn btn-outline-secondary" disabled>Leave</button>
+  </div>
+
+  <div class="row g-3">
+    <!-- Local Video & Controls -->
+    <div class="col-12 col-md-4">
+      <div class="card shadow-sm mb-3">
+        <div class="ratio ratio-16x9">
+          <video id="localVideo" autoplay playsinline muted class="rounded"></video>
+        </div>
+        <div class="card-body text-center py-2">
+          <button id="toggleMic" class="btn btn-sm btn-outline-primary me-1">Mute</button>
+          <button id="toggleCam" class="btn btn-sm btn-outline-primary me-1">Camera Off</button>
+          <button id="shareScreen" class="btn btn-sm btn-outline-secondary">Share Screen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Remote Participants -->
+    <div class="col-12 col-md-8">
+      <div id="remotes" class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+        <!-- Remote videos will be dynamically added here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+  const ROOM_ID = "{{ room_id }}";  // Django passes room ID to JS
+</script>
+
+
+
+<script>
+(() => {
+  const wsBase = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host;
+  let ws, roomId, myId, myUsername;
+  let localStream;
+  const peers = new Map(); // remoteId -> RTCPeerConnection
+  const remoteVideos = new Map(); // remoteId -> <video>
+
+  const iceServers = [{ urls: "stun:stun.l.google.com:19302" }];
+  const $ = sel => document.querySelector(sel);
+  const localVideo = $("#localVideo");
+  const remotes = $("#remotes");
+
+  const joinBtn = $("#joinBtn");
+  const leaveBtn = $("#leaveBtn");
+  const roomInput = $("#roomId");
+
+  // ===== Get room ID from Django context =====
+  roomId = "{{ room_id }}";
+  roomInput.value = roomId; // pre-fill input
+  joinBtn.disabled = false;
+
+  joinBtn.addEventListener("click", joinRoom);
+  leaveBtn.addEventListener("click", leaveRoom);
+  $("#toggleMic").addEventListener("click", toggleMic);
+  $("#toggleCam").addEventListener("click", toggleCam);
+  $("#shareScreen").addEventListener("click", startScreenShare);
+
+  // Auto-join room (optional)
+  joinRoom();
+
+  async function joinRoom() {
+    joinBtn.disabled = true;
+
+    try {
+      localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      localVideo.srcObject = localStream;
+    } catch (e) {
+      console.error("getUserMedia failed:", e);
+      alert("Camera/Mic permission denied.");
+      joinBtn.disabled = false;
+      return;
+    }
+
+    ws = new WebSocket(`${wsBase}/ws/video/group/${encodeURIComponent(roomId)}/`);
+    ws.onopen = () => leaveBtn.disabled = false;
+    ws.onmessage = onWsMessage;
+    ws.onclose = () => leaveRoom();
+  }
+
+  function leaveRoom() {
+    cleanupAllPeers();
+    if (localStream) {
+      localStream.getTracks().forEach(t => t.stop());
+      localStream = null;
+      localVideo.srcObject = null;
+    }
+    joinBtn.disabled = false;
+    leaveBtn.disabled = true;
+  }
+
+  function onWsMessage(ev) {
+    const msg = JSON.parse(ev.data);
+
+    switch (msg.type) {
+      case "welcome":
+        myId = msg.user_id;
+        myUsername = msg.username;
+        ws.send(JSON.stringify({ type: "ready", from: myId, username: myUsername }));
+        break;
+
+      case "user_joined":
+      case "user_present":
+        if (msg.user_id !== myId) ensurePeer(msg.user_id, true, msg.username);
+        break;
+
+      case "user_left":
+        removePeer(msg.user_id);
+        break;
+
+      case "offer":
+        if (msg.to === myId) handleOffer(msg.from, msg.sdp);
+        break;
+
+      case "answer":
+        if (msg.to === myId) handleAnswer(msg.from, msg.sdp);
+        break;
+
+      case "candidate":
+        if (msg.to === myId) handleCandidate(msg.from, msg.candidate);
+        break;
+    }
+  }
+
+  function ensurePeer(remoteId, initiate, username) {
+    if (peers.has(remoteId)) return peers.get(remoteId);
+
+    const pc = new RTCPeerConnection({ iceServers });
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
+
+    pc.onicecandidate = e => {
+      if (e.candidate) {
+        ws.send(JSON.stringify({ type: "candidate", from: myId, to: remoteId, candidate: e.candidate }));
+      }
+    };
+
+    pc.ontrack = (e) => {
+      const vid = addRemoteVideo(remoteId, username);
+      vid.srcObject = e.streams[0];
+    };
+
+    pc.onconnectionstatechange = () => {
+      if (["failed", "disconnected", "closed"].includes(pc.connectionState)) removePeer(remoteId);
+    };
+
+    peers.set(remoteId, pc);
+
+    if (initiate) createAndSendOffer(remoteId);
+    return pc;
+  }
+
+  function addRemoteVideo(remoteId, username) {
+    let vid = remoteVideos.get(remoteId);
+    if (!vid) {
+      vid = document.createElement("video");
+      vid.autoplay = true;
+      vid.playsInline = true;
+      vid.dataset.id = remoteId;
+      vid.className = "col-6 col-md-4";
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "ratio ratio-16x9 border rounded";
+      wrapper.appendChild(vid);
+
+      const label = document.createElement("div");
+      label.className = "text-center mt-1 fw-bold";
+      label.textContent = username || "Anonymous";
+      wrapper.appendChild(label);
+
+      const col = document.createElement("div");
+      col.className = "col-6 col-md-4";
+      col.id = `remote-${remoteId}`;
+      col.appendChild(wrapper);
+
+      remotes.appendChild(col);
+      remoteVideos.set(remoteId, vid);
+    }
+    return vid;
+  }
+
+  async function createAndSendOffer(remoteId) {
+    const pc = peers.get(remoteId);
+    if (!pc) return;
+    const offer = await pc.createOffer({ offerToReceiveAudio: true, offerToReceiveVideo: true });
+    await pc.setLocalDescription(offer);
+    ws.send(JSON.stringify({ type: "offer", from: myId, to: remoteId, sdp: offer, username: myUsername }));
+  }
+
+  async function handleOffer(remoteId, sdp) {
+    const pc = ensurePeer(remoteId, false, "Anonymous");
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+    const answer = await pc.createAnswer();
+    await pc.setLocalDescription(answer);
+    ws.send(JSON.stringify({ type: "answer", from: myId, to: remoteId, sdp: answer }));
+  }
+
+  async function handleAnswer(remoteId, sdp) {
+    const pc = peers.get(remoteId);
+    if (!pc) return;
+    await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+  }
+
+  async function handleCandidate(remoteId, candidate) {
+    const pc = peers.get(remoteId);
+    if (!pc || !candidate) return;
+    await pc.addIceCandidate(new RTCIceCandidate(candidate));
+  }
+
+  function removePeer(remoteId) {
+    const pc = peers.get(remoteId);
+    if (pc) pc.close();
+    peers.delete(remoteId);
+
+    const card = document.getElementById(`remote-${remoteId}`);
+    if (card) card.remove();
+
+    const vid = remoteVideos.get(remoteId);
+    if (vid) {
+      vid.srcObject = null;
+      remoteVideos.delete(remoteId);
+    }
+  }
+
+  function cleanupAllPeers() {
+    [...peers.keys()].forEach(removePeer);
+    remotes.innerHTML = "";
+  }
+
+  function toggleMic() {
+    if (!localStream) return;
+    const enabled = localStream.getAudioTracks()[0].enabled;
+    localStream.getAudioTracks().forEach(t => t.enabled = !enabled);
+    $("#toggleMic").textContent = enabled ? "Unmute" : "Mute";
+  }
+
+  function toggleCam() {
+    if (!localStream) return;
+    const enabled = localStream.getVideoTracks()[0].enabled;
+    localStream.getVideoTracks().forEach(t => t.enabled = !enabled);
+    $("#toggleCam").textContent = enabled ? "Camera On" : "Camera Off";
+  }
+
+  async function startScreenShare() {
+    if (!localStream) return;
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+      const screenTrack = screenStream.getVideoTracks()[0];
+
+      peers.forEach(pc => {
+        const sender = pc.getSenders().find(s => s.track && s.track.kind === "video");
+        if (sender) sender.replaceTrack(screenTrack);
+      });
+
+      localVideo.srcObject = screenStream;
+
+      screenTrack.onended = () => {
+        const camTrack = localStream.getVideoTracks()[0];
+        peers.forEach(pc => {
+          const sender = pc.getSenders().find(s => s.track && s.track.kind === "video");
+          if (sender) sender.replaceTrack(camTrack);
+        });
+        localVideo.srcObject = localStream;
+      };
+    } catch (e) {
+      console.error("Screen share failed:", e);
+    }
+  }
+
+})();
+</script>
+
+
+{% endblock %}

@@ -42,14 +42,15 @@
 <!-- Add JS for Select2 -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
-
-
 <link rel="stylesheet" href="{% static 'css/core.css' %}">
-
 <script src="{% static 'js/common.js' %}"></script>
-
-
 <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+
+
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.css"/>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick-theme.css"/>
+<script src="https://cdn.jsdelivr.net/npm/slick-carousel@1.8.1/slick/slick.min.js"></script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 
 
 
@@ -244,6 +245,9 @@ li a {
     width: 280px;         /* Default for desktop */
     max-width: 80vw;      /* Limit width on small screens */
     min-width: 220px;     /* Don't shrink too small */
+    background-color: #0f2235; /* dark navy blue */
+    color: #e9ecef;
+     border-right: 1px solid #1a2d45;
 }
 
 @media (max-width: 576px) {
@@ -274,15 +278,28 @@ li a {
     background-color: #34495e;  /* Slightly lighter background on hover/focus */
     color: white;
 }
+.nav-link {
+  color: #adb5bd; /* muted text */
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #ffffff;
+}
+
+.nav-link .text-dark {
+  color: #e9ecef !important;
+}
+
+
+
 
 
 .cs-logo {
   display: block;       /* Removes inline text baseline space */
   margin: 0 auto;       /* Centers the SVG */
 }
-
-
-
 
 .navbar-brand svg {
     width: 280px;    /* A fixed width for large screens */
@@ -333,6 +350,84 @@ li a {
 }
 
 
+
+/* for websocket */
+.chat-notification-popup {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+  animation: pulse 1.5s infinite;
+}
+.chat-notification-popup .btn {
+  border-radius: 50px;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 1rem;
+}
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220,53,69, 0.5); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(220,53,69, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(220,53,69, 0); }
+}
+
+
+
+
+
+
+
+/* Small screen */
+@media (max-width: 768px) {
+  .basket-btn {
+    padding: 5px;
+    font-size: 12px;
+  }
+}
+
+/* Large screen */
+@media (min-width: 769px) {
+  .basket-btn {
+    padding: 10px;
+    font-size: 18px;
+  }
+}
+
+.basket-btn {
+  background-color: transparent;
+}
+.basket-btn:hover {
+  background-color: transparent;
+}
+
+.icon-format:hover {
+    fill: blue;
+}
+
+/* Large screen */
+@media (min-width: 769px) {
+    .icon-format{
+        width:30px;
+        height:30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .icon-format{
+        width:22px;
+        height:22px;
+    }
+}
+
+
+.icon-format {
+    width:30px;
+    height:30px;
+}
+
+
+
+
 </style>
 
 
@@ -342,6 +437,28 @@ li a {
 
 
 <body>
+<!-- 
+    
+{% if has_unread %}
+  {% if request.user.is_authenticated %}
+    {% if request.user.role == 'doctor' %}
+      <div class="chat-notification-popup">
+        <a href="{% url 'chat:doctor_notifications_view' %}" class="btn btn-danger btn-lg shadow">
+          🔔 You have unread messages
+        </a>
+      </div>
+    {% elif request.user.role == 'patient' %}
+      <div class="chat-notification-popup">
+        <a href="{% url 'chat:patient_notifications_view' %}" class="btn btn-danger btn-lg shadow">
+          🔔 You have unread messages
+        </a>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endif %} -->
+
+
+    
 <nav class="navbar navbar-dark social-nav" id="socialNav">
     <div class="container-fluid d-flex justify-content-between align-items-center">
         <!-- Left Section -->
@@ -351,15 +468,31 @@ li a {
             </span>
         </div>
 
-        <!-- Middle Section (Search Form) -->
-        <div class="flex-grow-1 d-none d-md-flex justify-content-center">
-            <form class="d-flex" method="GET" action="{% url 'accounts:search_all' %}">
-                <select id="id_search" class="form-control select2 me-2" name="q">
-                    <option value="">Search...</option>
-                </select>
-                <button class="btn btn-info" type="submit">Search</button>
-            </form>
-        </div>
+        <!--  basket here -->
+                <div id="basket-container" {% if basket|length == 0 %}style="display:none;"{% endif %}>
+
+                <a type="button" role="button" href="{% url "basket:basket_summary" %}"
+                    class="btn btn-outline-secondary border-0 basket-btn" style="color:white; font-size:1em;">
+                    {% with total_qty=basket|length %}   
+                    <div id="basket-qty" class="basket-qty">
+                        {% if total_qty > 0 %}
+                        {{ total_qty }}
+                        {% else %}
+                        0
+                        {% endif %}
+                    </div>
+                        {% endwith %}
+                      <div >
+                          <svg xmlns="http://www.w3.org/2000/svg" fill="#0AEDED" class="bi bi-cart3 icon-format"
+                            viewBox="0 0 16 16" >
+                            <path
+                              d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .49.598l-1 5a.5.5 0 0 1-.465.401l-9.397.472L4.415 11H13a.5.5 0 0 1 0 1H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l.84 4.479 9.144-.459L13.89 4H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+                          </svg>
+                      </div>
+                      <span class="fs15 fw500" style="color:white">Basket</span>
+                  </a>
+                </div>
+
 
         <!-- Right Section (Language + Icons) -->
         <div class="d-flex align-items-center">
@@ -411,11 +544,12 @@ li a {
         </button>
 
        <a class="navbar-brand d-flex align-items-center" href="{% url 'prescription:home' %}">
-        {% include "partials/caresetu-logo.svg" %}
+        {% include "partials/caresetu-logo.svg" %}l
     </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
+        
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav">
                 <!-- notification menue -->               
@@ -534,7 +668,7 @@ li a {
                
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle dropdown_caret_color"href="#" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class=" fas fa-user-cog text-info"></i>  &nbsp;<span style="color:gray">User Account</span>            
+                        <i class=" fas fa-user-cog text-info"></i>  &nbsp;<span style="color:gray">User</span>            
                                   
                     </a>   
                                     
@@ -645,18 +779,51 @@ li a {
                 
                 <li><a href="#" class="nav-link text-truncate"> <i class="fs-5 bi-grid"></i><span class="ms-1 text-success">Docctors</span></a> </li>
                 <li><a href="#" class="nav-link text-truncate"><i class="fs-5 bi-people"></i><span class="ms-1 text-primary">Patients</span> </a></li>
+                               
+                 
+                 <li class="dropdown"><a href="#" class="nav-link dropdown-toggle  text-truncate" id="dropdown" data-bs-toggle="dropdown" aria-expanded="false"> 
+                    <i class="fas fa-pills text-success"></i><i class="fas fa-vial text-danger"></i><span 
+			           class="ms-1 text-success">Order Management</span> </a>
+                    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdown">
+                          {% if request.user.is_staff %}
+                             <li><a href="{% url 'store:store_home' %}" class="nav-link text-truncate"><i class="fs-5 bi-people"></i><span class="ms-1 text-primary">Store</span> </a></li>
+                         <li><a href="{% url 'orders:all-order-items' %}" class="nav-link text-truncate"><i class="fs-5 bi-people"></i><span class="ms-1 text-primary">View Orders</span> </a></li>
+                           <li><a href="{% url 'orders:order_crud_read' %}" class="nav-link text-truncate"><i class="fs-5 bi-people"></i><span class="ms-1 text-primary">Order CRUD</span> </a></li>
+                            <li><a href="{% url 'chat:create_meeting' %}" class="nav-link text-truncate"><i class="fs-5 bi-people"></i><span class="ms-1 text-primary">Create Meeting</span> </a></li>
+                          {% endif %}       
+                           <li><a href="{% url 'chat:group_conference' %}" class="nav-link text-truncate"><i class="fs-5 bi-people"></i><span class="ms-1 text-primary">Video Conf room</span> </a></li>
+                    </ul>
+                </li>              
+
+
             </ul>
      </div>
  </div>
-
-
 
 
     <div class="container-fluid">          
         {% block content %}
         {% endblock %}
     </div>
-    
+
+
+
+            
+    {% if request.user.is_authenticated %}
+        <script>
+        window.currentUserId = "{{ doctor_user_id|default:patient_user_id }}";
+        window.currentUserRole = "{{ user_role }}";
+        window.tenantPrefix = "{{ tenant_prefix }}";
+        </script>
+
+        {% if user_role == 'doctor' %}
+        <script src="{% static 'js//doctor_ws_v2.js' %}"></script>
+        {% elif user_role == 'patient' %}
+        <script src="{% static 'js/patient_ws1.js' %}"></script>
+        {% endif %}
+    {% endif %}
+
+            
     {% include 'footer.html' %}
 
 
@@ -682,6 +849,50 @@ li a {
         </div>
     </div>
 </div>
+
+
+
+
+<audio id="silenceAudio" muted autoplay src="{% static 'sounds/silence.mp3' %}" preload="auto"></audio>
+
+<script>
+  function unlockAudio() {
+    const audio = document.getElementById('silenceAudio');
+
+    if (!audio) return;
+
+    audio.play().then(() => {
+      console.log('🔓 Audio unlocked with autoplay.');
+    }).catch(err => {
+      console.warn('🔒 Autoplay blocked. Will try on user gesture.', err);
+    });
+
+    if (typeof AudioContext !== 'undefined' || typeof webkitAudioContext !== 'undefined') {
+      const AudioCtx = AudioContext || webkitAudioContext;
+      const context = new AudioCtx();
+
+      if (context.state === 'suspended') {
+        const resume = () => {
+          context.resume().then(() => {
+            console.log('🔓 AudioContext resumed.');
+            document.removeEventListener('click', resume);
+            document.removeEventListener('touchstart', resume);
+            document.removeEventListener('keydown', resume);
+          });
+        };
+
+        document.addEventListener('click', resume, { once: true });
+        document.addEventListener('touchstart', resume, { once: true });
+        document.addEventListener('keydown', resume, { once: true });
+      }
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', unlockAudio);
+</script>
+
+
+
 
 
 
@@ -777,6 +988,9 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
     </script>
+
+
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {   
         const messageModal = document.getElementById('messageModal');
@@ -831,9 +1045,145 @@ $(document).ready(function () {
 
 
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const tenantPrefix = "{{ request.tenant.schema_name }}";
+  const userId = "{{ request.user.id }}";
+  const userRole = "{{ request.user.role|default_if_none:'patient' }}"; // adjust if needed
+
+  const userSocket = new WebSocket(
+    (window.location.protocol === "https:" ? "wss://" : "ws://") +
+    window.location.host +
+    `/ws/call/${tenantPrefix}/${userId}/`
+  );
+
+  userSocket.onmessage = function(e) {
+  const data = JSON.parse(e.data);
+  const isChatRoom = !!window.activeThreadId;
+  
+  if (data.type === "chat_notify") {
+    if (parseInt(data.sender_id) !== parseInt(userId) &&
+        (!isChatRoom || window.activeThreadId != data.thread_id)) {
+      showNotificationPopup(`New message from ${data.sender_name}`, data.thread_id); 
+    } else {
+      // User is in the chat room for this thread, suppress popup
+      console.log("Popup suppressed: user is in chat room with thread", window.activeThreadId);
+    }
+  }
+};
 
 
 
+function getCookie(name) {
+  const cookieValue = document.cookie
+    .split("; ")
+    .find((row) => row.startsWith(name + "="))
+    ?.split("=")[1];
+  return cookieValue || "";
+}
+
+
+
+  // === Notification Popup ===
+  function showNotificationPopup(message, threadId = null) {
+    const popup = document.createElement("div");
+
+    Object.assign(popup.style, {
+      position: "fixed",
+      bottom: "20px",
+      right: "20px",
+      backgroundColor: "rgba(30, 136, 229, 0.95)",
+      color: "white",
+      padding: "16px 24px",
+      borderRadius: "12px",
+      boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)",
+      backdropFilter: "blur(8px)",
+      WebkitBackdropFilter: "blur(8px)",
+      zIndex: 10000,
+      display: "flex",
+      alignItems: "center",
+      minWidth: "280px",
+      maxWidth: "320px",
+      fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      fontSize: "16px",
+      fontWeight: "500",
+      userSelect: "none",
+      cursor: threadId ? "pointer" : "default",
+      animation: "slideInUp 0.4s ease forwards",
+    });
+
+    if (threadId) {
+      popup.onclick = () => {
+        const chatUrl =
+          userRole === "doctor"
+            ? `/chat/doctor/thread/${threadId}/`
+            : `/chat/patient/thread/${threadId}/`;
+        window.location.href = chatUrl;
+      };
+    }
+
+    if (!document.getElementById("popup-slide-in-style")) {
+      const style = document.createElement("style");
+      style.id = "popup-slide-in-style";
+      style.textContent = `
+        @keyframes slideInUp {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .popup-close-button:hover {
+          color: #f44336;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
+    const msgSpan = document.createElement("span");
+    msgSpan.textContent = message;
+    msgSpan.style.flex = "1";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.className = "popup-close-button";
+
+    Object.assign(closeBtn.style, {
+      background: "transparent",
+      border: "none",
+      color: "white",
+      fontSize: "22px",
+      cursor: "pointer",
+      padding: "0 0 2px 16px",
+      fontWeight: "700",
+      lineHeight: "1",
+      transition: "color 0.3s ease",
+    });
+
+    closeBtn.onclick = (event) => {
+      event.stopPropagation();
+      popup.remove();
+    };
+
+    popup.appendChild(msgSpan);
+    popup.appendChild(closeBtn);
+    document.body.appendChild(popup);
+
+    if (!threadId) {
+      setTimeout(() => {
+        popup.remove();
+      }, 20000);
+    }
+  }
+});
+</script>
+
+
+
+<script>
+  setInterval(function () {
+    if (!document.hidden) {
+      navigator.sendBeacon("{% url 'accounts:heartbeat' %}");
+    }
+  }, 60000); // every 60s
+</script>
 
 </body>
 </html>

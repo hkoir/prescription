@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <div class="container mt-5">
+    <h2>{{ product.title }} Reviews</h2>
+
+    {% if product.reviews.all %}
+      <ul class="list-group mt-3">
+        {% for review in product.reviews.all %}
+          <li class="list-group-item">
+            <strong>{{ review.user }}</strong>
+            <span class="float-right">{{ review.created_at|date:"F d, Y" }}</span>
+            <p>{{ review.text }}</p>
+            <p>Rating: {{ review.rating }}/5</p>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>No reviews yet. Be the first to write one!</p>
+    {% endif %}
+
+    <h2 class="mt-5">Write a Review</h2>
+    <form method="post" class="mt-3">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-primary">Submit Review</button>
+    </form>
+  </div>
+{% endblock %}

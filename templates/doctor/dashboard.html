@@ -1,24 +1,67 @@
 {% extends "base.html" %}
+
+{% load humanize %}
+{% load custom_filters %}
 {% block content %}
 
+<style>
+.hover-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: #fff;
+    position: relative;
+}
 
+/* Left accent stripe */
+.left-accent::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;          /* thickness of the accent */
+    height: 100%;
+    background: linear-gradient(to bottom, #28a745, #85e085); /* green shade gradient */
+    border-top-left-radius: 0.5rem;  /* match card rounding */
+    border-bottom-left-radius: 0.5rem;
+}
+
+/* Hover effect */
+.hover-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+</style>
 
 <div class="container-fluid py-4 px-0" style="margin-left:0px;margin-right: 0px;">
 
  <h3 class="text-center mb-4 fw-bold text-primary">👤 Doctor Dashboard</h3>
     <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
-        
-        <div class="col">
-        <a href="{% url 'prescription:create_ai_prescription' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+
+       <div class="col">
+        <a href="{% url 'appointments:create_doctor_timeslots' %}" 
+             class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
             <div class="card-body text-center">
-            <h6 class="card-title text-success">🤖 Try AI Prescription Now</h6>
-            <p class="text-muted small mb-0 d-none d-md-block">See the power of AI to auto-generate prescriptions.</p>
+            <h6 class="card-title text-success">🤖 Create your chamber appointment slots</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">Your Patient will book appointment time slotand visit your chamber</p>
             </div>
         </a>
         </div>
+        
+        <div class="col">
+            <a href="{% url 'prescription:create_ai_prescription' %}" 
+              class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
+                <div class="card-body text-center py-4">                   
+                    <h6 class="card-title fw-bold text-success mb-2">🤖Try AI Prescription Now</h6>
+                    <p class="text-muted small mb-0 d-none d-md-block">
+                        Experience the power of AI to auto-generate prescriptions.
+                    </p>
+                </div>
+
+            </a>
+        </div>
 
          <div class="col">
-        <a href="{% url 'symptom_checker:start_symptom_check' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+           <a href="{% url 'symptom_checker:start_symptom_check' %}" 
+             class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
             <div class="card-body text-center">
             <h6 class="card-title text-success">🤖 Talk with Your Ai Doctor</h6>
             <p class="text-muted small mb-0 d-none d-md-block">Talk to your Ai Doctor and get insights of issues</p>
@@ -28,7 +71,8 @@
 
 
         <div class="col">
-        <a href="{% url 'prescription:available_doctors' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+        <a href="{% url 'prescription:available_doctors' %}" 
+            class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
             <div class="card-body text-center">
             <h6 class="card-title text-success">🔍 Search Doctors</h6>
             <p class="text-muted small mb-0 d-none d-md-block">Find and book the right doctor easily.</p>
@@ -38,7 +82,8 @@
 
      
         <div class="col">
-        <a href="{% url 'prescription:doctor_prescription_list' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+        <a href="{% url 'prescription:doctor_prescription_list' %}" 
+            class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
             <div class="card-body text-center">
             <h6 class="card-title text-primary">📄 Your Prescriptions</h6>
             <p class="text-muted small mb-0 d-none d-md-block">Access all your previous prescriptions here.</p>
@@ -47,7 +92,8 @@
         </div>
 
         <div class="col">
-        <a href="{% url 'prescription:doctor_bookings_list' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+        <a href="{% url 'prescription:doctor_bookings_list' %}" 
+            class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
             <div class="card-body text-center">
             <h6 class="card-title text-primary">📚 Your Booking History</h6>
             <p class="text-muted small mb-0 d-none d-md-block">Check your booking consultation history.</p>
@@ -55,7 +101,8 @@
         </a>
         </div>
           <div class="col">
-        <a href="{% url 'appointments:available_doctors' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+        <a href="{% url 'appointments:available_doctors' %}" 
+           class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
             <div class="card-body text-center">
             <h6 class="card-title text-info">🏥 Book doctor chamber appointment</h6>
             <p class="text-muted small mb-0 d-none d-md-block">Book your desired doctor appointment and visit doctor's chamber.</p>
@@ -64,13 +111,28 @@
         </div>
 
         <div class="col">
-        <a href="{% url 'appointments:appointment_list' %}" class="card text-decoration-none shadow-sm border-0 h-100">
+        <a href="{% url 'appointments:appointment_list' %}" 
+            class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
             <div class="card-body text-center">
             <h6 class="card-title text-info">🏥 Your Chamber appointment</h6>
             <p class="text-muted small mb-0 d-none d-md-block">Review Patient past chamber visits and follow-ups.</p>
             </div>
         </a>
         </div>
+
+        <div class="col">
+        <a href="{% url 'chat:doctor_notifications_view' %}" 
+            class="card text-decoration-none shadow-sm border-0 h-100 rounded-4 overflow-hidden hover-card left-accent">
+            <div class="card-body text-center">
+            <h6 class="card-title text-info">🏥 Messaging History</h6>
+            <p class="text-muted small mb-0 d-none d-md-block">See all of your real time messaging history</p>
+            </div>
+        </a>
+        </div>
+
+
+
+
     </div>
    
     {% if request.user.is_staff %}
@@ -79,7 +141,7 @@
      
      <div class="row mt-5" style="margin-left:0px;margin-right: 0px;">
           <h2 class="mb-4">My Earnings Dashboard</h2>       
-          <form method="get" class="mb-3">
+          <form method="get" class="my-3">
               <div class="row">
                 <div class="col-md-4">
                   <label>Start Date</label>
@@ -90,7 +152,7 @@
                   <input type="date" name="end_date" value="{{ end_date }}" class="form-control">
                 </div>
                 <div class="col-md-4 d-flex align-items-end">
-                  <button type="submit" class="btn btn-primary w-100">Filter</button>
+                  <button type="submit" class="btn btn-sm btn-outline-success w-100">Filter</button>
                 </div>
               </div>
             </form>
@@ -243,7 +305,8 @@
       <table class="table table-hover mb-0">
         <thead class="table-info">
           <tr>
-            <th>#</th>
+            <th>#</th>         
+            <th>Online Status</th>
             <th>Patient</th>
              <th>Parent booking</th>
             <th>Follow up bookings</th>
@@ -256,6 +319,15 @@
           {% for appointment in page_obj|slice:":5" %}
             <tr>
               <td>{{ forloop.counter }}</td>
+              <td>
+              {% if appointment.patient.user|online %}
+                  <span class="badge bg-success">Online</span>
+                {% else %}
+                  <span class="badge bg-secondary">Offline</span>
+                {% endif %}
+
+
+              </td>
               <td>{{ appointment.patient.full_name }}</td>
               <td>{{ appointment.booking_code}}</td>
               <td>
@@ -272,7 +344,7 @@
                   {{ appointment.status|capfirst }}
                 </span>
                  <a href="{% url 'prescription:doctor_booking_detail' appointment.id %}" 
-		     class="badge bg-primary">View and Prescribe</a>
+		           class="badge bg-primary">View and Prescribe</a>
 
               {% if appointment.video_link %}
                 <a href="{{ appointment.video_link }}" class="badge bg-success" target="_blank">
@@ -284,8 +356,14 @@
               <span class="badge bg-success">
                 {{ appointment.status|capfirst }}
               </span>
-              <a href="{% url 'prescription:doctor_prescription_detail' appointment.doctor_booking_refs.first.id %}"
-              class="badge bg-primary"> View</a>
+              {% if appointment.doctor_booking_refs.first %}
+                <a href="{% url 'prescription:doctor_prescription_detail_single' appointment.doctor_booking_refs.first.id %}">
+                  View Prescription
+                </a>
+              {% else %}
+                <span class="text-muted">No Prescription</span>
+              {% endif %}
+
               
             {% else %}
               <span class="badge bg-secondary">
@@ -296,6 +374,10 @@
           <a href="{% url 'prescription:ai_prescription_detail' appointment.ai_prescription.id %}"
             class="badge bg-primary">View AI</a>
         {% endif %}
+   
+        <button class="chatPatientBtn btn btn-sm btn-outline-success" data-patient-id="{{ appointment.patient.id }}">Chat with patient</button>
+        <button class="callPatientBtn btn btn-sm btn-outline-primary" data-patient-id="{{ appointment.patient.id }}">Call to patient</button>
+                 
 
           </td>
 
@@ -332,4 +414,94 @@
 
 
 </div>
+
+
+
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const wsScheme = window.location.protocol === "https:" ? "wss" : "ws";
+  const tenantPrefix = "{{ tenant_prefix|default:'public' }}";
+  const doctorId = "{{ user.id }}";
+
+  const socket = new WebSocket(`${wsScheme}://${window.location.host}/ws/chat/${tenantPrefix}/${doctorId}/`);
+
+  socket.onopen = () => {
+    console.log("Doctor WebSocket connected");
+  };
+
+  socket.onerror = (error) => {
+    console.error("Doctor WebSocket error:", error);
+  };
+
+  socket.onclose = () => {
+    console.log("Doctor WebSocket closed");
+  };
+
+  // Attach to all chat buttons
+  document.querySelectorAll(".chatPatientBtn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.preventDefault();
+      const patientId = btn.dataset.patientId;
+
+      if (socket.readyState === WebSocket.OPEN) {
+        socket.send(JSON.stringify({
+          type: "incoming_chat",
+          to_user_id: patientId,
+          from_user_id: doctorId,
+          from_user_name: "{{ user.get_full_name|default:user.username }}",
+        }));
+      }
+
+      setTimeout(() => {
+        window.location.href = `/chat/doctor_chat_view/${patientId}/`;
+      }, 100);
+    });
+  });
+});
+</script>
+
+
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+  document.querySelectorAll(".callPatientBtn").forEach((btn) => {
+    btn.addEventListener("click", async function () {
+      const patientId = this.dataset.patientId;
+
+      try {
+        const response = await fetch(`/prescription/doctor_initiate_video_call/${patientId}/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": csrfToken,
+            "Accept": "application/json",
+          },
+          body: JSON.stringify({})
+        });
+
+        const data = await response.json();
+        if (data.success && data.join_url) {
+          window.open(data.join_url, "_blank");
+        } else {
+          alert("Call failed: " + (data.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Request failed.");
+      }
+    });
+  });
+});
+</script>
+
+
+
+
 {% endblock %}

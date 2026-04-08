@@ -55,7 +55,7 @@ class TenantPaymentConfig(models.Model):
 
 from datetime import time
 from django.utils.timezone import now
-
+from orders.models import Order
 
 class PaymentInvoice(models.Model):
     INVOICE_TYPES = [
@@ -70,6 +70,7 @@ class PaymentInvoice(models.Model):
         ('medicine', 'Medicine'),
         ('appointment', 'Chamber Visit appointment'),
         ('Others', 'Others'),
+        ('ecommerce', 'ecommerce'),
     ]
 
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE,null=True, blank=True)
@@ -81,6 +82,8 @@ class PaymentInvoice(models.Model):
     doctor_followup_booking = models.OneToOneField(DoctorFolloupBooking,on_delete=models.SET_NULL, null=True, blank=True,related_name='doctor_followup_invoice')
     zoom_meeting = models.OneToOneField(ZoomMeeting, on_delete=models.SET_NULL, null=True, blank=True,related_name='zoom_meeting_invoice')
     appointment= models.OneToOneField(Appointment, on_delete=models.SET_NULL, null=True, blank=True,related_name='appointment_invoice')
+    ecommerce_order= models.OneToOneField(Order, on_delete=models.SET_NULL, null=True, blank=True,related_name='ecommerce_invoice')
+   
     related_object_id = models.PositiveIntegerField(blank=True, null=True)
     invoice_type = models.CharField(max_length=30, choices=INVOICE_TYPES)
     amount = models.DecimalField(max_digits=10, decimal_places=2)

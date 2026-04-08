@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-12 col-md-8 col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Create Meeting Room</h3>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Meeting Title</label>
+                            <input type="text" class="form-control" id="title" name="title" 
+                                   placeholder="Enter meeting title" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="host_name" class="form-label">Host Name</label>
+                            <input type="text" class="form-control" id="host_name" name="host_name" 
+                                   placeholder="Enter host name" 
+                                   value="{{ request.user.get_full_name|default:request.user.username }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="start_time" class="form-label">Meeting Date & Time</label>
+                            <input type="datetime-local" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">Create Meeting</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

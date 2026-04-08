@@ -1,0 +1,109 @@
+{% extends "../base.html" %}
+
+{% block content %}
+
+
+
+<div class="container">
+
+ 
+    <h3>Welcome, {{ user_name }}</h3>   
+       
+    <div class="col">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th  class="text-center">Product</th>
+                    <th  class="text-center">Price</th>
+                    <th  class="text-center">Quantity</th>  
+                    <th  class="text-center">Product Image</th>                  
+                    <th  class="text-center">Delivery Status</th>
+                    <th  class="text-center">Confirmation Status</th>
+                    <th  class="text-center">order_key</th>
+                    <th  class="text-center">Review</th>
+                  
+
+                </tr>
+            </thead>            
+            <tbody>
+                <h6>Your purchase history</h6>
+                {% for item in order_items %}
+                    <tr>
+                        <th class="text-center"> {{ item.product.title }}</th>
+                        <td class="text-center">{{ item.price }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>   
+                        <td class="text-center"><img src="{{ item.product.product_image.first.image.url }}"  style="width:50px;height:50px;"></td>                    
+                        <td class="text-center"><small class="text-success">{{ item.delivery_status }}</small></td>
+                        
+                        <td class="text-center">
+                            {% if item.confirmation_status != 'CONFIRMED' %}
+                            <form id="confirmDeliveryForm" method="post" action="{% url 'orders:update_delivery_confirmation' item_id=item.id %}" >
+                                {% csrf_token %}
+                                <input type="hidden" name="delivery_confirmation" value="Confirmed">
+                                <input type="hidden" name="item_id" value="{{ item.id }}">
+                                <button type="submit" class="btn btn-primary confirmButton" id="confirmButton">Pending</button>
+                            </form>
+                            {% else %}
+                            <span class="text-success">{{ item.confirmation_status }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">{{ item.order.order_key }}</td>
+
+                        <td>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#reviewModal">
+                              Review
+                            </button>
+                          
+                            <!-- Modal -->
+                            <div class="modal" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+                                <div class="modal-dialog">
+                                  <div class="modal-content">
+                                    <div class="modal-header">
+                                      <h5 class="modal-title" id="reviewModalLabel">Submit Review</h5>
+                                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                      <form method="post" action="{% url 'store:product_reviews' slug=item.product.slug %}">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                          <label for="reviewText" class="form-label">Review Form</label>
+                                          <textarea class="form-control" id="reviewText" name="text" rows="5" placeholder=" Please write your review here"></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                          <label for="reviewRating" class="form-label">Rating (1-5)</label>
+                                          <input type="number" class="form-control" id="reviewRating" name="rating" min="1" max="5" placeholder="Rating (1-5)">
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                      </form>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                              
+                          </td>
+                          
+                          
+                  
+
+                               
+
+                    </tr>
+                {% endfor %}
+             
+
+                
+            </tbody>
+        </table>  
+
+
+        
+           
+
+    </div>
+    
+</div>
+
+
+
+{% endblock %}
