@@ -142,6 +142,22 @@ def register_view(request):
                 email_sent = False
                 sms_sent = False
 
+                if not user.email and not user.phone_number:
+                    messages.error(request, "You must provide at least an email or a phone number.")
+                    user.delete()
+                    return render(request, 'accounts/registration/register.html', {'form': registerForm})
+
+                if user.phone_number:
+                    try:
+                        from clients.models import TenantSMSConfig
+                        sms_object = TenantSMSConfig.objects.filter(tenant=current_tenant).first()
+
+                        if sms_object:
+                            return send_otp(request, user.phone_number)
+                    except Exception as e:
+                        print("SMS failed:", e)
+                        messages.warning(request, f"SMS failed: {e}")
+
                 if user.email:
                     try:
                         current_site = get_current_site(request)
@@ -149,53 +165,47 @@ def register_view(request):
                         domain = current_site.domain
 
                         subject = 'Activate your Account'
-                        message = render_to_string('accounts/registration/account_activation_email.html', {
-                            'user': user,
-                            'domain': domain,
-                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                            'token': account_activation_token.make_token(user),
-                            'subdomain': subdomain
-                        })
+                        message = render_to_string(
+                            'accounts/registration/account_activation_email.html',
+                            {
+                                'user': user,
+                                'domain': domain,
+                                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                                'token': account_activation_token.make_token(user),
+                                'subdomain': subdomain })
 
                         user.email_user(subject=subject, message=message)
                         email_sent = True
                     except Exception as e:
+                        print("Email failed:", e)
                         messages.warning(request, f"Email sending failed: {e}")
 
-                if user.phone_number:
-                    try:
-                        return send_otp(request, user.phone_number)  # this returns redirect
-                    except Exception as e:
-                        messages.warning(request, f"SMS failed: {e}")
-
-                if not user.email and not user.phone_number:
-                    messages.error(request, "You must provide at least an email or a phone number.")
+                if not email_sent:
                     user.delete()
+                    messages.error(request, "We could not send activation via email or SMS. Please try again.")
                     return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
-                if email_sent:
-                    messages.info(request, "Please check your email to activate your account.")
-                    return render(request, 'accounts/registration/register_email_confirm.html', {'form': registerForm})
+                messages.info(request, "Please check your email to activate your account.")
+                return render(request, 'accounts/registration/register_email_confirm.html')
 
-                # If neither email nor SMS worked
-                messages.error(request, "We could not send activation via email or SMS. Please try again.")
-                user.delete()
-                return render(request, 'accounts/registration/register.html', {'form': registerForm})
-    else:
-        registerForm = TenantUserRegistrationForm(tenant=current_tenant)
-    return render(request, 'accounts/registration/register.html', {'form': registerForm})
+    return render(request, 'accounts/registration/register.html', {
+    'form': registerForm })
+    
+
+
 from django.core.exceptions import ValidationError
-
-
 
 
 def register_patient(request):   
     current_tenant = getattr(connection, 'tenant', None)
     current_schema = current_tenant.schema_name if current_tenant else None
+
     registerForm = TenantUserRegistrationForm()
 
     if request.method == 'POST':
-        registerForm = TenantUserRegistrationForm(request.POST, request.FILES, tenant=current_tenant)
+        registerForm = TenantUserRegistrationForm(
+            request.POST, request.FILES, tenant=current_tenant
+        )
 
         if registerForm.is_valid():
             with transaction.atomic():
@@ -211,8 +221,20 @@ def register_patient(request):
                 user.save()
 
                 email_sent = False
-                sms_sent = False
 
+                # SMS
+                if user.phone_number:
+                    try:
+                        from clients.models import TenantSMSConfig
+                        sms_object = TenantSMSConfig.objects.filter(tenant=current_tenant).first()
+
+                        if sms_object:
+                            return send_otp(request, user.phone_number)
+
+                    except Exception as e:
+                        messages.warning(request, f"SMS failed: {e}")
+
+                # Email
                 if user.email:
                     try:
                         current_site = get_current_site(request)
@@ -220,40 +242,35 @@ def register_patient(request):
                         domain = current_site.domain
 
                         subject = 'Activate your Account'
-                        message = render_to_string('accounts/registration/account_activation_email.html', {
-                            'user': user,
-                            'domain': domain,
-                            'uid': urlsafe_base64_encode(force_bytes(user.pk)),
-                            'token': account_activation_token.make_token(user),
-                            'subdomain': subdomain
-                        })
+                        message = render_to_string(
+                            'accounts/registration/account_activation_email.html',
+                            {
+                                'user': user,
+                                'domain': domain,
+                                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                                'token': account_activation_token.make_token(user),
+                                'subdomain': subdomain
+                            }
+                        )
+
                         user.email_user(subject=subject, message=message)
                         email_sent = True
+
                     except Exception as e:
                         messages.warning(request, f"Email sending failed: {e}")
-                if user.phone_number:
-                    try:
-                        return send_otp(request, user.phone_number)  # this returns redirect
-                    except Exception as e:
-                        messages.warning(request, f"SMS failed: {e}")
 
-                if not user.email and not user.phone_number:
-                    messages.error(request, "You must provide at least an email or a phone number.")
+                if not email_sent:
                     user.delete()
+                    messages.error(request, "We could not send activation via email or SMS.")
                     return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
-                if email_sent:
-                    messages.info(request, "Please check your email to activate your account.")
-                    return render(request, 'accounts/registration/register_email_confirm.html', {'form': registerForm})
+                messages.info(request, "Please check your email to activate your account.")
+                return render(request, 'accounts/registration/register_email_confirm.html')
 
-                # If neither email nor SMS worked
-                messages.error(request, "We could not send activation via email or SMS. Please try again.")
-                user.delete()
-                return render(request, 'accounts/registration/register.html', {'form': registerForm})
-    else:
-        registerForm = TenantUserRegistrationForm(tenant=current_tenant)
-    return render(request, 'accounts/registration/register.html', {'form': registerForm})
 
+    return render(request, 'accounts/registration/register.html', {
+        'form': registerForm
+    })
 
 
 
@@ -336,64 +353,49 @@ def account_activate(request, uidb64, token):
 
 
 
-
 def login_view(request):
-    current_tenant = None
-    if hasattr(connection, 'tenant'):
-        current_tenant = connection.tenant         
-        current_schema = current_tenant.schema_name   
-
-        subscriptions = Subscription.objects.all()
-        current_date = timezone.now().date()
-        for subscription in subscriptions:
-            if subscription.expiration_date:
-                if subscription.expiration_date < current_date:
-                    subscription.is_expired = True
-                    subscription.save()
-    form = CustomLoginForm(initial={'tenant': current_schema })   
+    current_tenant = getattr(connection, 'tenant', None)
+    current_schema = current_tenant.schema_name if current_tenant else None
 
     if request.method == 'POST':
         form = CustomLoginForm(data=request.POST)
+
         if form.is_valid():
             username = form.cleaned_data.get('username')
             password = form.cleaned_data.get('password')
-                    
+
             user = authenticate(request, username=username, password=password)
-            tenant = current_schema 
-            if user:                  
-                login(request, user,backend='accounts.backends.TenantAuthenticationBackend')
-                current_schema_found=request.tenant.schema_name == get_public_schema_name()
-                protocol = 'https' if request.is_secure() else 'http'
-                if not current_schema_found:   
-                    messages.success(request, "Login successful!")                      
-                    host = request.get_host()
-                    parts = host.split('.')
-                    if parts[0] == current_schema:
-                        domain = '.'.join(parts[1:])
-                    else:
-                        domain = '.'.join(parts)
-                    #domain = host.split(':')[0]  # strips port if any
-                    #domain = 'aiha.live'
-                    protocol = 'https'
-                    tenant_url = f"{protocol}://{tenant}.{domain}/clients/tenant_expire_check/"
-                    return redirect(tenant_url)       
+
+            if user:
+                login(request, user, backend='accounts.backends.TenantAuthenticationBackend')
+
+                messages.success(request, "Login successful!")
+
+                host = request.get_host()
+                parts = host.split('.')
+
+                if parts[0] == current_schema:
+                    domain = '.'.join(parts[1:])
                 else:
-                    messages.success(request, "Login successful!")                      
-                    tenant_url = f"{protocol}://{domain}/clients/tenant_expire_check/"                    
-                    return redirect(tenant_url)     
+                    domain = '.'.join(parts)
+
+                protocol = 'https' if request.is_secure() else 'http'
+
+                tenant_url = f"{protocol}://{current_schema}.{domain}/clients/tenant_expire_check/"
+
+                return redirect(tenant_url)
 
             else:
                 messages.error(request, "Invalid username or password.")
+
         else:
             print(form.errors)
-            form = CustomLoginForm(initial={'tenant':  current_schema })  
             messages.error(request, "Please provide correct username and password")
-  
-    
-    form = CustomLoginForm(initial={'tenant':  current_schema })    
+
+    else:
+        form = CustomLoginForm(initial={'tenant': current_schema })
+
     return render(request, 'accounts/registration/login.html', {'form': form})
-
-
 
 
 def send_otp(request, phone_number):

@@ -80,6 +80,7 @@ def get_or_create_thread_for_doctor_patient_user(tenant_schema, doctor_user, pat
 # ------------------------------------------------------------------
 # PATIENT starts / resumes chat with a doctor
 # ------------------------------------------------------------------
+from django.db.models import Q, Max, Count
 
 def get_all_threads_for_user(user, tenant_schema):
     threads_qs = (
@@ -102,10 +103,11 @@ def get_all_threads_for_user(user, tenant_schema):
     )
 
     thread_list = []
-    for t in threads_qs:
-        if t.patient_user == user:
-            partner = t.doctor_user
 
+    for t in threads_qs:
+        # ✅ CRITICAL FIX (ID comparison)
+        if t.patient_user_id == user.id:
+            partner = t.doctor_user
         else:
             partner = t.patient_user
 
@@ -117,7 +119,7 @@ def get_all_threads_for_user(user, tenant_schema):
             "partner_user": partner,
             "last_text": last_text,
             "unread_count": t.unread_count,
-            "read_count": t.read_count,  # new added field
+            "read_count": t.read_count,
         })
 
     return thread_list
@@ -310,7 +312,9 @@ def doctor_chat_thread_view(request, thread_id):
         chat_partner = thread.patient_user
     else:
         chat_partner = thread.doctor_user   
-    all_threads = get_all_threads_for_user(request.user, tenant_schema)    
+
+    all_threads = get_all_threads_for_user(request.user, tenant_schema)  
+   
     patient_booking = DoctorBooking.objects.filter(patient__user=thread.patient_user).first()
 
     context = {
@@ -368,7 +372,7 @@ def patient_chat_thread_view(request, thread_id):
         chat_partner = thread.patient_user
 
     all_threads = get_all_threads_for_user(request.user, tenant_schema)
-
+   
     context = {
         "chat_partner": chat_partner,
         "chat_partner_id": chat_partner.id,
@@ -523,6 +527,7 @@ def save_device_token(request):
     return JsonResponse({"error": "unauthenticated"}, status=401)
 
 
+from firebase_admin import messaging
 
 @csrf_exempt
 def send_push_to_doctor(request):

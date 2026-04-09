@@ -14,15 +14,16 @@ urlpatterns = [
     path("doctor_chat_view/<int:patient_id>/", views.doctor_chat_view, name="doctor_chat_view"),
     path("patient_chat_view/<int:doctor_id>/", views.patient_chat_view, name="patient_chat_view"),
     
-    path('doctor_notifications_view/', views.doctor_notifications_view, name='doctor_notifications_view'),
-    path('patient_notifications_view/', views.patient_notifications_view, name='patient_notifications_view'),
-    
+       
     path("doctor/thread/<int:thread_id>/", views.doctor_chat_thread_view, name="doctor_chat_thread_view"),
     path("patient/thread/<int:thread_id>/", views.patient_chat_thread_view, name="patient_chat_thread_view"),
    
     path("send/<int:thread_id>/", views.send_message, name="send_message"),
     path('save-token/', views.save_device_token, name='save_device_token'),
     path('send-push/', views.send_push_to_doctor, name='send_push'),
+
+     path('doctor_notifications_view/', views.doctor_notifications_view, name='doctor_notifications_view'),
+    path('patient_notifications_view/', views.patient_notifications_view, name='patient_notifications_view'),
 
    path("online_doctors_view/", views.online_doctors_view, name="online_doctors_view"),
    path("online_patients_view/", views.online_patients_view, name="online_patients_view"),

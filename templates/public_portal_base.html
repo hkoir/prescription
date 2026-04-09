@@ -179,30 +179,8 @@
 <body>
 
 
-<!-- Social Links Navbar -->
-<nav class="navbar navbar-dark social-nav" id="socialNav">
-    <div class="container-fluid d-flex justify-content-between align-items-center">
-        <span class="navbar-text">Social Links | Contact Us | Follow Us</span>
-        <div class="social-icons">
-            <a href="https://www.facebook.com" target="_blank" class="text-light me-3">
-                <i class="fab fa-facebook-f"></i>
-            </a>
-            <a href="https://www.twitter.com" target="_blank" class="text-light me-3">
-                <i class="fab fa-twitter"></i>
-            </a>
-            <a href="https://www.linkedin.com" target="_blank" class="text-light">
-                <i class="fab fa-linkedin-in"></i>
-            </a>
-            <a href="mailto:contact@yourcompany.com" class="text-light ms-3">
-                <i class="fas fa-envelope"></i> Email Us
-            </a>
-        </div>
-    </div>
-</nav>
-
-
 <!-- Main Navbar -->
-<nav class="navbar navbar-expand-lg main-nav" id="mainNav">
+<nav class="navbar navbar-expand-lg fixed-top main-nav" id="mainNav">
     <div class="container-fluid">
         <a class="navbar-brand d-flex align-items-center" href="{% url 'prescription:home' %}">
         {% include "partials/caresetu-logo.svg" %}

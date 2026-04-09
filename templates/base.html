@@ -242,11 +242,9 @@ li a {
 
 
 .custom-sidebar {
-    width: 280px;         /* Default for desktop */
-    max-width: 80vw;      /* Limit width on small screens */
-    min-width: 220px;     /* Don't shrink too small */
+      --bs-offcanvas-width: 280px;
     background-color: #0f2235; /* dark navy blue */
-    color: #e9ecef;
+    color: aliceblue;
      border-right: 1px solid #1a2d45;
 }
 
@@ -256,16 +254,13 @@ li a {
     }
 }
 
-.custom-sidebar .dropdown-menu {
-    min-width: 250px !important;
-    width: auto !important;
+.custom-sidebar .dropdown-menu {  
     white-space: normal;
-
     background-color: #2c3e50;
     border: none;
     border-radius: 8px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-    color: white; /* This sets text color for the dropdown container */
+    
 }
 
 /* Specifically target the links inside the submenu */
@@ -649,7 +644,8 @@ li a {
                       
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdownDashboard" style="max-height: 400px; overflow-y: auto;">
                          {% if request.user.role == 'doctor' %}                     
-                          <li><a class="dropdown-item" href="{% url 'finance:doctor_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Doctor Dashboard</a></li>                                 
+                          <li><a class="dropdown-item" href="{% url 'finance:doctor_dashboard' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Doctor Dashboard</a></li>   
+                          <li><a class="dropdown-item" href="{% url 'finance:create_doctor_profile' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Create Doctor Profile</a></li>                              
                          {% elif request.user.is_staff %}
                           <li><a class="dropdown-item" href="{% url 'finance:create_doctor_profile' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Create Doctor Profile</a></li>
                           <li><a class="dropdown-item" href="{% url 'finance:enroll_doctor' %}" style="text-decoration: none;"><i class="fas fa-plus-square"></i>&nbsp;Enroll Doctor</a></li>   

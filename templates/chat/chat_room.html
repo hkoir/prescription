@@ -260,52 +260,61 @@ input#chatInput {
   <div class="row">
 
   <!-- Left Pane -->
-<div class="thread-list-pane col-12 col-md-4 p-3 {% if current_thread_id %}d-none d-md-block{% endif %}" id="chat-thread-pane">
-  <h5 class="d-md-block d-none fw-bold mb-3">Chats</h5>
+<div class="thread-list-pane col-12 col-md-4 p-3 {% if current_thread_id %}d-none d-md-block{% endif %}">
+  <h5 class="fw-bold mb-3">Chats</h5>
+
   <ul class="list-group list-group-flush">
+
     {% for thread in all_threads %}
-      {% with partner=thread.partner_user %}
-        {% if request.user.role == 'patient' %}
-          {% url 'chat:patient_chat_thread_view' thread.id as thread_url %}
-        {% else %}
-          {% url 'chat:doctor_chat_thread_view' thread.id as thread_url %}
-        {% endif %}
-        
-        <li class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center {% if thread.id == current_thread_id %} bg-light rounded-3 {% endif %} thread-item">
-          <a href="{{ thread_url }}" class="d-flex align-items-center flex-grow-1 text-decoration-none text-dark">
-            
-            {% if partner.photo_id %}
-              <img src="{{ partner.photo_id.url }}" alt="Profile" class="rounded-circle me-3" width="48" height="48" style="object-fit: cover;">
-            {% else %}
-              <div class="rounded-circle bg-secondary me-3 d-flex justify-content-center align-items-center text-white fw-bold" style="width:48px; height:48px;">
-                {{ partner.first_name|default:partner.username|slice:":1" }}
-              </div>
-            {% endif %}
 
-            <div class="flex-grow-1 overflow-hidden">
-              <div class="fw-semibold text-truncate">
-                {{ partner.get_full_name|default:partner.username }}
-                {% if partner|online %}
-                    <span style="color: green;">● Online</span>
-                {% else %}
-                    <span style="color: gray;">● Offline <br>Last seen {{ partner.last_seen|timesince }} ago</span>
-                {% endif %}
-               </div>
-              <div class="text-muted small text-truncate">{{ thread.last_text|default:"(no messages)" }}</div>
+      {% if request.user.role == 'patient' %}
+        {% url 'chat:patient_chat_thread_view' thread.id as thread_url %}
+      {% else %}
+        {% url 'chat:doctor_chat_thread_view' thread.id as thread_url %}
+      {% endif %}
+
+      <li class="list-group-item d-flex justify-content-between align-items-center {% if thread.id == current_thread_id %}bg-light{% endif %}">
+
+        <a href="{{ thread_url }}" class="d-flex align-items-center text-dark text-decoration-none flex-grow-1">
+
+          {% if thread.partner_user.photo_id %}
+            <img src="{{ thread.partner_user.photo_id.url }}" class="rounded-circle me-3" width="48" height="48">
+          {% else %}
+            <div class="rounded-circle bg-secondary text-white d-flex justify-content-center align-items-center me-3"
+                 style="width:48px;height:48px;">
+              {{ thread.partner_user.first_name|default:thread.partner_user.username|slice:":1" }}
             </div>
-          </a>
+          {% endif %}
 
-          <div class="d-flex flex-column align-items-end ms-2" style="min-width: 50px;">
-            {% if thread.unread_count > 0 %}
-              <span class="badge bg-success rounded-pill px-2 py-1 fw-bold" style="font-size: 0.75rem;">{{ thread.unread_count }}</span>
-            {% endif %}
-            <small class="badge bg-info mt-1" style="font-size: 0.65rem;">Read: {{ thread.read_count }}</small>
+          <div class="flex-grow-1">
+            <div class="fw-semibold">
+              {{ thread.partner_user.get_full_name|default:thread.partner_user.username }}
+
+              {% if thread.partner_user|online %}
+                <span style="color: green;">● Online</span>
+              {% else %}
+                <span style="color: gray;">● Offline</span>
+              {% endif %}
+            </div>
+
+            <div class="text-muted small">
+              {{ thread.last_text|default:"(no messages)" }}
+            </div>
           </div>
-        </li>
-      {% endwith %}
+        </a>
+
+        <div class="text-end">
+          {% if thread.unread_count > 0 %}
+            <span class="badge bg-success">{{ thread.unread_count }}</span>
+          {% endif %}
+        </div>
+
+      </li>
+
     {% empty %}
-      <li class="list-group-item text-muted fst-italic">No chats found.</li>
+      <li class="text-muted">No chats found</li>
     {% endfor %}
+
   </ul>
 </div>
 
@@ -504,7 +513,7 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         const data = JSON.parse(event.data);
         console.log("📩 WS IN:", data);
-
+      
         if (!data.type) {
           console.warn("⚠️ Unknown message format:", data);
           return;
@@ -583,7 +592,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
   }
 
-  function appendMessageWS(senderName, message, mediaUrl, isOwn, sentAt) {
+  function appendMessageWS(senderName, message, mediaUrl, isOwn, sentAt) {   
     try {
       if (!chatBox) {
         console.error("🚫 chatBox not found in DOM.");

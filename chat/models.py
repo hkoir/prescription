@@ -13,6 +13,11 @@ class ChatThread(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     last_message_at = models.DateTimeField(null=True, blank=True)
 
+    def get_partner(self, user):
+        if user == self.doctor_user:
+            return self.patient_user
+        return self.doctor_user
+
     class Meta:
         unique_together = ('tenant_schema', 'doctor_user', 'patient_user')
 

@@ -1,10 +1,10 @@
 <svg
   xmlns="http://www.w3.org/2000/svg"
-  viewBox="0 0 560 140"
+  viewBox="0 0 590 140"
   preserveAspectRatio="xMidYMid meet"
   role="img"
   aria-labelledby="csTitle"
-  style="display:block;max-width:100%;margin:0 auto;"
+  style="display:block;max-width:100%;margin:0 auto;padding:0;"
 >
   <title id="csTitle">CareSetu Logo</title>
   <style>
@@ -17,13 +17,13 @@
     .cs-bn-text {
       font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif;
       font-weight: 700;           /* Bold for premium feel */
-      fill: #fff;                  /* Elegant dark gray */
+      fill: #91edf0;                  /* Elegant dark gray */
       letter-spacing: 0.5px;      /* Slight spacing */
     }
   </style>
 
   <!-- Icon -->
-  <g transform="translate(10,20)">
+  <g transform="translate(0,0)">
     <path class="cs-green" d="M0 60c20-30 60-60 110-60s90 30 110 60h-22c-16-22-48-44-88-44S38 38 22 60H0Z"/>
     <rect x="28" y="46" width="8" height="14" class="cs-green" opacity=".6"/>
     <rect x="184" y="46" width="8" height="14" class="cs-green" opacity=".6"/>

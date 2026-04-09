@@ -1,2 +1,109 @@
-humayun@ubuntu-s-1vcpu-1gb-sgp1-01:/var/www/html/download$ ls
-prescriptionInstaller.exe
+
+
+
+python manage.py makemigrations
+python manage.py migrate_schemas
+python manage.py migrate_schemas --shared
+
+from clients.models import Client
+from clients.models import Domain
+
+tenant = Client(schema_name='public', name='Public')
+tenant.save()
+domain=Domain(domain ='localhost', tenant=tenant,is_primary=True)
+domain.save()
+
+tenant = Client(schema_name='public', name='Public')
+tenant.save()
+domain=Domain(domain ='bnova.pro', tenant=tenant,is_primary=True)
+domain.save()
+
+
+tenant = Client(schema_name='prescription', name='prescription')
+tenant.save()
+domain=Domain(domain ='demo1.localhost', tenant=tenant,is_primary=True)
+domain.save()
+
+tenant = Client(schema_name='education', name='education')
+tenant.save()
+domain=Domain(domain ='education.bnova.pro', tenant=tenant,is_primary=True)
+domain.save()
+
+
+
+
+tenant = Client(schema_name='demo2', name='demo2')
+tenant.save()
+domain=Domain(domain ='demo2.localhost', tenant=tenant,is_primary=True)
+domain.save()
+
+tenant = Client(schema_name='mno', name='mno')
+tenant.save()
+domain=Domain(domain ='mno.localhost', tenant=tenant,is_primary=True)
+domain.save()
+
+
+python manage.py tenant_command createsuperuser --schema=public
+python manage.py tenant_command createsuperuser --schema=office
+python manage.py tenant_command createsuperuser --schema=education
+
+
+
+
+
+
+caddy validate --config /etc/caddy/Caddyfile
+sudo journalctl -u caddy -f
+sudo journalctl -u gunicorn -f
+
+sudo journalctl -u gunicorn -n 100
+sudo journalctl -u caddy -n 100
+
+sudo systemctl stop caddy
+
+sudo rm -rf /var/lib/caddy/.local/share/caddy
+
+sudo systemctl start caddy
+
+
+{
+    email hkobir1973@gmail.com
+
+    on_demand_tls {
+       ask http://127.0.0.1/allow-cert
+    }
+}
+
+:80 {
+    # Allow Caddy to reach Django for TLS verification
+    @allow path /allow-cert
+    handle @allow {
+        reverse_proxy unix//run/gunicorn.sock
+    }
+  
+    handle {
+        redir https://{host}{uri}
+    }
+}
+
+:443 {
+    encode gzip
+
+    tls {
+        on_demand
+    }
+  
+    handle_path /static/* {
+        root * /home/humayun/myprojectdir/staticfiles
+        file_server
+    }
+  
+    handle_path /media/* {
+        root * /home/humayun/myprojectdir/media
+        file_server
+    }
+  
+    handle {
+        reverse_proxy unix//run/gunicorn.sock
+    }
+}

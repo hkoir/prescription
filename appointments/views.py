@@ -24,35 +24,68 @@ from.models import AppointmentSlot
 from datetime import datetime, timedelta
 
 
-
 def generate_time_slots(doctor, slot_duration, start_date, end_date):
+    from datetime import datetime, timedelta
+    import traceback
+
+    print("\n===== ENTERED generate_time_slots =====")
+    print("Doctor:", doctor)
+    print("Doctor start_time:", doctor.hospital_start_time)
+    print("Doctor end_time:", doctor.hospital_end_time)
+    print("Slot duration:", slot_duration)
+    print("Start date:", start_date, "End date:", end_date)
+
     # Validate dates
     if not start_date or not end_date or start_date > end_date:
+        print("❌ Invalid date range")
         return False
 
     # Validate doctor's available hours
-    if not doctor.start_time or not doctor.end_time:
-        return False  # Or raise a specific error message if needed
+    if not doctor.hospital_start_time or not doctor.hospital_end_time:
+        print("❌ Doctor missing start_time or end_time")
+        return False
 
     slot_delta = timedelta(minutes=slot_duration)
+    created = False
 
-    for single_date in (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1)):
-        current_time = doctor.start_time
+    try:
+        for single_date in (start_date + timedelta(days=n) for n in range((end_date - start_date).days + 1)):
+            print("\n--- Date:", single_date, "---")
 
-        while current_time < doctor.end_time:
-            slot_end_time = (datetime.combine(single_date, current_time) + slot_delta).time()
-            AppointmentSlot.objects.create(
-                doctor=doctor,
-                date=single_date,
-                start_time=current_time,
-                end_time=slot_end_time,
-                slot_duration=slot_duration,
-                is_booked=False
-            )
-            current_time = slot_end_time  # Move to next slot
+            current_time = doctor.hospital_start_time
 
-    return True
+            while current_time < doctor.hospital_end_time:
+                print("Trying slot:", current_time)
 
+                slot_end_time = (
+                    datetime.combine(single_date, current_time) + slot_delta
+                ).time()
+
+                print("Slot end time:", slot_end_time)
+
+                AppointmentSlot.objects.create(
+                    doctor=doctor,
+                    date=single_date,
+                    start_time=current_time,
+                    end_time=slot_end_time,
+                    slot_duration=slot_duration,
+                    is_booked=False
+                )
+
+                print("✅ Created slot:", current_time, "-", slot_end_time)
+
+                created = True
+                current_time = slot_end_time
+
+    except Exception as e:
+        print("🔥 ERROR:", e)
+        traceback.print_exc()
+        return False
+
+    print("Final created:", created)
+    print("===== EXIT generate_time_slots =====\n")
+
+    return created
 
 
  
@@ -92,51 +125,106 @@ def generate_monthly_timeslots(doctor_id, year, month, start_time="09:00", end_t
 
 
 
-
 @login_required
 def create_doctor_timeslots(request, id=None):
+    print("\n===== ENTERED create_doctor_timeslots VIEW =====")
+
     instance = get_object_or_404(AppointmentSlot, id=id) if id else None
+    print("Instance:", instance)
+
     message_text = "updated successfully!" if id else "added successfully!"
     form = TimeSlotForm(request.POST or None, instance=instance, user=request.user)
 
+    print("Request method:", request.method)
+
     if request.method == 'POST':
+        print("POST data:", request.POST)
+
         if form.is_valid():
+            print("✅ Form is valid")
+            print("Cleaned data:", form.cleaned_data)
+
             # Determine doctor based on role
             if hasattr(request.user, 'role') and request.user.role == 'doctor':
+                print("User is doctor")
                 doctor = Doctor.objects.filter(user=request.user).first()
+                print("Doctor found:", doctor)
+
                 if not doctor:
+                    print("❌ Doctor profile not found")
                     messages.error(request, "Doctor profile not found.")
                     return redirect('prescription:home')
+
             elif request.user.is_staff:
+                print("User is staff")
                 doctor = form.cleaned_data.get("doctor")
+                print("Selected doctor:", doctor)
+
             else:
+                print("❌ Unauthorized user")
                 return redirect('prescription:home')
 
             slot_duration = form.cleaned_data.get("slot_duration")
             start_date = form.cleaned_data.get("start_date")
             end_date = form.cleaned_data.get("end_date")
 
+            print("Slot duration:", slot_duration)
+            print("Start date:", start_date)
+            print("End date:", end_date)
+
             if start_date and end_date:
-                if generate_time_slots(doctor, slot_duration, start_date, end_date):
+                print("Calling generate_time_slots...")
+
+                result = generate_time_slots(doctor, slot_duration, start_date, end_date)
+                print("generate_time_slots result:", result)
+
+                if result:
+                    print("✅ Slots created successfully")
                     messages.success(request, f"Time slots {message_text}")
                     return redirect("appointments:create_doctor_timeslots")
                 else:
+                    print("❌ Slot generation failed")
                     form.add_error(None, "Fail to create time slots. Please check all the form fields.")
             else:
+                print("❌ Missing start_date or end_date")
                 form.add_error(None, "Start date and End date are required.")
 
-    datas =None
-    if request.user.role == 'doctor':
+        else:
+            print("❌ Form is NOT valid")
+            print("Form errors:", form.errors)
+            print("Non-field errors:", form.non_field_errors())
+
+    # ======================
+    # DATA FETCHING SECTION
+    # ======================
+    datas = None
+
+    print("Fetching data for listing...")
+
+    if hasattr(request.user, 'role') and request.user.role == 'doctor':
+        print("Listing for doctor")
         doctor = Doctor.objects.filter(user=request.user).first()
+        print("Doctor:", doctor)
+
         datas = AppointmentSlot.objects.filter(doctor=doctor).order_by('-date')
+
     elif request.user.is_staff:
+        print("Listing for staff")
         datas = AppointmentSlot.objects.all().order_by('-date')
+
     else:
+        print("❌ Unauthorized in listing section")
         return redirect('prescription:home')
+
+    print("Total slots found:", datas.count())
 
     paginator = Paginator(datas, 5)
     page_number = request.GET.get('page')
+    print("Page number:", page_number)
+
     page_obj = paginator.get_page(page_number)
+
+    print("===== EXIT VIEW =====\n")
 
     return render(request, 'appointments/manage_doctor_timeslots.html', {
         'form': form,
@@ -144,6 +232,7 @@ def create_doctor_timeslots(request, id=None):
         'datas': datas,
         'page_obj': page_obj
     })
+
 
 
 @login_required

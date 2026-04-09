@@ -58,6 +58,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
             self.tenant_prefix = self.scope["url_route"]["kwargs"].get("tenant_prefix", "unknown")
             self.user_id = int(self.scope["url_route"]["kwargs"]["user_id"])
+            # self.user_id = self.scope["user"].id
             self.group_name = f"{self.tenant_prefix}_user_{self.user_id}"
 
             await self.channel_layer.group_add(self.group_name, self.channel_name)
@@ -170,16 +171,21 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender_id = event["sender_id"]
         current_user = self.scope["user"]
 
-        active_thread_id = self.scope.get("session", {}).get("active_thread_id")
+        try:
+            session = self.scope.get("session")
+            active_thread_id = session.get("active_thread_id") if session else None
 
-        if str(active_thread_id) == str(thread_id) and current_user.id != sender_id:            
-            await database_sync_to_async(
-                ChatMessage.objects.filter(
-                    thread_id=thread_id,
-                    sender_id=sender_id,
-                    read_at__isnull=True
-                ).update
-            )(read_at=timezone.now())
+            if str(active_thread_id) == str(thread_id) and current_user.id != sender_id:
+                await database_sync_to_async(
+                    ChatMessage.objects.filter(
+                        thread_id=thread_id,
+                        sender_id=sender_id,
+                        read_at__isnull=True
+                    ).update
+                )(read_at=timezone.now())
+
+        except Exception as e:
+            print("⚠️ session error (ignored):", e)
 
         await self.send(text_data=json.dumps({
             "type": "chat_message",

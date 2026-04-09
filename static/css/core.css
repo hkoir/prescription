@@ -3,11 +3,9 @@
 html, body {
     background-color: white;
     color: #333333;
-    padding-top: 125px; 
+    padding-top: 55px; 
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-
-
 
 
 .social-nav {
@@ -15,7 +13,7 @@ html, body {
     color: white;
     position: fixed;
     top: 0;
-    min-height: 125px; /* allow it to grow if needed */
+    min-height: 56px; /* allow it to grow if needed */
     width: 100%;
     z-index: 1030;
     transition: top 0.3s ease-in-out;
@@ -25,16 +23,21 @@ html, body {
 }
 
 
-    .main-nav {
-        background-color: #16213e;
-        color: white;
-        position: fixed;
-        top: 125px;
-        height:75px;
-        width: 100%;
-        z-index: 1031;
-        transition: top 0.3s ease-in-out;
-    }
+
+
+
+.main-nav {
+    background-color: #16213e;
+    color: white;
+    position: fixed;
+    top: 55px;
+    height:75px;
+    width: 100%;
+    z-index: 1031;
+    transition: top 0.3s ease-in-out;
+}
+
+
 
 
 .navbar-toggler {  
