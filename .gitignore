@@ -27,5 +27,3 @@ env/
 # Environment
 .env
 
-# Migrations
-*/migrations/
