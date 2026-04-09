@@ -28,3 +28,5 @@ myenv/
 # Environment
 .env
 
+media/
+staticfiles/
